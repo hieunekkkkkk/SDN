@@ -13,7 +13,12 @@ if (!PUBLISHABLE_KEY) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ClerkProvider localization={viVN} publishableKey={PUBLISHABLE_KEY} afterSignOutUrl='/'>
+    <ClerkProvider localization={viVN} publishableKey={PUBLISHABLE_KEY} afterSignOutUrl='/'
+      appearance={{
+        layout: {
+          unsafe_disableDevelopmentModeWarnings: true,
+        },
+      }}>
       <App />
     </ClerkProvider>
   </StrictMode>,
