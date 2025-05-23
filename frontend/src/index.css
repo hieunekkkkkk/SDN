@@ -4,7 +4,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .app {
@@ -22,8 +22,8 @@
 
 /* Variables */
 :root {
-  --primary-color: #4285F4;
-  --secondary-color: #4285F4;
+  --primary-color: #4285f4;
+  --secondary-color: #4285f4;
   --white: #ffffff;
   --text-color: #333333;
   --border-radius: 5px;
@@ -405,30 +405,39 @@ footer {
   .how-it-works {
     flex-direction: column;
   }
-  
+
   .places-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
-  
+
   .categories {
     gap: 10px;
   }
-  
+
   .category-icon {
     width: 50px;
     height: 50px;
     font-size: 20px;
   }
-  
+
   .category-name {
     font-size: 12px;
   }
-  
+
   .footer-grid {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .nav-links {
     display: none;
   }
+}
+
+/* ===================== LOGIN ===================== */
+
+.loginContainer, .signupContainer {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  align-items: center;
 }
