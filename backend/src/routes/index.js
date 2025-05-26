@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const userRoutes = require('./user.route');
+
 const businessRoutes = require('./business.routes');
 const productRoutes = require('./product.routes');
 const paymentRoutes = require('./payment.routes');
@@ -12,7 +12,7 @@ const feedbackProductRoutes = require('./feedback_product.routes');
 const redisRoutes = require('./redisRouter');
 
 // Tập trung các routes
-router.use('/users', userRoutes);
+
 router.use('/business', businessRoutes);
 router.use('/product', productRoutes);
 router.use('/payment', paymentRoutes);
