@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const userRoutes = require('./user.route');
+const homeRoutes = require('./home.route');
+const redisRouter = require('./redisRouter');
 
 // Tập trung các routes
-router.use('/users', userRoutes);
+router.use('/home', homeRoutes);
+router.use('/redis', redisRouter);
 
 module.exports = router;
