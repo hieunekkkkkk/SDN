@@ -1,12 +1,28 @@
 // LandingPage.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../index.css';
 import Header from '../components/header';
 import Footer from '../components/footer';
+import { useUser, useAuth } from '@clerk/clerk-react';
 
 function LandingPage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  
+  //clerk return jwt
+  const { user } = useUser();
+  const { getToken, isSignedIn } = useAuth();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      if (isSignedIn) {
+        const token = await getToken();
+        console.log("JWT từ Clerk:", token);
+      }
+    };
+
+    fetchToken();
+  }, [isSignedIn, getToken]);
 
   const handleCategoryClick = (categoryName) => {
     setSelectedCategory(categoryName);
