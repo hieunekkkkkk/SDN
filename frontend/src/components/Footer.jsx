@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import '../css/Footer.css';
 import { FaFacebookF, FaInstagram, FaGoogle } from 'react-icons/fa';
 
-
 const Footer = () => {
   const [email, setEmail] = useState('');
 
@@ -20,30 +19,57 @@ const Footer = () => {
             <div className="footer-left">
               <h3>Speak to our expert at...</h3>
               <div className="contact-info">
+                {/* Bạn có thể thêm nội dung liên hệ ở đây nếu cần */}
               </div>
             </div>
 
             <div className="footer-right">
               <h3>Follow Us</h3>
               <div className="social-links">
-                <a href="https://facebook.com" className="social-link" aria-label="Facebook"><FaFacebookF /></a>
-                <a href="https://instagram.com" className="social-link" aria-label="Instagram"><FaInstagram /></a>
-                <a href="https://google.com" className="social-link" aria-label="Google"><FaGoogle /></a>
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                  aria-label="Facebook"
+                >
+                  <FaFacebookF />
+                </a>
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                  aria-label="Instagram"
+                >
+                  <FaInstagram />
+                </a>
+                <a
+                  href="https://google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="social-link"
+                  aria-label="Google"
+                >
+                  <FaGoogle />
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
+
       <div className="footer-main">
         <div className="container">
           <div className="footer-grid">
             <div className="footer-column">
               <h4>Contact</h4>
               <ul className="footer-links">
-                <p>Truong dai hoc FPT, Thach Hoa, Thach That, Thanh pho Ha Noi</p>
-                <p>Locallink@gmail.com</p>
+                <li>Truong dai hoc FPT, Thach Hoa, Thach That, Thanh pho Ha Noi</li>
+                <li>Locallink@gmail.com</li>
               </ul>
             </div>
+
             <div className="footer-column">
               <h4>Company</h4>
               <ul className="footer-links">
@@ -70,21 +96,19 @@ const Footer = () => {
             <div className="footer-column">
               <h4>Newsletter</h4>
               <p>Subscribe to the free newsletter and stay up to date</p>
-              <div className="newsletter-form">
+              <form className="newsletter-form" onSubmit={handleNewsletterSubmit}>
                 <input
                   type="email"
                   placeholder="Your email address"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="newsletter-input"
+                  required
                 />
-                <button
-                  onClick={handleNewsletterSubmit}
-                  className="newsletter-btn"
-                >
+                <button type="submit" className="newsletter-btn">
                   Send
                 </button>
-              </div>
+              </form>
               <div className="payment-methods">
                 <img src="/visa.png" alt="Visa" />
                 <img src="/mastercard.png" alt="Mastercard" />
