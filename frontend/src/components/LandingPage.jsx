@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../css/LandingPage.css';
-import Header from '../components/header';
-import Footer from '../components/footer';
+import Header from './header';
+import Footer from './footer';
 
 const LandingPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,28 +24,28 @@ const LandingPage = () => {
       title: 'Molokini and Turtle Town Snorkeling Adventure Aboard',
       location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
       status: 'Đang mở cửa',
-      image: '1.png',
+      image: '/place1.jpg',
       rating: 4.8
     },
     {
       title: 'All Inclusive Ultimate Circle Island Day Tour with Lunch',
       location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
       status: 'Đang mở cửa',
-      image: '1.png',
+      image: '/place2.jpg',
       rating: 4.9
     },
     {
       title: 'Clear Kayak Tour of Shell Key Preserve and Tampa Bay Area',
       location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
       status: 'Đang mở cửa',
-      image: '1.png',
+      image: '/place3.jpg',
       rating: 4.7
     },
     {
       title: 'Mauna Kea Summit Sunset and Stars Free Astro Photos Hilo...',
       location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
       status: 'Đang mở cửa',
-      image: '1.png',
+      image: '/place4.jpg',
       rating: 4.6
     }
   ];
@@ -57,7 +57,7 @@ const LandingPage = () => {
       description: 'Các mặt hàng đa dạng, Hệ thống siêu thị vô cùng tiện lợi',
       action: 'Xem thêm',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      image: '1.png'
+      image: '/service1.jpg'
     },
     {
       title: 'Hệ thống siêu thị vô cùng tiện lợi',
@@ -65,7 +65,7 @@ const LandingPage = () => {
       description: 'Hệ thống siêu thị vô cùng tiện lợi',
       action: 'Xem thêm',
       background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      image: '1.png'
+      image: '/service2.jpg'
     },
     {
       title: 'Tiết lộ những nơi ở tiện nghi',
@@ -73,7 +73,7 @@ const LandingPage = () => {
       description: 'Tiết lộ những nơi ở tiện nghi',
       action: 'Xem thêm',
       background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      image: '1.png'
+      image: '/service3.jpg'
     }
   ];
 
@@ -107,19 +107,19 @@ const LandingPage = () => {
       text: 'I think Educraft is the best theme I ever seen this year. Amazing design, easy to customize and a design quality superlative account on its cloud platform for the optimized performance',
       author: 'Courtney Henry',
       role: 'Web Designer',
-      avatar: '1.png'
+      avatar: '/avatar1.jpg'
     },
     {
       text: 'I think Educraft is the best theme I ever seen this year. Amazing design, easy to customize and a design quality superlative account on its cloud platform for the optimized performance',
       author: 'Courtney Henry',
       role: 'Web Designer',
-      avatar: '1.png'
+      avatar: '/avatar2.jpg'
     },
     {
       text: 'I think Educraft is the best theme I ever seen this year. Amazing design, easy to customize and a design quality superlative account on its cloud platform for the optimized performance',
       author: 'Courtney Henry',
       role: 'Web Designer',
-      avatar: '1.png'
+      avatar: '/avatar3.jpg'
     }
   ];
 
@@ -130,7 +130,7 @@ const LandingPage = () => {
         {/* Hero Section */}
         <section className="hero-section">
           <div className="hero-background">
-            <img src="1.png" alt="Mountains" className="hero-bg-image" />
+            <img src="/hero-bg.jpg" alt="Mountains" className="hero-bg-image" />
             <div className="hero-overlay"></div>
           </div>
           <div className="hero-content">
@@ -233,7 +233,7 @@ const LandingPage = () => {
               </div>
               
               <div className="why-choose-right">
-                <img src="1.png" alt="Hot air balloons" className="choose-image" />
+                <img src="/hot-air-balloons.jpg" alt="Hot air balloons" className="choose-image" />
               </div>
             </div>
 

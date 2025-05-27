@@ -1,61 +1,53 @@
-// components/Header.js
-import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/clerk-react'
+import React, { useState, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { FaUserCircle } from 'react-icons/fa';
+import '../css/Header.css';
 
 const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
 
-  // Đóng menu khi click ra ngoài
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (accountRef.current && !accountRef.current.contains(event.target)) {
-        setShowAccountMenu(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
   return (
-    <header>
-      <div className="container">
-        <nav>
-          <img
-            src="/logo1.png"
-            className="logo"
-            alt="Logo"
-          />
-          <ul className="nav-links">
-            <li><Link to="/LandingPage">TRANG CHỦ</Link></li>
-            <li><Link to="/near-me">GẦN TÔI</Link></li>
-            <li><Link to="/top-places">ĐỊA ĐIỂM HOT</Link></li>
-            <li><Link to="/blog">BLOG DU LỊCH</Link></li>
-            <li><Link to="/contact">LIÊN HỆ</Link></li>
-          </ul>
-          {/* Phần tài khoản với dropdown */}
-          <SignedOut>
-          <div
-            className="btn account-menu-wrapper"
-            ref={accountRef}
-            onClick={() => setShowAccountMenu((prev) => !prev)}
-            style={{ cursor: "pointer", userSelect: "none" }}
-          >
-            Tài khoản
-            {showAccountMenu && (
-              <ul className="account-dropdown">
-                <li><Link to="/login">Login</Link></li>
-                <li><Link to="/Logout">Logout</Link></li>
-                <li><Link to="/Signup">Sign Up</Link></li>
-              </ul>
-            )}
-          </div>
-          </SignedOut>
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
+    <header className="header">
+      <div className="header-container">
+        <div className="header-left">
+          <Link to="/">
+            <img src="/Logo_FPT_Education.png" alt="FPT Education Logo" className="header-logo" />
+          </Link>
+        </div>
+
+        <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
+          <Link to="/" className="header-nav-link">Home</Link>
+          <Link to="/food" className="header-nav-link">Food</Link>
+          <Link to="/destination" className="header-nav-link">Destination</Link>
+          <Link to="/pages" className="header-nav-link">Pages</Link>
         </nav>
+
+        <div
+          className="account-menu-wrapper"
+          ref={accountRef}
+          onClick={() => setShowAccountMenu((prev) => !prev)}
+        >
+          <FaUserCircle size={20} />
+          <span>Tài khoản</span>
+          {showAccountMenu && (
+            <ul className="account-dropdown">
+              <li><Link to="/login">Đăng nhập</Link></li>
+              <li><Link to="/logout">Đăng xuất</Link></li>
+              <li><Link to="/signup">Đăng ký</Link></li>
+            </ul>
+          )}
+        </div>
+        <button
+          className="header-menu-toggle"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </div>
     </header>
   );

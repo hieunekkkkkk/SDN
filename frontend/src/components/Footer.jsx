@@ -1,47 +1,111 @@
-// components/Footer.js
-import React from "react";
+import React, { useState } from 'react';
+import '../css/Footer.css';
+import { FaFacebookF, FaInstagram, FaGoogle } from 'react-icons/fa';
+
 
 const Footer = () => {
+  const [email, setEmail] = useState('');
+
+  const handleNewsletterSubmit = (e) => {
+    e.preventDefault();
+    console.log('Newsletter subscription:', email);
+    setEmail('');
+  };
+
   return (
-    <footer>
-      <div className="container">
-        <div className="footer-grid">
-          <div>
-            <img src="/logo1.png" alt="Logo" className="footer-logo" />
-          </div>
-          <div>
-            <h3 className="footer-title">VỀ REPTIEST</h3>
-            <ul className="footer-links">
-              <li><a href="#">Giới thiệu</a></li>
-              <li><a href="#">Tuyển dụng</a></li>
-              <li><a href="#">Đối tác</a></li>
-              <li><a href="#">Tin tức</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="footer-title">HỖ TRỢ</h3>
-            <ul className="footer-links">
-              <li><a href="#">Trung tâm hỗ trợ</a></li>
-              <li><a href="#">Phương thức thanh toán</a></li>
-              <li><a href="#">Chính sách bảo mật</a></li>
-              <li><a href="#">Điều khoản sử dụng</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="footer-title">LIÊN HỆ</h3>
-            <p>Số 123, Đường ABC, Quận XYZ, Hà Nội, Việt Nam</p>
-            <p>Điện thoại: 0987 654 321</p>
-            <p>Email: info@locallink.vn</p>
-            <div className="social-icons">
-              <a href="#" className="social-icon">FB</a>
-              <a href="#" className="social-icon">IG</a>
-              <a href="#" className="social-icon">YT</a>
-              <a href="#" className="social-icon">TW</a>
+    <footer className="footer">
+      <div className="footer-top">
+        <div className="container">
+          <div className="footer-content">
+            <div className="footer-left">
+              <h3>Speak to our expert at...</h3>
+              <div className="contact-info">
+              </div>
+            </div>
+
+            <div className="footer-right">
+              <h3>Follow Us</h3>
+              <div className="social-links">
+                <a href="https://facebook.com" className="social-link" aria-label="Facebook"><FaFacebookF /></a>
+                <a href="https://instagram.com" className="social-link" aria-label="Instagram"><FaInstagram /></a>
+                <a href="https://google.com" className="social-link" aria-label="Google"><FaGoogle /></a>
+              </div>
             </div>
           </div>
         </div>
-        <div className="footer-bottom">
-          <p>© COPYRIGHT 2025 BY LOCALLINK</p>
+      </div>
+      <div className="footer-main">
+        <div className="container">
+          <div className="footer-grid">
+            <div className="footer-column">
+              <h4>Contact</h4>
+              <ul className="footer-links">
+                <p>Truong dai hoc FPT, Thach Hoa, Thach That, Thanh pho Ha Noi</p>
+                <p>Locallink@gmail.com</p>
+              </ul>
+            </div>
+            <div className="footer-column">
+              <h4>Company</h4>
+              <ul className="footer-links">
+                <li><a href="#">About Us</a></li>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">Travel Guides</a></li>
+                <li><a href="#">Data Policy</a></li>
+                <li><a href="#">Cookie Policy</a></li>
+                <li><a href="#">Legal</a></li>
+                <li><a href="#">Sitemap</a></li>
+              </ul>
+            </div>
+
+            <div className="footer-column">
+              <h4>Support</h4>
+              <ul className="footer-links">
+                <li><a href="#">Get in Touch</a></li>
+                <li><a href="#">Help center</a></li>
+                <li><a href="#">Live chat</a></li>
+                <li><a href="#">How it works</a></li>
+              </ul>
+            </div>
+
+            <div className="footer-column">
+              <h4>Newsletter</h4>
+              <p>Subscribe to the free newsletter and stay up to date</p>
+              <div className="newsletter-form">
+                <input
+                  type="email"
+                  placeholder="Your email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="newsletter-input"
+                />
+                <button
+                  onClick={handleNewsletterSubmit}
+                  className="newsletter-btn"
+                >
+                  Send
+                </button>
+              </div>
+              <div className="payment-methods">
+                <img src="/visa.png" alt="Visa" />
+                <img src="/mastercard.png" alt="Mastercard" />
+                <img src="/paypal.png" alt="PayPal" />
+                <img src="/amex.png" alt="American Express" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="footer-bottom">
+        <div className="container">
+          <div className="footer-bottom-content">
+            <p>© Copyright Vietnus 2024</p>
+            <div className="footer-bottom-links">
+              <a href="#">Privacy Policy</a>
+              <a href="#">Terms of Service</a>
+              <a href="#">Cookies Policy</a>
+            </div>
+          </div>
         </div>
       </div>
     </footer>
