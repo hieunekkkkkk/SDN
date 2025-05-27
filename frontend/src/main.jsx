@@ -1,22 +1,25 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import './index.css'; 
-import LandingPage from './LandingPage';
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.jsx'
+import { ClerkProvider } from '@clerk/clerk-react'
+import { viVN } from '@clerk/localizations'
+//clerk
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
 
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/LandingPage" element={<LandingPage />} />
-      </Routes>
-    </BrowserRouter>
-  );
+if (!PUBLISHABLE_KEY) {
+  throw new Error('Missing Publishable Key')
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <ClerkProvider localization={viVN} publishableKey={PUBLISHABLE_KEY} afterSignOutUrl='/'
+      appearance={{
+        layout: {
+          unsafe_disableDevelopmentModeWarnings: true,
+        },
+      }}>
+      <App />
+    </ClerkProvider>
+  </StrictMode>,
+)

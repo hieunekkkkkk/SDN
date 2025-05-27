@@ -1,0 +1,16 @@
+# global:
+#   resolve_timeout: 5m
+#   smtp_smarthost: 'smtp.gmail.com:587'
+#   smtp_from: 'iwillwin2211@gmail.com'
+#   smtp_auth_username: 'your-email@gmail.com'  # Thay bằng email Gmail của bạn
+#   smtp_auth_password: 'abcd efgh ijkl mnop'  # Thay bằng App Password từ Gmail
+#   smtp_require_tls: true
+
+# route:
+#   receiver: 'email'
+
+# receivers:
+#   - name: 'email'
+#     email_configs:
+#       - to: 'receiver-email@gmail.com'  # Thay bằng email nhận thông báo
+#         send_resolved: true
