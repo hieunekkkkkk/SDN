@@ -122,7 +122,7 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="container">
           <div className="footer-bottom-content">
-            <p>© Copyright Vietnus 2024</p>
+            <p>© Copyright LocalLink 2024</p>
             <div className="footer-bottom-links">
               <a href="#">Privacy Policy</a>
               <a href="#">Terms of Service</a>
