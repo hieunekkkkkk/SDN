@@ -19,7 +19,6 @@ const Footer = () => {
             <div className="footer-left">
               <h3>Speak to our expert at...</h3>
               <div className="contact-info">
-                {/* Bạn có thể thêm nội dung liên hệ ở đây nếu cần */}
               </div>
             </div>
 
