@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
+import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/clerk-react'
 import '../css/Header.css';
 
 const Header = () => {
@@ -23,23 +24,27 @@ const Header = () => {
           <Link to="/destination" className="header-nav-link">Destination</Link>
           <Link to="/pages" className="header-nav-link">Pages</Link>
         </nav>
-
-        <div
-          className="account-menu-wrapper"
-          ref={accountRef}
-          onClick={() => setShowAccountMenu((prev) => !prev)}
-        >
-          <FaUserCircle size={20} />
-          <span>Tài khoản</span>
-          {showAccountMenu && (
-            <ul className="account-dropdown">
-              <li><Link to="/login">Đăng nhập</Link></li>
-              <li><Link to="/logout">Đăng xuất</Link></li>
-              <li><Link to="/signup">Đăng ký</Link></li>
-            </ul>
-          )}
-        </div>
-        <button
+        <SignedOut>
+          <div
+            className="account-menu-wrapper"
+            ref={accountRef}
+            onClick={() => setShowAccountMenu((prev) => !prev)}
+          >
+            <FaUserCircle size={20} />
+            <span>Tài khoản</span>
+            {showAccountMenu && (
+              <ul className="account-dropdown">
+                <li><Link to="/login">Đăng nhập</Link></li>
+                <li><Link to="/logout">Đăng xuất</Link></li>
+                <li><Link to="/signup">Đăng ký</Link></li>
+              </ul>
+            )}
+          </div>
+        </SignedOut>
+        <SignedIn>
+          <UserButton />
+        </SignedIn>
+        {/* <button
           className="header-menu-toggle"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label="Toggle menu"
@@ -47,7 +52,7 @@ const Header = () => {
           <span></span>
           <span></span>
           <span></span>
-        </button>
+        </button> */}
       </div>
     </header>
   );

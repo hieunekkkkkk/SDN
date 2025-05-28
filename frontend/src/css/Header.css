@@ -26,7 +26,7 @@
 .header-nav {
     display: flex;
     gap: 2rem;
-    margin-left: 350px;
+    /* margin-left: 350px; */
 }
 
 .header-nav a {
@@ -49,7 +49,8 @@
   align-items: center;
   gap: 0.5rem;
   transition: background-color 0.2s ease;
-  margin-left: 300px;
+  /* margin-left: 300px; */
+  cursor: pointer;
 }
 
 .account-menu-wrapper:hover {
