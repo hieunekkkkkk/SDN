@@ -197,6 +197,7 @@ const LandingPage = () => {
       </section>
 
       {/* Services Section */}
+    <div className="container">
       <section className="services-section">
         <div className="services-grid">
           {services.map((service, index) => (
@@ -214,6 +215,7 @@ const LandingPage = () => {
           ))}
         </div>
       </section>
+      </div>
 
       {/* Why Choose Us Section */}
       <section className="why-choose-section">
