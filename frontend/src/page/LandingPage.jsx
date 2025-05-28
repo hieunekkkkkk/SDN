@@ -16,7 +16,7 @@ function LandingPage() {
   useEffect(() => {
     const fetchToken = async () => {
       if (isSignedIn) {
-        const token = await getToken();
+        const token = await getToken({ template: 'node-backend' });
         console.log("JWT từ Clerk:", token);
       }
     };
