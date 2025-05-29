@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import '../css/LandingPage.css';
 import Header from '../components/header';
 import Footer from '../components/footer';
-import { useUser, useAuth } from '@clerk/clerk-react';
 
 const LandingPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
