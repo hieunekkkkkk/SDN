@@ -1,7 +1,9 @@
+
 import React, { useState } from 'react';
 import Header from '../components/header';
 import Footer from '../components/footer';
 import { FaFacebookF, FaInstagram, FaGoogle } from 'react-icons/fa';
+import ProductDetailModal from '../components/ProductDetailModal';
 import '../css/BusinessPage.css';
 
 const BusinessPage = () => {
@@ -11,12 +13,14 @@ const BusinessPage = () => {
 
   // --- BusinessProducts state ---
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const products = [
-    { id: 1, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '1.png', thumbnails: ['1.png', '1.png', '1.png'] },
-    { id: 2, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '2.png', thumbnails: ['2.png', '2.png', '2.png'] },
-    { id: 3, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '3.png', thumbnails: ['3.png', '3.png', '3.png'] },
-    { id: 4, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '4.png', thumbnails: ['4.png', '4.png', '4.png'] },
-    { id: 5, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '1.png', thumbnails: ['1.png', '1.png', '1.png'] },
+    { id: 1, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '1.png', thumbnails: ['1.png', '2.png', '3.png'], description: 'Lorem ipsum is simply dummy text of the printing and typesetting industry.', isSaved: true },
+    { id: 2, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '2.png', thumbnails: ['2.png', '2.png', '2.png'], description: 'Lorem ipsum is simply dummy text of the printing and typesetting industry.', isSaved: true },
+    { id: 3, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '3.png', thumbnails: ['3.png', '3.png', '3.png'], description: 'Lorem ipsum is simply dummy text of the printing and typesetting industry.', isSaved: false },
+    { id: 4, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '4.png', thumbnails: ['4.png', '4.png', '4.png'], description: 'Lorem ipsum is simply dummy text of the printing and typesetting industry.', isSaved: true },
+    { id: 5, name: 'Lorem Ipsum Ipsum', price: '$0.00', rating: 0, reviews: '000 Đánh giá', mainImage: '1.png', thumbnails: ['1.png', '1.png', '1.png'], description: 'Lorem ipsum is simply dummy text of the printing and typesetting industry.', isSaved: true},
   ];
   const itemsPerSlide = 3;
   const totalSlides = Math.ceil(products.length / itemsPerSlide);
@@ -32,10 +36,10 @@ const BusinessPage = () => {
       id: 1,
       userName: 'Lorem Ipsum',
       avatar: 'L',
-      rating: 0,
+      rating: 5,
       date: '06/12/21',
       title: 'Lorem Ipsum is simply dummy',
-      content: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
+      content: 'Lorem Ipsumವ: Lorem ipsum is simply dummy text of the printing and typesetting industry.',
       helpfulCount: 0,
       notHelpfulCount: 0,
       isVerified: true,
@@ -44,10 +48,10 @@ const BusinessPage = () => {
       id: 2,
       userName: 'Lorem Ipsum',
       avatar: 'S',
-      rating: 0,
+      rating: 5,
       date: '06/12/21',
       title: 'Lorem Ipsum is simply dummy',
-      content: "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever.",
+      content: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
       helpfulCount: 0,
       notHelpfulCount: 0,
       isVerified: true,
@@ -67,7 +71,11 @@ const BusinessPage = () => {
     const startIndex = currentSlide * itemsPerSlide;
     return products.slice(startIndex, startIndex + itemsPerSlide);
   };
-  const handleViewDetails = (id) => console.log('Xem chi tiết sản phẩm:', id);
+  const handleViewDetails = (id) => {
+    const product = products.find((p) => p.id === id);
+    setSelectedProduct(product);
+    setShowModal(true);
+  };
   const renderStars = (rating) => '★'.repeat(rating) + '☆'.repeat(5 - rating);
 
   // BusinessFeedback handlers
@@ -271,8 +279,8 @@ const BusinessPage = () => {
               <div className="rating-score">
                 <span className="score">{overallRating}</span>
                 <div className="stars">{renderStars(Math.floor(overallRating))}</div>
-                <span className="time-period">vài tháng gắn</span>
               </div>
+                <span className="time-period">vài tháng gắn</span>
 
               <div className="review-actions">
                 <button className="write-review-btn" onClick={handleWriteReview}>
@@ -357,6 +365,22 @@ const BusinessPage = () => {
           </div>
         </div>
       </section>
+
+      <ProductDetailModal
+        showModal={showModal}
+        setShowModal={setShowModal}
+        selectedProduct={selectedProduct}
+        setSelectedProduct={setSelectedProduct}
+        products={products}
+        reviews={reviews}
+        overallRating={overallRating}
+        totalReviews={totalReviews}
+        handleWriteReview={handleWriteReview}
+        handleCancelReview={handleCancelReview}
+        handleShareReview={handleShareReview}
+        handleHelpful={handleHelpful}
+        renderStars={renderStars}
+      />
 
       <Footer />
     </>

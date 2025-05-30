@@ -19,10 +19,8 @@ const Header = () => {
       if(isSignedIn){
         const token = await getToken({ template: 'node-backend' });
         console.log("JWT: ", token);
-        
       }
     };
-
     fetchToken();
   }, [isSignedIn, getToken]);
 

@@ -96,6 +96,7 @@
 }
 
 .business-title {
+  text-align: left;
   font-size: 1.5rem;
   font-weight: 700;
   color: #333;
@@ -123,20 +124,20 @@
 .business-description {
   color: #666;
   line-height: 1.5;
-  margin: 0.5rem 0;
+  /* margin: 0.5rem 0; */
 }
 
 .business-category {
   font-size: 0.9rem;
   color: #888;
-  margin: 0.5rem 0;
+  /* margin: 0.5rem 0; */
 }
 
 .rating-section {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin: 0.5rem 0;
+  /* margin: 0.5rem 0; */
 }
 
 .stars {
@@ -154,7 +155,7 @@
 .business-long-description {
   color: #666;
   line-height: 1.6;
-  margin: 1rem 0;
+  /* margin: 1rem 0; */
 }
 
 .action-buttons {
@@ -577,7 +578,8 @@
 
 .rating-score {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: flex-end;
   gap: 0.5rem;
 }
 
@@ -590,6 +592,7 @@
 .stars {
   color: #ffc107;
   font-size: 1.5rem;
+  height: 35px;
 }
 
 .time-period {
