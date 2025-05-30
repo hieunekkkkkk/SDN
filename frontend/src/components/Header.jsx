@@ -1,13 +1,28 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/clerk-react'
 import '../css/Header.css';
+import { useUser, useAuth } from '@clerk/clerk-react';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
+  
+  //clear jwt
+  const { user } = useUser();
+  const { getToken, isSignedIn } = useAuth();
+
+  useEffect(() => {
+    const fetchToken = async () => {
+      if(isSignedIn){
+        const token = await getToken({ template: 'node-backend' });
+        console.log("JWT: ", token);
+      }
+    };
+    fetchToken();
+  }, [isSignedIn, getToken]);
 
   return (
     <header className="header">
