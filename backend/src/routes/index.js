@@ -9,7 +9,7 @@ const ownerStackRoutes = require('./owner_stack.routes');
 const categoryRoutes = require('./category.routes');
 const feedbackBusinessRoutes = require('./feedback_business.routes');
 const feedbackProductRoutes = require('./feedback_product.routes');
-const redisRoutes = require('./redisRouter');
+// const redisRoutes = require('./redisRouter');
 
 // Tập trung các routes
 
@@ -21,6 +21,6 @@ router.use('/owner-stack', ownerStackRoutes);
 router.use('/category', categoryRoutes);
 router.use('/feedback-business', feedbackBusinessRoutes);
 router.use('/feedback-product', feedbackProductRoutes);
-router.use('/redis', redisRoutes);
+// router.use('/redis', redisRoutes);
 
 module.exports = router;
