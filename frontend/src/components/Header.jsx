@@ -9,14 +9,14 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
-  
+
   //clear jwt
   const { user } = useUser();
   const { getToken, isSignedIn } = useAuth();
 
   useEffect(() => {
     const fetchToken = async () => {
-      if(isSignedIn){
+      if (isSignedIn) {
         const token = await getToken({ template: 'node-backend' });
         console.log("JWT: ", token);
       }
@@ -57,7 +57,9 @@ const Header = () => {
           </div>
         </SignedOut>
         <SignedIn>
-          <UserButton />
+          <div className="header-user-info">
+            <UserButton userProfileUrl="/user-profile" />
+          </div>
         </SignedIn>
         {/* <button
           className="header-menu-toggle"
