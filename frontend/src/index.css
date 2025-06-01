@@ -207,3 +207,9 @@ h2 {
   min-width: 100vw;
   align-items: center;
 }
+.cl-userProfile-root{
+  background-image: url('../public/1.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
