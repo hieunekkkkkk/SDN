@@ -255,6 +255,10 @@
 }
 
 /* Services Grid */
+.services-section{
+  padding-top: 5rem;
+}
+
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));

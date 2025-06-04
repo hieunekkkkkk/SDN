@@ -170,16 +170,15 @@ function PersonalizedPage() {
                         <div className="personalized-filter-group">
                             <label className="personalized-filter-label">Ratings:</label>
                             <div className="personalized-rating-options">
-                                <span className="personalized-star-rating">★★★★★</span>
-                                <input
-                                    type="range"
-                                    min="1"
-                                    max="5"
-                                    value={rating}
-                                    onChange={(e) => setRating(e.target.value)}
-                                    className="personalized-rating-slider"
-                                />
-                                <span className="personalized-rating-value">{rating} stars</span>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <span
+                                        key={star}
+                                        className={`personalized-star-rating ${star <= rating ? 'personalized-active' : ''}`}
+                                        onClick={() => setRating(star)}
+                                    >
+                                        ★
+                                    </span>
+                                ))}
                             </div>
                         </div>
 
