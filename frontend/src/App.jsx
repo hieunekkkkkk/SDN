@@ -9,6 +9,8 @@ import BusinessPage from './page/BusinessPage';
 import UserProfilePage from './page/UserProfilePage';
 import AuthCallback from './components/AuthCallback';
 import PersonalizedPage from './page/PersonalizedPage';
+import DiscoverPage from './page/DiscoverPage';
+import DiscoverByCategoryPage from './page/DiscoverByCategoryPage';
 function App() {
   return (
     <BrowserRouter>
@@ -21,6 +23,8 @@ function App() {
         <Route path="/user-profile/*" element={<UserProfilePage />} />
         <Route path="/auth-callback" element={<AuthCallback />} />
         <Route path="/personalized" element={<PersonalizedPage />} />
+        <Route path="/discover/" element={<DiscoverPage />} />
+        <Route path="/discover/:category" element={<DiscoverByCategoryPage />} />
 
         {/* Các route khác có thể thêm sau */}
       </Routes>
