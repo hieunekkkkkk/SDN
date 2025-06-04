@@ -197,20 +197,22 @@ const LandingPage = () => {
 
       {/* Services Section */}
       <section className="services-section">
-        <div className="services-grid">
-          {services.map((service, index) => (
-            <div key={index} className="service-card" style={{ background: service.background }}>
-              <div className="service-content">
-                <h3>{service.title}</h3>
-                <p className="service-subtitle">{service.subtitle}</p>
-                <p className="service-description">{service.description}</p>
-                <button className="service-btn">{service.action}</button>
+        <div className="container">
+          <div className="services-grid">
+            {services.map((service, index) => (
+              <div key={index} className="service-card" style={{ background: service.background }}>
+                <div className="service-content">
+                  <h3>{service.title}</h3>
+                  <p className="service-subtitle">{service.subtitle}</p>
+                  <p className="service-description">{service.description}</p>
+                  <button className="service-btn">{service.action}</button>
+                </div>
+                <div className="service-image">
+                  <img src={service.image} alt={service.title} />
+                </div>
               </div>
-              <div className="service-image">
-                <img src={service.image} alt={service.title} />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
@@ -260,7 +262,6 @@ const LandingPage = () => {
       <section className="feedback-section">
         <div className="container">
           <h2>Feedback</h2>
-
           <div className="testimonials-grid">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="testimonial-card">
@@ -295,7 +296,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
       <Footer />
     </div>
   );
