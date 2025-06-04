@@ -8,6 +8,7 @@ import SignupPage from './page/SignupPage';
 import BusinessPage from './page/BusinessPage';
 import UserProfilePage from './page/UserProfilePage';
 import AuthCallback from './components/AuthCallback';
+import PersonalizedPage from './page/PersonalizedPage';
 function App() {
   return (
     <BrowserRouter>
@@ -19,6 +20,7 @@ function App() {
         <Route path="/business" element={<BusinessPage />} />
         <Route path="/user-profile/*" element={<UserProfilePage />} />
         <Route path="/auth-callback" element={<AuthCallback />} />
+        <Route path="/personalized" element={<PersonalizedPage />} />
 
         {/* Các route khác có thể thêm sau */}
       </Routes>

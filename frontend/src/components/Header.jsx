@@ -21,10 +21,10 @@ const Header = () => {
         </div>
 
         <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
-          <Link to="/" className="header-nav-link">Home</Link>
-          <Link to="/food" className="header-nav-link">Food</Link>
-          <Link to="/destination" className="header-nav-link">Destination</Link>
-          <Link to="/pages" className="header-nav-link">Pages</Link>
+          <Link to="/" className="header-nav-link">Trang chủ</Link>
+          <Link to="/food" className="header-nav-link">Khám phá</Link>
+          <Link to="/destination" className="header-nav-link">Cá nhân hóa</Link>
+          <Link to="/pages" className="header-nav-link">Doanh nghiệp của tôi</Link>
         </nav>
         <SignedOut>
           <AuthTokenReset />
