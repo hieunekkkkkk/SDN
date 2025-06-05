@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import Header from '../components/header';
-import Footer from '../components/footer';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 import { FaFacebookF, FaInstagram, FaGoogle } from 'react-icons/fa';
 import ProductDetailModal from '../components/ProductDetailModal';
 import '../css/BusinessPage.css';

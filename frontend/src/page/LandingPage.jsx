@@ -1,24 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import '../css/LandingPage.css';
-import Header from '../components/header';
-import Footer from '../components/footer';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import HeroSection from '../components/HeroSection';
+import { useNavigate } from 'react-router-dom';
 
 const LandingPage = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    console.log('Searching for:', searchQuery);
-  };
-
-  const categories = [
-    { icon: '🏠', name: 'Nhà trọ' },
-    { icon: '🍜', name: 'Quán ăn' },
-    { icon: '🛒', name: 'Siêu thị' },
-    { icon: '💊', name: 'Nhà thuốc' }
-  ];
-
+  const navigate = useNavigate();
+  
   const bestPlaces = [
     {
       title: 'Molokini and Turtle Town Snorkeling Adventure Aboard',
@@ -126,49 +115,9 @@ const LandingPage = () => {
   return (
     <div className="landing-page">
       <Header />
-      
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-background">
-          <img src="1.png" alt="Mountains" className="hero-bg-image" />
-          <div className="hero-overlay"></div>
-        </div>
-        <div className="hero-content">
-          <div className="hero-text">
-            <h1>Lựa chọn điểm đến lý tưởng ở gần bạn</h1>
-            <p>Cùng cập mới thông tin hữu ích</p>
-          </div>
 
-          <div className="search-form">
-            <div className="search-box">
-              <input
-                type="text"
-                placeholder="Tìm kiếm địa điểm"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="search-input"
-              />
-              <button onClick={handleSearch} className="search-btn">🔍</button>
-            </div>
-          </div>
-
-          <div className="category-pills">
-            <p>Đã đăng theo mục điều</p>
-            <div className="pills-container">
-              {categories.map((category, index) => (
-                <button
-                  key={index}
-                  className={`category-pill ${selectedCategory === category.name ? 'active' : ''}`}
-                  onClick={() => setSelectedCategory(category.name)}
-                >
-                  <span className="pill-icon">{category.icon}</span>
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Use the HeroSection component without passing props */}
+      <HeroSection />
 
       {/* Best Places Section */}
       <section className="best-places-section">
@@ -176,7 +125,7 @@ const LandingPage = () => {
           <h2>Best of <span className="highlight">Hoa Lac</span></h2>
           <div className="places-grid">
             {bestPlaces.map((place, index) => (
-              <div key={index} className="place-card" onClick={() => window.location.href = '/business'} style={{ cursor: 'pointer' }}>
+              <div key={index} className="place-card" onClick={() => navigate('/business')} style={{ cursor: 'pointer' }}>
                 <div className="place-image">
                   <img src={place.image} alt={place.title} />
                   <button className="favorite-btn">❤️</button>

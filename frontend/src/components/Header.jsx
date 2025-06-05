@@ -1,28 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
-import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/clerk-react'
+import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import '../css/Header.css';
-import { useUser, useAuth } from '@clerk/clerk-react';
+import AuthTokenReset from './AuthTokenReset';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
-  
-  //clear jwt
-  const { user } = useUser();
-  const { getToken, isSignedIn } = useAuth();
 
-  useEffect(() => {
-    const fetchToken = async () => {
-      if(isSignedIn){
-        const token = await getToken({ template: 'node-backend' });
-        console.log("JWT: ", token);
-      }
-    };
-    fetchToken();
-  }, [isSignedIn, getToken]);
 
   return (
     <header className="header">
@@ -34,12 +21,13 @@ const Header = () => {
         </div>
 
         <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
-          <Link to="/" className="header-nav-link">Home</Link>
-          <Link to="/food" className="header-nav-link">Food</Link>
-          <Link to="/destination" className="header-nav-link">Destination</Link>
-          <Link to="/pages" className="header-nav-link">Pages</Link>
+          <Link to="/" className="header-nav-link">Trang chủ</Link>
+          <Link to="/discover" className="header-nav-link">Khám phá</Link>
+          <Link to="/personalized" className="header-nav-link">Cá nhân hóa</Link>
+          <Link to="/my-business" className="header-nav-link">Doanh nghiệp của tôi</Link>
         </nav>
         <SignedOut>
+          <AuthTokenReset />
           <div
             className="account-menu-wrapper"
             ref={accountRef}
@@ -50,14 +38,15 @@ const Header = () => {
             {showAccountMenu && (
               <ul className="account-dropdown">
                 <li><Link to="/login">Đăng nhập</Link></li>
-                <li><Link to="/logout">Đăng xuất</Link></li>
                 <li><Link to="/signup">Đăng ký</Link></li>
               </ul>
             )}
           </div>
         </SignedOut>
         <SignedIn>
-          <UserButton />
+          <div className="header-user-info">
+            <UserButton userProfileUrl="/user-profile" />
+          </div>
         </SignedIn>
         {/* <button
           className="header-menu-toggle"
