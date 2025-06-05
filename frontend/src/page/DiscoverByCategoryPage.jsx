@@ -5,8 +5,8 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import HeroSection from '../components/HeroSection';
 import '../css/DiscoverByCategoryPage.css';
-import { PuffLoader } from 'react-spinners';
 import FilterSidebar from '../components/FilterSidebar';
+import LoadingScreen from '../components/LoadingScreen';
 
 function DiscoverByCategoryPage() {
   const location = useLocation();
@@ -83,20 +83,7 @@ function DiscoverByCategoryPage() {
 
   if (loading) {
     return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          flexDirection: 'column',
-        }}
-      >
-        <PuffLoader size={90} />
-        <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}>
-          Đang tải...
-        </p>
-      </div>
+      <LoadingScreen/>
     );
   }
 

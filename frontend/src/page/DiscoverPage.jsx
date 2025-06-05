@@ -4,8 +4,8 @@ import axios from 'axios';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import HeroSection from '../components/HeroSection';
+import LoadingScreen from '../components/LoadingScreen';
 import '../css/DiscoverPage.css';
-import { PuffLoader } from 'react-spinners';
 
 function DiscoverPage() {
   const [category, setCategory] = useState('All');
@@ -65,16 +65,7 @@ function DiscoverPage() {
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        flexDirection: 'column'
-      }}>
-        <PuffLoader size={90} />
-        <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
-      </div>
+      <LoadingScreen/>
     )
   }
 
