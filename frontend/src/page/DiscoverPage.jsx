@@ -78,14 +78,6 @@ function DiscoverPage() {
     )
   }
 
-  if (error) {
-    return (
-      <div>
-        <p>Error: {error}</p>
-        <button onClick={() => window.location.reload()}>Retry</button>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -100,12 +92,12 @@ function DiscoverPage() {
               <div className="discover-places-grid">
                 {filteredBusinesses
                   .filter(b => b.business_category_id === cat.category_id)
-                  .slice(0, 3) // 👈 limit to 3 businesses per category
+                  .slice(0, 3) // limit to 3 businesses per category
                   .map((business) => (
                     <div
                       key={business.business_id}
                       className="discover-place-card"
-                      onClick={() => window.location.href = '/business'}
+                      onClick={() => navigate('/business')}
                       style={{ cursor: 'pointer' }}
                     >
                       <div className="discover-place-image">

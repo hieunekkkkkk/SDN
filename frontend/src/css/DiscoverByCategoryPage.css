@@ -13,7 +13,7 @@
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1px solid #eee;
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 .sidebar-header {
@@ -28,11 +28,15 @@
   padding: 20px;
 }
 
-.filter-section-header{
-    text-align: center;
-    background-color: #f05a24;
-    color: white;
-    padding: 2rem 0;
+.filter-section input[type="range"] {
+  accent-color: #f05a24;
+}
+
+.filter-section-header {
+  text-align: center;
+  background-color: #f05a24;
+  color: white;
+  padding: 2rem 0;
 }
 
 .filter-section {
@@ -78,7 +82,7 @@
   font-weight: 600;
 }
 
-.place-header{
+.place-header {
   text-transform: capitalize;
 }
 

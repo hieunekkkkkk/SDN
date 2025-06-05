@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { useNavigate } from 'react-router-dom';
 import '../css/PersonalizedPage.css';
 
 
@@ -8,6 +9,7 @@ function PersonalizedPage() {
     const [type, setType] = useState('Boarding');
     const [budget, setBudget] = useState('50,000');
     const [rating, setRating] = useState(5);
+    const navigate = useNavigate();
 
     const bestPlaces = [
         {
@@ -198,7 +200,7 @@ function PersonalizedPage() {
                         <h2>Địa điểm gợi ý</h2>
                         <div className="personalized-places-grid">
                             {bestPlaces.map((place, index) => (
-                                <div key={index} className="personalized-place-card" onClick={() => window.location.href = '/business'} style={{ cursor: 'pointer' }}>
+                                <div key={index} className="personalized-place-card" onClick={() => navigate('/business')} style={{ cursor: 'pointer' }}>
                                     <div className="personalized-place-image">
                                         <img src={place.image} alt={place.title} />
                                         <button className="personalized-favorite-btn">❤️</button>

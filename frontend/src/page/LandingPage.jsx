@@ -3,8 +3,11 @@ import '../css/LandingPage.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import HeroSection from '../components/HeroSection';
+import { useNavigate } from 'react-router-dom';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  
   const bestPlaces = [
     {
       title: 'Molokini and Turtle Town Snorkeling Adventure Aboard',
@@ -112,7 +115,7 @@ const LandingPage = () => {
   return (
     <div className="landing-page">
       <Header />
-      
+
       {/* Use the HeroSection component without passing props */}
       <HeroSection />
 
@@ -122,7 +125,7 @@ const LandingPage = () => {
           <h2>Best of <span className="highlight">Hoa Lac</span></h2>
           <div className="places-grid">
             {bestPlaces.map((place, index) => (
-              <div key={index} className="place-card" onClick={() => window.location.href = '/business'} style={{ cursor: 'pointer' }}>
+              <div key={index} className="place-card" onClick={() => navigate('/business')} style={{ cursor: 'pointer' }}>
                 <div className="place-image">
                   <img src={place.image} alt={place.title} />
                   <button className="favorite-btn">❤️</button>
