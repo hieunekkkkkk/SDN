@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
-import { PuffLoader } from 'react-spinners';
+import LoadingScreen from './LoadingScreen';
 
 const AuthCallback = () => {
   const { user, isSignedIn } = useUser();
@@ -56,16 +56,9 @@ const AuthCallback = () => {
   }, [isSignedIn, user, getToken, navigate]);
 
   return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh',
-      flexDirection: 'column'
-    }}>
-      <PuffLoader size={90} />
-      <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}>Đang đăng nhập...</p>
-    </div>
+    <>
+      <LoadingScreen/>
+    </>
   );
 };
 
