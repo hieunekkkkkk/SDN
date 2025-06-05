@@ -1,87 +1,69 @@
-import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import HeroSection from '../components/HeroSection';
 import '../css/DiscoverByCategoryPage.css';
+import { PuffLoader } from 'react-spinners';
 
 function DiscoverByCategoryPage() {
   const { category } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const categories = [
-    { category_id: '1a2b3c4d-1111-1111-1111-abcdef123456', category_name: 'coffee' },
-    { category_id: '2b3c4d5e-2222-2222-2222-fedcba654321', category_name: 'restaurant' },
-  ];
-
-  const businesses = [
-    {
-      business_id: 'b1f4b5b1-a1e2-4450-91c1-001',
-      business_name: 'Coffee House A',
-      business_address: '101 Coffee St',
-      business_image: ['coffee1.jpg'],
-      business_rating: 4.2,
-      business_status: true,
-      distance: 5,
-      price: 40,
-      rating: 4.2,
-      location: 'Hanoi',
-      status: 'Đang mở cửa',
-      business_category_id: '1a2b3c4d-1111-1111-1111-abcdef123456',
-    },
-    {
-      business_id: 'b1f4b5b1-a1e2-4450-91c1-002',
-      business_name: 'Coffee Garden B',
-      business_address: '102 Garden Ave',
-      business_image: ['coffee2.jpg'],
-      business_rating: 4.5,
-      business_status: true,
-      distance: 8,
-      price: 60,
-      rating: 4.5,
-      location: 'Hanoi',
-      status: 'Đang mở cửa',
-      business_category_id: '1a2b3c4d-1111-1111-1111-abcdef123456',
-    },
-    {
-      business_id: 'b2f4b5b1-a1e2-4450-91c1-003',
-      business_name: 'Phở Việt',
-      business_address: '123 Main St',
-      business_image: ['pho.jpg'],
-      business_rating: 5.0,
-      business_status: true,
-      distance: 3,
-      price: 30,
-      rating: 5.0,
-      location: 'Hanoi',
-      status: 'Đang mở cửa',
-      business_category_id: '2b3c4d5e-2222-2222-2222-fedcba654321',
-    },
-  ];
-
-  const slugToCategoryName = (slug) =>
-    slug
-      .replace(/-/g, ' ')
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase();
-
-  const normalizedSlug = slugToCategoryName(category);
-
-  const matchedCategory = categories.find(
-    (c) => c.category_name.toLowerCase() === normalizedSlug
-  );
-
-  const categoryBusinesses = matchedCategory
-    ? businesses.filter((b) => b.business_category_id === matchedCategory.category_id)
-    : [];
-
+  const [categoryId, setCategoryId] = useState(location.state?.category_id || null);
+  const [categoryName, setCategoryName] = useState(location.state?.category_name || null);
+  const [businesses, setBusinesses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     distance: 0,
     price: 0,
     rating: 0,
   });
 
-  const filteredBusinesses = categoryBusinesses.filter((b) => {
+  // Fallback: fetch category info by slug if not passed via state
+  useEffect(() => {
+    if (!categoryId) {
+      navigate('/discover');
+    }
+  }, [categoryId, navigate]);
+
+  // Fetch businesses once categoryId is resolved
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!categoryId) return;
+
+      try {
+        setLoading(true);
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/business`);
+        if (Array.isArray(response.data)) {
+          const enriched = response.data.map((b) => ({
+            ...b,
+            distance: b.distance || 5,
+            price: b.price || 50,
+            rating: b.business_rating || 0,
+            status: b.business_status ? 'Đang mở cửa' : 'Đã đóng cửa',
+          }));
+
+          const filteredByCategory = enriched.filter(b => b.business_category_id === categoryId);
+          setBusinesses(filteredByCategory);
+        } else {
+          throw new Error('Unexpected business response format');
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+        setError(err.message || 'An error occurred while fetching data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [categoryId]);
+
+  const filteredBusinesses = businesses.filter((b) => {
     return (
       (filters.distance === 0 || b.distance <= filters.distance) &&
       (filters.price === 0 || b.price <= filters.price) &&
@@ -96,6 +78,21 @@ function DiscoverByCategoryPage() {
     }));
   };
 
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        flexDirection: 'column'
+      }}>
+        <PuffLoader size={90} />
+        <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
+      </div>
+    );
+  }
+
   return (
     <>
       <Header />
@@ -103,15 +100,12 @@ function DiscoverByCategoryPage() {
 
       <div className="discover-by-category-page">
         <div className="sidebar">
-          <p className='filter-section-header'>Hãy lựa chọn yêu cầu của bạn:</p>
+          <p className="filter-section-header">Hãy lựa chọn yêu cầu của bạn:</p>
           <div className="filter-section">
             <h4>Vị trí</h4>
             {[5, 10, 15].map((d) => (
               <label key={d}>
-                <input
-                  type="checkbox"
-                  onChange={() => handleFilterChange('distance', d)}
-                />
+                <input type="checkbox" onChange={() => handleFilterChange('distance', d)} />
                 0 - {d} km
               </label>
             ))}
@@ -120,10 +114,7 @@ function DiscoverByCategoryPage() {
             <h4>Giá tiền</h4>
             {[50, 75, 100].map((p) => (
               <label key={p}>
-                <input
-                  type="checkbox"
-                  onChange={() => handleFilterChange('price', p)}
-                />
+                <input type="checkbox" onChange={() => handleFilterChange('price', p)} />
                 0 - ${p}
               </label>
             ))}
@@ -132,10 +123,7 @@ function DiscoverByCategoryPage() {
             <h4>Đánh giá</h4>
             {[4.0, 4.5, 5.0].map((r) => (
               <label key={r}>
-                <input
-                  type="checkbox"
-                  onChange={() => handleFilterChange('rating', r)}
-                />
+                <input type="checkbox" onChange={() => handleFilterChange('rating', r)} />
                 {r} ★
               </label>
             ))}
@@ -143,13 +131,13 @@ function DiscoverByCategoryPage() {
         </div>
 
         <div className="main-content">
-          <h1>Danh sách {matchedCategory?.category_name || category}</h1>
+          <h1>Danh sách <span className='place-header'>{categoryName}</span></h1>
           <div className="place-grid">
             {filteredBusinesses.length > 0 ? (
               filteredBusinesses.map((b) => (
                 <div key={b.business_id} className="place-card">
                   <div className="place-image">
-                    <img src={b.business_image[0]} alt={b.business_name} />
+                    <img src={b.business_image[0] || 'placeholder.jpg'} alt={b.business_name} />
                   </div>
                   <div className="place-info">
                     <h3>{b.business_name}</h3>

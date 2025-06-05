@@ -1,72 +1,91 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import HeroSection from '../components/HeroSection';
 import '../css/DiscoverPage.css';
+import { PuffLoader } from 'react-spinners';
 
 function DiscoverPage() {
   const [category, setCategory] = useState('All');
+  const [categories, setCategories] = useState([]);
+  const [businesses, setBusinesses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const categories = [
-    { category_id: '1a2b3c4d-1111-1111-1111-abcdef123456', category_name: 'coffee', icon: 'FaCoffee' },
-  ];
+  // Fetch categories and businesses on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const categoryResponse = await axios.get(`${import.meta.env.VITE_BE_URL}/api/category`);
+        if (categoryResponse.data.status === 'success') {
+          setCategories(categoryResponse.data.data);
+        } else {
+          throw new Error('Failed to fetch categories');
+        }
 
-  // Simulated businesses
-  const businesses = [
-    {
-      business_id: 'b1f4b5b1-a1e2-4450-91c1-001',
-      owner_id: 'owner-001',
-      business_name: 'Coffee House A',
-      business_address: '101 Coffee St',
-      business_location: {},
-      business_category: 'coffee',
-      business_category_id: '1a2b3c4d-1111-1111-1111-abcdef123456',
-      business_detail: 'Great espresso.',
-      business_time: {},
-      business_phone: '0123456781',
-      business_status: true,
-      business_rating: 4.2,
-      business_view: 321,
-      business_image: ['coffee1.jpg'],
-      business_product: 5,
-      business_active: true,
-    },
-    {
-      business_id: 'b1f4b5b1-a1e2-4450-91c1-002',
-      owner_id: 'owner-002',
-      business_name: 'Coffee Garden B',
-      business_address: '102 Garden Ave',
-      business_location: {},
-      business_category: 'coffee',
-      business_category_id: '1a2b3c4d-1111-1111-1111-abcdef123456',
-      business_detail: 'Peaceful garden cafe.',
-      business_time: {},
-      business_phone: '0123456782',
-      business_status: true,
-      business_rating: 4.5,
-      business_view: 210,
-      business_image: ['coffee2.jpg'],
-      business_product: 3,
-      business_active: true,
-    },
-    // Add more business entries if needed
-  ];
+        const businessResponse = await axios.get(`${import.meta.env.VITE_BE_URL}/api/business`);
+        if (Array.isArray(businessResponse.data)) {
+          setBusinesses(businessResponse.data);
+        } else {
+          throw new Error('Unexpected business response format');
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+        setError(err.message || 'An error occurred while fetching data');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // Filter businesses by category if selected
+    fetchData();
+  }, []);
+
   const filteredBusinesses = category === 'All'
     ? businesses
     : businesses.filter(b => b.business_category === category);
 
-  const handleSeeMore = (categoryName) => {
-    const normalized = categoryName
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/\s+/g, '-');
-    navigate(`/discover/${normalized}`);
-  };
+  const handleSeeMore = (categoryName, categoryId) => {
+  const slug = categoryName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/\s+/g, '-');
+
+  navigate(`/discover/${slug}`, {
+    state: {
+      category_id: categoryId,
+      category_name: categoryName,
+    },
+  });
+};
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        flexDirection: 'column'
+      }}>
+        <PuffLoader size={90} />
+        <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div>
+        <p>Error: {error}</p>
+        <button onClick={() => window.location.reload()}>Retry</button>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -81,6 +100,7 @@ function DiscoverPage() {
               <div className="discover-places-grid">
                 {filteredBusinesses
                   .filter(b => b.business_category_id === cat.category_id)
+                  .slice(0, 3) // 👈 limit to 3 businesses per category
                   .map((business) => (
                     <div
                       key={business.business_id}
@@ -89,7 +109,10 @@ function DiscoverPage() {
                       style={{ cursor: 'pointer' }}
                     >
                       <div className="discover-place-image">
-                        <img src={business.business_image[0]} alt={business.business_name} />
+                        <img
+                          src={business.business_image[0] || 'placeholder.jpg'}
+                          alt={business.business_name}
+                        />
                       </div>
                       <div className="discover-place-info">
                         <h3>{business.business_name}</h3>
@@ -105,7 +128,7 @@ function DiscoverPage() {
                   ))}
               </div>
               <div className="see-more-container">
-                <button className="see-more-btn" onClick={() => handleSeeMore(cat.category_name)}>
+                <button className="see-more-btn" onClick={() => handleSeeMore(cat.category_name, cat.category_id)}>
                   Xem thêm
                 </button>
               </div>
