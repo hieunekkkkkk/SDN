@@ -11,7 +11,7 @@ function LoadingScreen() {
       flexDirection: 'column'
     }}>
       <PuffLoader size={90} />
-      <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}>Đang đăng nhập...</p>
+      <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
     </div>
   )
 }

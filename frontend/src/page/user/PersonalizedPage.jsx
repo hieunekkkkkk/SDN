@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 import { useNavigate } from 'react-router-dom';
-import '../css/PersonalizedPage.css';
+import '../../css/PersonalizedPage.css';
 
 
 function PersonalizedPage() {
@@ -64,7 +64,7 @@ function PersonalizedPage() {
 
     return (
         <>
-            <Header />
+            {/* <Header /> */}
 
             <div className="personalized-page">
                 {/* Welcome Section */}

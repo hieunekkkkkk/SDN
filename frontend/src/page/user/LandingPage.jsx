@@ -1,8 +1,8 @@
 import React from 'react';
-import '../css/LandingPage.css';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import HeroSection from '../components/HeroSection';
+import '../../css/LandingPage.css';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import HeroSection from '../../components/HeroSection';
 import { useNavigate } from 'react-router-dom';
 
 const LandingPage = () => {
@@ -114,7 +114,7 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
-      <Header />
+      {/* <Header /> */}
 
       {/* Use the HeroSection component without passing props */}
       <HeroSection />

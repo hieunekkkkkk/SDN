@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import HeroSection from '../components/HeroSection';
-import LoadingScreen from '../components/LoadingScreen';
-import '../css/DiscoverPage.css';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import HeroSection from '../../components/HeroSection';
+import LoadingScreen from '../../components/LoadingScreen';
+import '../../css/DiscoverPage.css';
 
 function DiscoverPage() {
   const [category, setCategory] = useState('All');
@@ -15,7 +15,6 @@ function DiscoverPage() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch categories and businesses on component mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -72,7 +71,7 @@ function DiscoverPage() {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <HeroSection />
 
       <div className="discover-page">

@@ -1,12 +1,16 @@
 /* Hero Section */
 .hero-section {
-  height: 100vh;
+  height: 70vh;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   text-align: center;
+}
+
+.hero-section.admin{
+  height: 40vh;
 }
 
 .hero-background {

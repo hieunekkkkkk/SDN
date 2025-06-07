@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import HeroSection from '../components/HeroSection';
-import '../css/DiscoverByCategoryPage.css';
-import FilterSidebar from '../components/FilterSidebar';
-import LoadingScreen from '../components/LoadingScreen';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import HeroSection from '../../components/HeroSection';
+import '../../css/DiscoverByCategoryPage.css';
+import FilterSidebar from '../../components/FilterSidebar';
+import LoadingScreen from '../../components/LoadingScreen';
 
 function DiscoverByCategoryPage() {
   const location = useLocation();
@@ -104,7 +104,7 @@ function DiscoverByCategoryPage() {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <HeroSection />
 
       <div className="discover-by-category-page">

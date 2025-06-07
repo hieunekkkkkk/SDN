@@ -1,19 +1,24 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, useLocation, Outlet } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
-import { motion } from 'framer-motion';
 import './index.css';
 
-import LandingPage from './page/LandingPage';
-import LoginPage from './page/LoginPage';
-import SignupPage from './page/SignupPage';
-import BusinessPage from './page/BusinessPage';
-import UserProfilePage from './page/UserProfilePage';
-import AuthCallback from './components/AuthCallback';
-import PersonalizedPage from './page/PersonalizedPage';
-import DiscoverPage from './page/DiscoverPage';
-import DiscoverByCategoryPage from './page/DiscoverByCategoryPage';
+import Header from './components/Header';
+import Footer from './components/Footer';
+
+import LandingPage from './page/user/LandingPage';
+import LoginPage from './page/user/LoginPage';
+import SignupPage from './page/user/SignupPage';
+import BusinessPage from './page/user/BusinessPage';
+import UserProfilePage from './page/user/UserProfilePage';
+import AuthCallback from './auth/AuthCallback';
+import PersonalizedPage from './page/user/PersonalizedPage';
+import DiscoverPage from './page/user/DiscoverPage';
+import DiscoverByCategoryPage from './page/user/DiscoverByCategoryPage';
 import AnimatedLayout from './components/AnimatedLayout';
+import ManageUserPage from './page/admin/ManageUserPage';
+import MyBusinessPage from './page/user/MyBusinessPage';
+import BusinessRegistrationPage from './page/user/BusinessRegistrationPage';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -31,7 +36,16 @@ const AppRoutes = () => {
           <Route path="/auth-callback" element={<AuthCallback />} />
           <Route path="/personalized" element={<PersonalizedPage />} />
           <Route path="/discover/" element={<DiscoverPage />} />
-          <Route path="/discover/:category" element={<DiscoverByCategoryPage />} />
+          <Route
+            path="/discover/:category"
+            element={<DiscoverByCategoryPage />}
+          />
+          <Route path="/admin/users" element={<ManageUserPage />} />
+          <Route path="/my-business" element={<MyBusinessPage />} />
+          <Route
+            path="/business-registration"
+            element={<BusinessRegistrationPage />}
+          />
         </Route>
       </Routes>
     </AnimatePresence>
@@ -41,6 +55,7 @@ const AppRoutes = () => {
 function App() {
   return (
     <BrowserRouter>
+      <Header />
       <AppRoutes />
     </BrowserRouter>
   );

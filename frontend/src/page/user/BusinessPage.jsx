@@ -1,10 +1,10 @@
 
 import React, { useState } from 'react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
 import { FaFacebookF, FaInstagram, FaGoogle } from 'react-icons/fa';
-import ProductDetailModal from '../components/ProductDetailModal';
-import '../css/BusinessPage.css';
+import ProductDetailModal from '../../components/ProductDetailModal';
+import '../../css/BusinessPage.css';
 
 const BusinessPage = () => {
   // --- BusinessDetail state ---
@@ -125,7 +125,7 @@ const BusinessPage = () => {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
 
       {/* Business Detail Section */}
       <section className="business-detail-section">
