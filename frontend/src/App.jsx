@@ -17,6 +17,8 @@ import DiscoverPage from './page/user/DiscoverPage';
 import DiscoverByCategoryPage from './page/user/DiscoverByCategoryPage';
 import AnimatedLayout from './components/AnimatedLayout';
 import ManageUserPage from './page/admin/ManageUserPage';
+import MyBusinessPage from './page/user/MyBusinessPage';
+import BusinessRegistrationPage from './page/user/BusinessRegistrationPage';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -34,8 +36,16 @@ const AppRoutes = () => {
           <Route path="/auth-callback" element={<AuthCallback />} />
           <Route path="/personalized" element={<PersonalizedPage />} />
           <Route path="/discover/" element={<DiscoverPage />} />
-          <Route path="/discover/:category" element={<DiscoverByCategoryPage />} />
+          <Route
+            path="/discover/:category"
+            element={<DiscoverByCategoryPage />}
+          />
           <Route path="/admin/users" element={<ManageUserPage />} />
+          <Route path="/my-business" element={<MyBusinessPage />} />
+          <Route
+            path="/business-registration"
+            element={<BusinessRegistrationPage />}
+          />
         </Route>
       </Routes>
     </AnimatePresence>
