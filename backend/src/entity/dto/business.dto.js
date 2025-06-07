@@ -4,7 +4,7 @@ class BusinessDTO {
     this.business_name = data.business_name;
     this.business_address = data.business_address;
     this.business_location = data.business_location;
-    this.business_category = data.business_category;
+    this.business_category_id = data.business_category_id;
     this.business_detail = data.business_detail;
     this.business_time = data.business_time;
     this.business_phone = data.business_phone;

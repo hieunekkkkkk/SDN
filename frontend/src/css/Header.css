@@ -1,43 +1,43 @@
 .header {
-    width: 100%;
-    padding: 1rem;
-    background-color: #ffffff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  padding: 1rem;
+  background-color: rgba(0, 0, 0, 0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 999;
 }
 
 .header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .header-logo {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
-    text-decoration: none;
-    width: 100px;  /* Chiều rộng ảnh */
-    height: 50px; /* Chiều cao ảnh */
-
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  text-decoration: none;
+  width: 120px; /* Chiều rộng ảnh */
+  height: 50px; /* Chiều cao ảnh */
 }
 
 .header-nav {
-    display: flex;
-    gap: 2rem;
-    /* margin-left: 350px; */
+  display: flex;
+  gap: 2rem;
+  /* margin-left: 350px; */
 }
 
 .header-nav a {
-    color: #333;
-    text-decoration: none;
-    font-weight: 500;
+  color: #333;
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .header-nav a:hover {
-    color: #007bff;
-} 
+  color: #007bff;
+}
 
 .account-menu-wrapper {
   position: relative;
@@ -83,4 +83,9 @@
 .account-dropdown li a:hover {
   background-color: #f1f1f1;
   color: #007bff;
+}
+
+.header-nav-link.active {
+  font-weight: bold;
+  color: #ff6b35;
 }

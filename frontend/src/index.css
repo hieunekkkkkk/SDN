@@ -4,7 +4,11 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Montserrat";
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 .app {
@@ -200,9 +204,10 @@ h2 {
 
 /* ===================== LOGIN ===================== */
 
-.loginContainer, .signupContainer {
+.loginContainer, .signupContainer, .cl-userProfile-root {
   display: flex;
   justify-content: center;
   min-height: 100vh;
+  min-width: 100vw;
   align-items: center;
 }
