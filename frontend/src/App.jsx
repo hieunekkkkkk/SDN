@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
+import "@fontsource/montserrat";
 
 import Header from './components/Header';
 import Footer from './components/Footer';

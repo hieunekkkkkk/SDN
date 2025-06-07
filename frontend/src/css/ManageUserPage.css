@@ -1,0 +1,87 @@
+.manage-user-table-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: Arial, sans-serif;
+  padding: 20px;
+}
+
+.manage-user-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.manage-user-search-bar {
+  display: flex;
+  align-items: center;
+}
+
+.manage-user-search-bar input {
+  padding: 14px 20px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  width: 300px;
+  background-color: #e0e0ec;
+  outline: none;
+}
+
+.manage-user-sort-select select {
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+th {
+  color: #9aa3b4;
+  font-weight: 500;
+  padding-bottom: 10px;
+}
+
+td {
+  padding: 12px 0;
+  border-bottom: 1px solid #eaeaea;
+}
+
+.manage-user-status {
+  padding: 4px 10px;
+  border-radius: 4px;
+  color: white;
+  font-size: 12px;
+  display: inline-block;
+}
+
+.manage-user-status.active {
+  background-color: #00d100;
+}
+
+.manage-user-status.deactivate {
+  background-color: #d10000;
+}
+
+.manage-user-status.pending {
+  background-color: #f9e70b;
+  color: #000;
+}
+
+.manage-user-pagination {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.manage-user-pagination span {
+  margin: 0 5px;
+  cursor: pointer;
+}
+
+.manage-user-pagination .page {
+  color: #6c5ce7;
+  font-weight: bold;
+}
