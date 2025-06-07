@@ -1,10 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUserCircle } from 'react-icons/fa';
+import { FaUserCircle, FaHome, FaUserCog } from 'react-icons/fa';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import '../css/Header.css';
 import AuthTokenReset from '../auth/AuthTokenReset';
-import { GrUserAdmin } from "react-icons/gr";
 import { useNavigate } from 'react-router-dom';
 import { useUserRole } from '../contexts/UserRoleContext';
 
@@ -30,9 +29,9 @@ const Header = () => {
 
         {role === 'admin' && isAdminPage ? (
           <nav className="header-nav">
-            <Link to="/admin" className="header-nav-link">Dashboard</Link>
-            <Link to="/admin/users" className="header-nav-link">Users</Link>
-            <Link to="/admin/settings" className="header-nav-link">Settings</Link>
+            <Link to="/admin/users" className="header-nav-link">Người dùng</Link>
+            <Link to="/admin/businesses" className="header-nav-link">Doanh nghiệp</Link>
+            <Link to="/admin/transactions" className="header-nav-link">Giao dịch</Link>
           </nav>
         ) : (
           <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
@@ -62,11 +61,18 @@ const Header = () => {
         <SignedIn>
           <div className="header-user-info">
             <UserButton userProfileUrl="/user-profile">
-              {role == 'admin' && <UserButton.MenuItems>
+              {role == 'admin' && !isAdminPage && <UserButton.MenuItems>
                 <UserButton.Action
                   label="Quản trị hệ thống"
-                  labelIcon={<GrUserAdmin />}
-                  onClick={() => navigate('/admin')}
+                  labelIcon={<FaUserCog />}
+                  onClick={() => navigate('/admin/users')}
+                />
+              </UserButton.MenuItems>}
+              {role == 'admin' && isAdminPage && <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Trang chủ"
+                  labelIcon={<FaHome />}
+                  onClick={() => navigate('/')}
                 />
               </UserButton.MenuItems>}
             </UserButton>

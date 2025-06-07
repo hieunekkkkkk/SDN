@@ -114,7 +114,7 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
-      <Header />
+      {/* <Header /> */}
 
       {/* Use the HeroSection component without passing props */}
       <HeroSection />
@@ -245,7 +245,7 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 };

@@ -125,7 +125,7 @@ const BusinessPage = () => {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
 
       {/* Business Detail Section */}
       <section className="business-detail-section">
@@ -382,7 +382,7 @@ const BusinessPage = () => {
         renderStars={renderStars}
       />
 
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

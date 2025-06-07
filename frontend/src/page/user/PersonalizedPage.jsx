@@ -64,7 +64,7 @@ function PersonalizedPage() {
 
     return (
         <>
-            <Header />
+            {/* <Header /> */}
 
             <div className="personalized-page">
                 {/* Welcome Section */}
@@ -225,7 +225,7 @@ function PersonalizedPage() {
         `}
                 </style>
             </div>
-            <Footer />
+            {/* <Footer /> */}
         </>
     );
 }

@@ -71,7 +71,7 @@ function DiscoverPage() {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <HeroSection />
 
       <div className="discover-page">
@@ -119,7 +119,7 @@ function DiscoverPage() {
         </div>
       </div>
 
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }

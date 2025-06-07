@@ -3,6 +3,9 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
 
+import Header from './components/Header';
+import Footer from './components/Footer';
+
 import LandingPage from './page/user/LandingPage';
 import LoginPage from './page/user/LoginPage';
 import SignupPage from './page/user/SignupPage';
@@ -13,6 +16,7 @@ import PersonalizedPage from './page/user/PersonalizedPage';
 import DiscoverPage from './page/user/DiscoverPage';
 import DiscoverByCategoryPage from './page/user/DiscoverByCategoryPage';
 import AnimatedLayout from './components/AnimatedLayout';
+import ManageUserPage from './page/admin/ManageUserPage';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -31,6 +35,7 @@ const AppRoutes = () => {
           <Route path="/personalized" element={<PersonalizedPage />} />
           <Route path="/discover/" element={<DiscoverPage />} />
           <Route path="/discover/:category" element={<DiscoverByCategoryPage />} />
+          <Route path="/admin/users" element={<ManageUserPage />} />
         </Route>
       </Routes>
     </AnimatePresence>
@@ -40,7 +45,9 @@ const AppRoutes = () => {
 function App() {
   return (
     <BrowserRouter>
+      <Header />
       <AppRoutes />
+      <Footer />
     </BrowserRouter>
   );
 }
