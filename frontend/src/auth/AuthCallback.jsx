@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
-import LoadingScreen from './LoadingScreen';
+import LoadingScreen from '../components/LoadingScreen';
 
 const AuthCallback = () => {
   const { user, isSignedIn } = useUser();

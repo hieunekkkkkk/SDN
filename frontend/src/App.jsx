@@ -8,7 +8,7 @@ import LoginPage from './page/LoginPage';
 import SignupPage from './page/SignupPage';
 import BusinessPage from './page/BusinessPage';
 import UserProfilePage from './page/UserProfilePage';
-import AuthCallback from './components/AuthCallback';
+import AuthCallback from './auth/AuthCallback';
 import PersonalizedPage from './page/PersonalizedPage';
 import DiscoverPage from './page/DiscoverPage';
 import DiscoverByCategoryPage from './page/DiscoverByCategoryPage';

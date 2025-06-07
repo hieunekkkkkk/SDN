@@ -3,9 +3,13 @@ import { Link } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import '../css/Header.css';
-import AuthTokenReset from './AuthTokenReset';
+import AuthTokenReset from '../auth/AuthTokenReset';
+import { GrUserAdmin } from "react-icons/gr";
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+  const navigate = useNavigate();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
@@ -45,7 +49,15 @@ const Header = () => {
         </SignedOut>
         <SignedIn>
           <div className="header-user-info">
-            <UserButton userProfileUrl="/user-profile" />
+            <UserButton userProfileUrl="/user-profile">
+              <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Quản trị hệ thống"
+                  labelIcon={<GrUserAdmin />}
+                  onClick={() => navigate('/admin')}
+                />
+              </UserButton.MenuItems>
+            </UserButton>
           </div>
         </SignedIn>
         {/* <button
