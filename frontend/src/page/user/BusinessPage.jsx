@@ -382,7 +382,7 @@ const BusinessPage = () => {
         renderStars={renderStars}
       />
 
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 };

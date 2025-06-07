@@ -225,7 +225,7 @@ function PersonalizedPage() {
         `}
                 </style>
             </div>
-            {/* <Footer /> */}
+            <Footer />
         </>
     );
 }

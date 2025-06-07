@@ -141,7 +141,7 @@ function DiscoverByCategoryPage() {
         </div>
       </div>
 
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 }

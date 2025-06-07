@@ -119,7 +119,7 @@ function DiscoverPage() {
         </div>
       </div>
 
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 }

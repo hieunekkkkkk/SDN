@@ -9,6 +9,10 @@
   text-align: center;
 }
 
+.hero-section.admin{
+  height: 40vh;
+}
+
 .hero-background {
   position: absolute;
   top: 0;
