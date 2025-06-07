@@ -17,7 +17,7 @@ function ManageTransactionPage() {
   ]);
 
   const [search, setSearch] = useState('');
-  const [sortBy, setSortBy] = useState('Sort: Select');
+  const [sortBy, setSortBy] = useState('Sắp xếp: Chọn');
   const monthlyChartRef = useRef(null);
   const categoryChartRef = useRef(null);
   const monthlyChartInstance = useRef(null);
@@ -38,7 +38,7 @@ function ManageTransactionPage() {
   };
 
   useEffect(() => {
-    // Monthly Transaction Chart
+    // Biểu đồ giao dịch hàng tháng
     if (monthlyChartRef.current) {
       const ctx = monthlyChartRef.current.getContext('2d');
       
@@ -49,7 +49,7 @@ function ManageTransactionPage() {
       monthlyChartInstance.current = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+          labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6'],
           datasets: [{
             label: 'Giao dịch',
             data: [20, 35, 25, 40, 30, 35],
@@ -95,7 +95,7 @@ function ManageTransactionPage() {
       });
     }
 
-    // Category Chart
+    // Biểu đồ danh mục
     if (categoryChartRef.current) {
       const ctx = categoryChartRef.current.getContext('2d');
       
@@ -106,7 +106,7 @@ function ManageTransactionPage() {
       categoryChartInstance.current = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: ['Dịch vụ', 'Nhà trọ', 'Siêu thị', 'Café', 'Supply'],
+          labels: ['Dịch vụ', 'Nhà trọ', 'Siêu thị', 'Quán cà phê', 'Cung ứng'],
           datasets: [{
             data: [80, 65, 70, 85, 60],
             backgroundColor: [
@@ -177,7 +177,7 @@ function ManageTransactionPage() {
       <HeroSectionAdmin message={<>Trang quản lý <br /> giao dịch</>} />
 
       <div className="manage-transaction-container">
-        {/* Search and Filter Section */}
+        {/* Phần tìm kiếm và lọc */}
         <div className="transaction-header">
           <div className="transaction-search-bar">
             <input
@@ -186,6 +186,7 @@ function ManageTransactionPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+            <div className="search-icon">🔍</div>
           </div>
           <div className="transaction-filter-section">
             <div className="total-value">
@@ -193,7 +194,7 @@ function ManageTransactionPage() {
             </div>
             <div className="sort-select">
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                <option>Sort: Select</option>
+                <option>Sắp xếp: Chọn</option>
                 <option>Giá trị cao nhất</option>
                 <option>Giá trị thấp nhất</option>
                 <option>Mới nhất</option>
@@ -202,30 +203,30 @@ function ManageTransactionPage() {
           </div>
         </div>
 
-        {/* Transaction Table */}
+        {/* Bảng giao dịch */}
         <div className="transaction-table-container">
           <table className="transaction-table">
             <thead>
               <tr>
-                <th>Tx ID</th>
-                <th>From</th>
-                <th>Value</th>
-                <th>Date/Time</th>
-                <th>To</th>
+                <th>Mã GD</th>
+                <th>Từ</th>
+                <th>Giá trị</th>
+                <th>Ngày/Giờ</th>
+                <th>Đến</th>
               </tr>
             </thead>
             <tbody>
               {filteredTransactions.map((transaction, index) => (
                 <tr key={index}>
-                  <td>
+                  <td data-label="Mã GD">
                     <span className="tx-id">{transaction.id}</span>
                   </td>
-                  <td>{transaction.from}</td>
-                  <td>
+                  <td data-label="Từ">{transaction.from}</td>
+                  <td data-label="Giá trị">
                     <span className="transaction-amount">{transaction.value}</span>
                   </td>
-                  <td>{transaction.datetime}</td>
-                  <td>{transaction.to}</td>
+                  <td data-label="Ngày/Giờ">{transaction.datetime}</td>
+                  <td data-label="Đến">{transaction.to}</td>
                 </tr>
               ))}
               {filteredTransactions.length === 0 && (
@@ -239,16 +240,17 @@ function ManageTransactionPage() {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="transaction-pagination">
-          &lt; 1 <span className="page-active">2</span> 3 4 5 6 7 &gt;
+        {/* Phân trang */}
+        <div className="manage-pagination">
+          &lt; <span className="page">1</span><span>2</span><span>3</span><span>4</span>
+          <span>5</span><span>6</span><span>7</span><span>8</span> &gt;
         </div>
 
-        {/* Charts Section */}
+        {/* Phần biểu đồ */}
         <div className="charts-section">
-          {/* Monthly Transaction Chart */}
+          {/* Biểu đồ giao dịch hàng tháng */}
           <div className="chart-container">
-            <h3 className="chart-title">Monthly Transaction</h3>
+            <h3 className="chart-title">Giao dịch hàng tháng</h3>
             <p className="chart-subtitle">
               Thống kê lượng giao dịch hàng tháng<br />của hệ thống
             </p>
@@ -257,10 +259,10 @@ function ManageTransactionPage() {
             </div>
           </div>
 
-          {/* Category Statistics */}
+          {/* Thống kê danh mục */}
           <div className="chart-container">
             <h3 className="chart-title">Thống kê lượng giao dịch mỗi danh mục kinh doanh</h3>
-            <p className="chart-subtitle">Các danh mục hot nhất</p>
+            <p className="chart-subtitle">Các danh mục phổ biến nhất</p>
             <div className="chart-wrapper">
               <canvas ref={categoryChartRef}></canvas>
             </div>
@@ -280,17 +282,17 @@ function ManageTransactionPage() {
               </div>
               <div className="legend-item">
                 <div className="legend-color" style={{ background: '#0288D1' }}></div>
-                <span>Café</span>
+                <span>Quán cà phê</span>
               </div>
               <div className="legend-item">
                 <div className="legend-color" style={{ background: '#0277BD' }}></div>
-                <span>Supply</span>
+                <span>Cung ứng</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Business Revenue Chart */}
+        {/* Biểu đồ doanh thu doanh nghiệp */}
         <div className="business-revenue-section">
           <div className="revenue-chart-header">
             <h3 className="revenue-chart-title">
@@ -298,7 +300,7 @@ function ManageTransactionPage() {
             </h3>
             <div className="sort-select">
               <select>
-                <option>Sort: Select</option>
+                <option>Sắp xếp: Chọn</option>
                 <option>Cao nhất</option>
                 <option>Thấp nhất</option>
               </select>
