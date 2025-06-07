@@ -7,6 +7,10 @@
   font-family: "Montserrat";
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .app {
   padding: 20px;
   max-width: 1200px;
