@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import HeroSectionAdmin from '../../components/HeroSectionAdmin';
+import Footer from '../../components/Footer';
 import '../../css/AdminManagePage.css';
 import { FaRegCircleCheck } from "react-icons/fa6";
 import { IoBanSharp } from "react-icons/io5";
@@ -149,6 +150,8 @@ function ManageUserPage() {
           <span>5</span><span>6</span><span>7</span><span>8</span> &gt;
         </div>
       </div>
+
+      <Footer />
     </>
   );
 }

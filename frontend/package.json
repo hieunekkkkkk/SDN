@@ -16,6 +16,7 @@
     "@fontsource/montserrat": "^5.2.5",
     "@fortawesome/fontawesome-free": "^6.7.2",
     "axios": "^1.9.0",
+    "chart.js": "^4.4.9",
     "framer-motion": "^12.16.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

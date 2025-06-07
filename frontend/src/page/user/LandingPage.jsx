@@ -1,70 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../../css/LandingPage.css';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import HeroSection from '../../components/HeroSection';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  
-  const bestPlaces = [
-    {
-      title: 'Molokini and Turtle Town Snorkeling Adventure Aboard',
-      location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-      status: 'Đang mở cửa',
-      image: '1.png',
-      rating: 4.8
-    },
-    {
-      title: 'All Inclusive Ultimate Circle Island Day Tour with Lunch',
-      location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-      status: 'Đang mở cửa',
-      image: '1.png',
-      rating: 4.9
-    },
-    {
-      title: 'Clear Kayak Tour of Shell Key Preserve and Tampa Bay Area',
-      location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-      status: 'Đang mở cửa',
-      image: '1.png',
-      rating: 4.7
-    },
-    {
-      title: 'Mauna Kea Summit Sunset and Stars Free Astro Photos Hilo...',
-      location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-      status: 'Đang mở cửa',
-      image: '1.png',
-      rating: 4.6
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pageData, setPageData] = useState({
+    topBusinesses: [],
+    categories: [],
+    stats: {
+      totalBusinesses: 0,
+      activeBusinesses: 0,
+      totalCategories: 0,
+      totalProducts: 0
     }
-  ];
+  });
 
-  const services = [
-    {
-      title: 'Gợi ý hàng đầu cho các thực khách',
-      subtitle: 'Những món ăn ngon nhất',
-      description: 'Các mặt hàng đa dạng, Hệ thống siêu thị vô cùng tiện lợi',
-      action: 'Xem thêm',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      image: '1.png'
-    },
-    {
-      title: 'Hệ thống siêu thị vô cùng tiện lợi',
-      subtitle: 'Các mặt hàng đa dạng',
-      description: 'Hệ thống siêu thị vô cùng tiện lợi',
-      action: 'Xem thêm',
-      background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-      image: '1.png'
-    },
-    {
-      title: 'Tiết lộ những nơi ở tiện nghi',
-      subtitle: 'Những căn phòng chỉ',
-      description: 'Tiết lộ những nơi ở tiện nghi',
-      action: 'Xem thêm',
-      background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-      image: '1.png'
-    }
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/home');
+        setPageData(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch data');
+        setLoading(false);
+        console.error('Error fetching data:', err);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const features = [
     {
@@ -84,39 +55,16 @@ const LandingPage = () => {
     }
   ];
 
-  const stats = [
-    { number: '932M', label: 'Total Donations' },
-    { number: '24M', label: 'Campaigns Closed' },
-    { number: '10M', label: 'Happy People' },
-    { number: '65M', label: 'Our Volunteers' }
-  ];
+  if (loading) {
+    return <div className="loading">Loading...</div>;
+  }
 
-  const testimonials = [
-    {
-      text: 'I think Educraft is the best theme I ever seen this year. Amazing design, easy to customize and a design quality superlative account on its cloud platform for the optimized performance',
-      author: 'Courtney Henry',
-      role: 'Web Designer',
-      avatar: '1.png'
-    },
-    {
-      text: 'I think Educraft is the best theme I ever seen this year. Amazing design, easy to customize and a design quality superlative account on its cloud platform for the optimized performance',
-      author: 'Courtney Henry',
-      role: 'Web Designer',
-      avatar: '1.png'
-    },
-    {
-      text: 'I think Educraft is the best theme I ever seen this year. Amazing design, easy to customize and a design quality superlative account on its cloud platform for the optimized performance',
-      author: 'Courtney Henry',
-      role: 'Web Designer',
-      avatar: '1.png'
-    }
-  ];
+  if (error) {
+    return <div className="error">{error}</div>;
+  }
 
   return (
     <div className="landing-page">
-      {/* <Header /> */}
-
-      {/* Use the HeroSection component without passing props */}
       <HeroSection />
 
       {/* Best Places Section */}
@@ -124,14 +72,14 @@ const LandingPage = () => {
         <div className="container">
           <h2>Best of <span className="highlight">Hoa Lac</span></h2>
           <div className="places-grid">
-            {bestPlaces.map((place, index) => (
+            {pageData.topBusinesses.map((place, index) => (
               <div key={index} className="place-card" onClick={() => navigate('/business')} style={{ cursor: 'pointer' }}>
                 <div className="place-image">
-                  <img src={place.image} alt={place.title} />
+                  <img src={place.images[0] || '1.png'} alt={place.name} />
                   <button className="favorite-btn">❤️</button>
                 </div>
                 <div className="place-info">
-                  <h3>{place.title}</h3>
+                  <h3>{place.name}</h3>
                   <p className="place-location">{place.location}</p>
                   <div className="place-meta">
                     <span className="status">{place.status}</span>
@@ -148,16 +96,15 @@ const LandingPage = () => {
       <section className="services-section">
         <div className="container">
           <div className="services-grid">
-            {services.map((service, index) => (
-              <div key={index} className="service-card" style={{ background: service.background }}>
+            {pageData.categories.map((category, index) => (
+              <div key={index} className="service-card" style={{ background: `linear-gradient(135deg, ${getRandomGradient(index)})` }}>
                 <div className="service-content">
-                  <h3>{service.title}</h3>
-                  <p className="service-subtitle">{service.subtitle}</p>
-                  <p className="service-description">{service.description}</p>
-                  <button className="service-btn">{service.action}</button>
+                  <h3>{category.name}</h3>
+                  <p className="service-description">{category.description}</p>
+                  <button className="service-btn">Xem thêm</button>
                 </div>
                 <div className="service-image">
-                  <img src={service.image} alt={service.title} />
+                  <img src={category.image || '1.png'} alt={category.name} />
                 </div>
               </div>
             ))}
@@ -190,64 +137,44 @@ const LandingPage = () => {
 
           <div className="stats-section">
             <div className="stats-grid">
-              {stats.map((stat, index) => (
-                <div key={index} className="stat-item">
-                  <div className="stat-icon">
-                    {index === 0 && '📍'}
-                    {index === 1 && '🔗'}
-                    {index === 2 && '👤'}
-                    {index === 3 && '🤝'}
-                  </div>
-                  <div className="stat-number">{stat.number}</div>
-                  <div className="stat-label">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Feedback Section */}
-      <section className="feedback-section">
-        <div className="container">
-          <h2>Feedback</h2>
-          <div className="testimonials-grid">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="testimonial-card">
-                <div className="testimonial-header">
-                  <span className="testimonial-rating">Great Work</span>
-                </div>
-                <p className="testimonial-text">"{testimonial.text}"</p>
-                <div className="testimonial-author">
-                  <img src={testimonial.avatar} alt={testimonial.author} />
-                  <div>
-                    <h4>{testimonial.author}</h4>
-                    <p>{testimonial.role}</p>
-                  </div>
-                </div>
+              <div className="stat-item">
+                <div className="stat-icon">📍</div>
+                <div className="stat-number">{pageData.stats.totalBusinesses}</div>
+                <div className="stat-label">Total Businesses</div>
               </div>
-            ))}
-          </div>
-
-          <div className="feedback-stats">
-            <div className="feedback-stat">
-              <h3>4.9</h3>
-              <p>1000+ reviews on TripAdvisor, Certificate of Excellence</p>
-            </div>
-            <div className="feedback-stat">
-              <h3>16M</h3>
-              <p>Happy Customers</p>
-            </div>
-            <div className="feedback-stat">
-              <h3>Award winner</h3>
-              <p>G2's 2021 Best Software Awards</p>
+              <div className="stat-item">
+                <div className="stat-icon">🔗</div>
+                <div className="stat-number">{pageData.stats.activeBusinesses}</div>
+                <div className="stat-label">Active Businesses</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-icon">👤</div>
+                <div className="stat-number">{pageData.stats.totalCategories}</div>
+                <div className="stat-label">Categories</div>
+              </div>
+              <div className="stat-item">
+                <div className="stat-icon">🤝</div>
+                <div className="stat-number">{pageData.stats.totalProducts}</div>
+                <div className="stat-label">Total Products</div>
+              </div>
             </div>
           </div>
         </div>
       </section>
+
       <Footer />
     </div>
   );
+};
+
+// Helper function to generate random gradients
+const getRandomGradient = (index) => {
+  const gradients = [
+    '#667eea 0%, #764ba2 100%',
+    '#f093fb 0%, #f5576c 100%',
+    '#4facfe 0%, #00f2fe 100%'
+  ];
+  return gradients[index % gradients.length];
 };
 
 export default LandingPage;

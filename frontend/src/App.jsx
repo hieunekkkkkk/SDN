@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
 import "@fontsource/montserrat";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -21,6 +23,7 @@ import MyBusinessPage from './page/user/MyBusinessPage';
 import BusinessRegistrationPage from './page/user/BusinessRegistrationPage';
 import ManageUserPage from './page/admin/ManageUserPage';
 import ManageBusinessPage from './page/admin/ManageBusinessPage';
+import ManageTransactionPage from './page/admin/ManageTransactionPage'; 
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -43,6 +46,7 @@ const AppRoutes = () => {
           <Route path="/business-registration" element={<BusinessRegistrationPage />} />
           <Route path="/admin/users" element={<ManageUserPage />} />
           <Route path="/admin/businesses" element={<ManageBusinessPage />} />
+          <Route path="/admin/transactions" element={<ManageTransactionPage />} />
         </Route>
       </Routes>
     </AnimatePresence>
@@ -52,6 +56,7 @@ const AppRoutes = () => {
 function App() {
   return (
     <BrowserRouter>
+      <ToastContainer position="top-right" autoClose={3000} />
       <Header />
       <AppRoutes />
     </BrowserRouter>
