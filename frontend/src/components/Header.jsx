@@ -1,19 +1,23 @@
 import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import '../css/Header.css';
 import AuthTokenReset from '../auth/AuthTokenReset';
 import { GrUserAdmin } from "react-icons/gr";
 import { useNavigate } from 'react-router-dom';
+import { useUserRole } from '../contexts/UserRoleContext';
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith('/admin');
+
+  const { role } = useUserRole(); 
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
-
 
   return (
     <header className="header">
@@ -24,12 +28,20 @@ const Header = () => {
           </Link>
         </div>
 
-        <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
-          <Link to="/" className="header-nav-link">Trang chủ</Link>
-          <Link to="/discover" className="header-nav-link">Khám phá</Link>
-          <Link to="/personalized" className="header-nav-link">Cá nhân hóa</Link>
-          <Link to="/my-business" className="header-nav-link">Doanh nghiệp của tôi</Link>
-        </nav>
+        {role === 'admin' && isAdminPage ? (
+          <nav className="header-nav">
+            <Link to="/admin" className="header-nav-link">Dashboard</Link>
+            <Link to="/admin/users" className="header-nav-link">Users</Link>
+            <Link to="/admin/settings" className="header-nav-link">Settings</Link>
+          </nav>
+        ) : (
+          <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
+            <Link to="/" className="header-nav-link">Trang chủ</Link>
+            <Link to="/discover" className="header-nav-link">Khám phá</Link>
+            <Link to="/personalized" className="header-nav-link">Cá nhân hóa</Link>
+            <Link to="/my-business" className="header-nav-link">Doanh nghiệp của tôi</Link>
+          </nav>
+        )}
         <SignedOut>
           <AuthTokenReset />
           <div
@@ -50,13 +62,13 @@ const Header = () => {
         <SignedIn>
           <div className="header-user-info">
             <UserButton userProfileUrl="/user-profile">
-              <UserButton.MenuItems>
+              {role == 'admin' && <UserButton.MenuItems>
                 <UserButton.Action
                   label="Quản trị hệ thống"
                   labelIcon={<GrUserAdmin />}
                   onClick={() => navigate('/admin')}
                 />
-              </UserButton.MenuItems>
+              </UserButton.MenuItems>}
             </UserButton>
           </div>
         </SignedIn>

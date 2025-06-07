@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserProfile } from '@clerk/clerk-react';
-import HomeAddressPage from '../components/HomeAddressPage';
-import '../css/UserProfilePage.css'; 
+import HomeAddressPage from '../../components/HomeAddressPage';
+import '../../css/UserProfilePage.css'; 
 
 const UserProfilePage = () => (
     <UserProfile path="/user-profile" routing="path" showNavigation={true}>

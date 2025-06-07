@@ -3,15 +3,15 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
 
-import LandingPage from './page/LandingPage';
-import LoginPage from './page/LoginPage';
-import SignupPage from './page/SignupPage';
-import BusinessPage from './page/BusinessPage';
-import UserProfilePage from './page/UserProfilePage';
+import LandingPage from './page/user/LandingPage';
+import LoginPage from './page/user/LoginPage';
+import SignupPage from './page/user/SignupPage';
+import BusinessPage from './page/user/BusinessPage';
+import UserProfilePage from './page/user/UserProfilePage';
 import AuthCallback from './auth/AuthCallback';
-import PersonalizedPage from './page/PersonalizedPage';
-import DiscoverPage from './page/DiscoverPage';
-import DiscoverByCategoryPage from './page/DiscoverByCategoryPage';
+import PersonalizedPage from './page/user/PersonalizedPage';
+import DiscoverPage from './page/user/DiscoverPage';
+import DiscoverByCategoryPage from './page/user/DiscoverByCategoryPage';
 import AnimatedLayout from './components/AnimatedLayout';
 
 const AppRoutes = () => {
