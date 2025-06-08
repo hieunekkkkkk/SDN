@@ -5,6 +5,8 @@ import Footer from '../../components/Footer';
 import HeroSection from '../../components/HeroSection';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import LoadingScreen from '../../components/LoadingScreen';
+
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -56,114 +58,129 @@ const LandingPage = () => {
   ];
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
+    return (
+      <>
+        <Header />
+        <LoadingScreen />
+        <Footer />
+      </>
+    )
   }
 
   if (error) {
-    return <div className="error">{error}</div>;
+    return (
+      <>
+        <Header />
+        <LoadingScreen />
+        <Footer />
+      </>
+    );
   }
 
   return (
-    <div className="landing-page">
-      <HeroSection />
+    <>
+      <Header />
+      <div className="landing-page">
+        <HeroSection />
 
-      {/* Best Places Section */}
-      <section className="best-places-section">
-        <div className="container">
-          <h2>Best of <span className="highlight">Hoa Lac</span></h2>
-          <div className="places-grid">
-            {pageData.topBusinesses.map((place, index) => (
-              <div key={index} className="place-card" onClick={() => navigate('/business')} style={{ cursor: 'pointer' }}>
-                <div className="place-image">
-                  <img src={place.images[0] || '1.png'} alt={place.name} />
-                  <button className="favorite-btn">❤️</button>
-                </div>
-                <div className="place-info">
-                  <h3>{place.name}</h3>
-                  <p className="place-location">{place.location}</p>
-                  <div className="place-meta">
-                    <span className="status">{place.status}</span>
-                    <span className="rating">⭐ {place.rating}</span>
+        {/* Best Places Section */}
+        <section className="best-places-section">
+          <div className="container">
+            <h2>Best of <span className="highlight">Hoa Lac</span></h2>
+            <div className="places-grid">
+              {pageData.topBusinesses.map((place, index) => (
+                <div key={index} className="place-card" onClick={() => navigate('/business')} style={{ cursor: 'pointer' }}>
+                  <div className="place-image">
+                    <img src={place.images[0] || '1.png'} alt={place.name} />
+                    <button className="favorite-btn">❤️</button>
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section className="services-section">
-        <div className="container">
-          <div className="services-grid">
-            {pageData.categories.map((category, index) => (
-              <div key={index} className="service-card" style={{ background: `linear-gradient(135deg, ${getRandomGradient(index)})` }}>
-                <div className="service-content">
-                  <h3>{category.name}</h3>
-                  <p className="service-description">{category.description}</p>
-                  <button className="service-btn">Xem thêm</button>
-                </div>
-                <div className="service-image">
-                  <img src={category.image || '1.png'} alt={category.name} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Why Choose Us Section */}
-      <section className="why-choose-section">
-        <div className="container">
-          <div className="why-choose-content">
-            <div className="why-choose-left">
-              <h2>Why choose <span className="highlight">Tourz</span></h2>
-              <div className="features-list">
-                {features.map((feature, index) => (
-                  <div key={index} className="feature-item">
-                    <div className="feature-icon">{feature.icon}</div>
-                    <div className="feature-content">
-                      <h3>{feature.title}</h3>
-                      <p>{feature.description}</p>
+                  <div className="place-info">
+                    <h3>{place.name}</h3>
+                    <p className="place-location">{place.location}</p>
+                    <div className="place-meta">
+                      <span className="status">{place.status}</span>
+                      <span className="rating">⭐ {place.rating}</span>
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="why-choose-right">
-              <img src="1.png" alt="Hot air balloons" className="choose-image" />
+                </div>
+              ))}
             </div>
           </div>
+        </section>
 
-          <div className="stats-section">
-            <div className="stats-grid">
-              <div className="stat-item">
-                <div className="stat-icon">📍</div>
-                <div className="stat-number">{pageData.stats.totalBusinesses}</div>
-                <div className="stat-label">Total Businesses</div>
+        {/* Services Section */}
+        <section className="services-section">
+          <div className="container">
+            <div className="services-grid">
+              {pageData.categories.map((category, index) => (
+                <div key={index} className="service-card" style={{ background: `linear-gradient(135deg, ${getRandomGradient(index)})` }}>
+                  <div className="service-content">
+                    <h3>{category.name}</h3>
+                    <p className="service-description">{category.description}</p>
+                    <button className="service-btn">Xem thêm</button>
+                  </div>
+                  <div className="service-image">
+                    <img src={category.image || '1.png'} alt={category.name} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Why Choose Us Section */}
+        <section className="why-choose-section">
+          <div className="container">
+            <div className="why-choose-content">
+              <div className="why-choose-left">
+                <h2>Why choose <span className="highlight">Tourz</span></h2>
+                <div className="features-list">
+                  {features.map((feature, index) => (
+                    <div key={index} className="feature-item">
+                      <div className="feature-icon">{feature.icon}</div>
+                      <div className="feature-content">
+                        <h3>{feature.title}</h3>
+                        <p>{feature.description}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="stat-item">
-                <div className="stat-icon">🔗</div>
-                <div className="stat-number">{pageData.stats.activeBusinesses}</div>
-                <div className="stat-label">Active Businesses</div>
+              <div className="why-choose-right">
+                <img src="1.png" alt="Hot air balloons" className="choose-image" />
               </div>
-              <div className="stat-item">
-                <div className="stat-icon">👤</div>
-                <div className="stat-number">{pageData.stats.totalCategories}</div>
-                <div className="stat-label">Categories</div>
-              </div>
-              <div className="stat-item">
-                <div className="stat-icon">🤝</div>
-                <div className="stat-number">{pageData.stats.totalProducts}</div>
-                <div className="stat-label">Total Products</div>
+            </div>
+
+            <div className="stats-section">
+              <div className="stats-grid">
+                <div className="stat-item">
+                  <div className="stat-icon">📍</div>
+                  <div className="stat-number">{pageData.stats.totalBusinesses}</div>
+                  <div className="stat-label">Total Businesses</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-icon">🔗</div>
+                  <div className="stat-number">{pageData.stats.activeBusinesses}</div>
+                  <div className="stat-label">Active Businesses</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-icon">👤</div>
+                  <div className="stat-number">{pageData.stats.totalCategories}</div>
+                  <div className="stat-label">Categories</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-icon">🤝</div>
+                  <div className="stat-number">{pageData.stats.totalProducts}</div>
+                  <div className="stat-label">Total Products</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 };
 

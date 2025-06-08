@@ -1,4 +1,4 @@
-.manage-table-container {
+.manage-container {
   max-width: 1200px;
   margin: 0 auto;
   font-family: Arial, sans-serif;
@@ -14,41 +14,68 @@
 }
 
 .manage-search-bar {
-  display: flex;
-  align-items: center;
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+  min-width: 250px;
 }
 
 .manage-search-bar input {
+  width: 100%;
+  padding: 12px 40px 12px 20px;
+  border: 2px solid #e0e6ed;
+  border-radius: 25px;
   font-size: 16px;
-  padding: 14px 20px;
-  border-radius: 20px;
-  border: 1px solid #ccc;
-  width: 500px;
-  background-color: #e0e0ec;
   outline: none;
+  transition: all 0.3s ease;
+  background-color: #f8f9fa;
 }
 
 .manage-sort-select select {
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
+  padding: 8px;
+  border: 1px solid #e0e6ed;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  background-color: white;
+  font-weight: 500;
 }
 
-table {
+.manage-table-container {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+}
+
+.manage-table {
   width: 100%;
   border-collapse: collapse;
+}
+
+.manage-table th {
+  background: #f8f9fa;
+  padding: 15px;
   text-align: left;
-}
-
-th {
+  font-weight: 600;
   color: #9aa3b4;
-  font-weight: 500;
-  padding-bottom: 10px;
+  font-size: 14px;
+  border-bottom: 1px solid #e9ecef;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-td {
-  padding: 12px 0;
-  border-bottom: 1px solid #eaeaea;
+.manage-table tr {
+  transition: background-color 0.2s ease;
+}
+
+.manage-table td {
+  padding: 5px 15px;
+  border-bottom: 1px solid #f1f3f4;
+  color: #495057;
+  vertical-align: middle;
 }
 
 .manage-status {
@@ -89,17 +116,17 @@ td {
   font-weight: bold;
 }
 
-.manage-actions{
+.manage-actions {
   font-size: 37px;
   transition: all 0.2s;
-  padding: 0 7px
+  padding: 0 7px;
 }
-.manage-actions.action-ban{
+.manage-actions.action-ban {
   font-size: 39px;
 }
-.manage-actions.action-check:hover{
+.manage-actions.action-check:hover {
   color: green;
 }
-.manage-actions.action-ban:hover{
+.manage-actions.action-ban:hover {
   color: red;
 }

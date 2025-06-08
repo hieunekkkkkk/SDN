@@ -104,7 +104,7 @@ function DiscoverByCategoryPage() {
 
   return (
     <>
-      {/* <Header /> */}
+      <Header />
       <HeroSection />
 
       <div className="discover-by-category-page">
