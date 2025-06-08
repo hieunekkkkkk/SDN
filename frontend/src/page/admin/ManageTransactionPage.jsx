@@ -41,7 +41,7 @@ function ManageTransactionPage() {
     // Biểu đồ giao dịch hàng tháng
     if (monthlyChartRef.current) {
       const ctx = monthlyChartRef.current.getContext('2d');
-      
+
       if (monthlyChartInstance.current) {
         monthlyChartInstance.current.destroy();
       }
@@ -98,7 +98,7 @@ function ManageTransactionPage() {
     // Biểu đồ danh mục
     if (categoryChartRef.current) {
       const ctx = categoryChartRef.current.getContext('2d');
-      
+
       if (categoryChartInstance.current) {
         categoryChartInstance.current.destroy();
       }
@@ -111,7 +111,7 @@ function ManageTransactionPage() {
             data: [80, 65, 70, 85, 60],
             backgroundColor: [
               '#4FC3F7',
-              '#29B6F6', 
+              '#29B6F6',
               '#03A9F4',
               '#0288D1',
               '#0277BD'
@@ -182,19 +182,19 @@ function ManageTransactionPage() {
           <div className="transaction-search-bar">
             <input
               type="text"
-              placeholder=""
+              placeholder="Tìm theo mã GD, người gửi, người nhận"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <div className="search-icon">🔍</div>
           </div>
           <div className="transaction-filter-section">
             <div className="total-value">
               Tổng giá trị: {getTotalValue()} VND
             </div>
             <div className="sort-select">
+              Sắp xếp:&nbsp;
               <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                <option>Sắp xếp: Chọn</option>
+                <option>Chọn</option>
                 <option>Giá trị cao nhất</option>
                 <option>Giá trị thấp nhất</option>
                 <option>Mới nhất</option>
@@ -266,7 +266,7 @@ function ManageTransactionPage() {
             <div className="chart-wrapper">
               <canvas ref={categoryChartRef}></canvas>
             </div>
-            
+
             <div className="legend">
               <div className="legend-item">
                 <div className="legend-color" style={{ background: '#4FC3F7' }}></div>
@@ -310,8 +310,8 @@ function ManageTransactionPage() {
           <div className="revenue-bars">
             {businessRevenues.map((business, index) => (
               <div key={index} className="revenue-bar-container">
-                <div 
-                  className="revenue-bar" 
+                <div
+                  className="revenue-bar"
                   style={{ height: `${business.height}px` }}
                 ></div>
                 <div className="business-name">{business.name}</div>

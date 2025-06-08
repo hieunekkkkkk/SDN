@@ -61,7 +61,7 @@ function ManageUserPage() {
     <>
       <HeroSectionAdmin message={<>Trang quản lý <br /> người dùng</>} />
 
-      <div className="manage-table-container">
+      <div className="manage-container">
         <div className="manage-table-header">
           <div className="manage-search-bar">
             <input
@@ -81,69 +81,70 @@ function ManageUserPage() {
             </select>
           </div>
         </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Tên người dùng</th>
-              <th>ID</th>
-              <th>Vai trò</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredUsers.map((user, i) => (
-              <tr key={i}>
-                <td>{user.name}</td>
-                <td>{user.id}</td>
-                <td>{user.role}</td>
-                <td>
-                  <span className={`manage-status ${user.status.toLowerCase()}`}>
-                    {user.status}
-                  </span>
-                </td>
-                <td>
-                  {user.status === 'Deactivate' && (
-                    <FaRegCircleCheck
-                      className="manage-actions action-check"
-                      onClick={() => handleActivate(i, user.id)}
-                      title="Activate user"
-                    />
-                  )}
-                  {user.status === 'Active' && (
-                    <IoBanSharp
-                      className="manage-actions action-ban"
-                      onClick={() => handleBan(i, user.id)}
-                      title="Deactivate user"
-                    />
-                  )}
-                  {user.status === 'Pending' && (
-                    <>
+        <div className='manage-table-container'>
+          <table className='manage-table'>
+            <thead>
+              <tr>
+                <th>Tên người dùng</th>
+                <th>ID</th>
+                <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.map((user, i) => (
+                <tr key={i}>
+                  <td>{user.name}</td>
+                  <td>{user.id}</td>
+                  <td>{user.role}</td>
+                  <td>
+                    <span className={`manage-status ${user.status.toLowerCase()}`}>
+                      {user.status}
+                    </span>
+                  </td>
+                  <td>
+                    {user.status === 'Deactivate' && (
                       <FaRegCircleCheck
                         className="manage-actions action-check"
                         onClick={() => handleActivate(i, user.id)}
-                        title="Approve user"
+                        title="Activate user"
                       />
+                    )}
+                    {user.status === 'Active' && (
                       <IoBanSharp
                         className="manage-actions action-ban"
                         onClick={() => handleBan(i, user.id)}
-                        title="Reject user"
+                        title="Deactivate user"
                       />
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {filteredUsers.length === 0 && (
-              <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
-                  Không tồn tại người dùng.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                    )}
+                    {user.status === 'Pending' && (
+                      <>
+                        <FaRegCircleCheck
+                          className="manage-actions action-check"
+                          onClick={() => handleActivate(i, user.id)}
+                          title="Approve user"
+                        />
+                        <IoBanSharp
+                          className="manage-actions action-ban"
+                          onClick={() => handleBan(i, user.id)}
+                          title="Reject user"
+                        />
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {filteredUsers.length === 0 && (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+                    Không tồn tại người dùng.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
 
         <div className="manage-pagination">
           &lt; <span className="page">1</span><span>2</span><span>3</span><span>4</span>

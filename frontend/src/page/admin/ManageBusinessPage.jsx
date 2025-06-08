@@ -46,7 +46,7 @@ function ManageUserPage() {
     <>
       <HeroSectionAdmin message={<>Trang quản lý <br /> doanh nghiệp</>} />
 
-      <div className="manage-table-container">
+      <div className="manage-container">
         <div className="manage-table-header">
           <div className="manage-search-bar">
             <input
@@ -66,72 +66,72 @@ function ManageUserPage() {
             </select>
           </div>
         </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>Tên doanh nghiệp</th>
-              <th>Tên chủ doanh nghiệp</th>
-              <th>Loại doanh nghiệp</th>
-              <th>Ngày đăng ký</th>
-              <th>Trạng thái</th>
-              <th>Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredBusinesses.map((b, i) => (
-              <tr key={i}>
-                <td>{b.name}</td>
-                <td>{b.owner}</td>
-                <td>{b.type}</td>
-                <td>{b.register}</td>
-                <td>
-                  <span className={`manage-status ${b.status.toLowerCase()}`}>
-                    {b.status}
-                  </span>
-                </td>
-                <td>
-                  {b.status === 'Deactivate' && (
-                    <FaRegCircleCheck
-                      className="manage-actions action-check"
-                      onClick={() => handleActivate(i, b.name)}
-                      title="Activate business"
-                    />
-                  )}
-                  {b.status === 'Active' && (
-                    <IoBanSharp
-                      className="manage-actions action-ban"
-                      onClick={() => handleBan(i, b.name)}
-                      title="Deactivate business"
-                    />
-                  )}
-                  {b.status === 'Pending' && (
-                    <>
+        <div className='manage-table-container'>
+          <table className='manage-table'>
+            <thead>
+              <tr>
+                <th>Tên doanh nghiệp</th>
+                <th>Tên chủ doanh nghiệp</th>
+                <th>Loại doanh nghiệp</th>
+                <th>Ngày đăng ký</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredBusinesses.map((b, i) => (
+                <tr key={i}>
+                  <td>{b.name}</td>
+                  <td>{b.owner}</td>
+                  <td>{b.type}</td>
+                  <td>{b.register}</td>
+                  <td>
+                    <span className={`manage-status ${b.status.toLowerCase()}`}>
+                      {b.status}
+                    </span>
+                  </td>
+                  <td>
+                    {b.status === 'Deactivate' && (
                       <FaRegCircleCheck
                         className="manage-actions action-check"
                         onClick={() => handleActivate(i, b.name)}
-                        title="Approve business"
+                        title="Activate business"
                       />
+                    )}
+                    {b.status === 'Active' && (
                       <IoBanSharp
                         className="manage-actions action-ban"
                         onClick={() => handleBan(i, b.name)}
-                        title="Reject business"
+                        title="Deactivate business"
                       />
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {filteredBusinesses.length === 0 && (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                  Không tồn tại doanh nghiệp.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-
+                    )}
+                    {b.status === 'Pending' && (
+                      <>
+                        <FaRegCircleCheck
+                          className="manage-actions action-check"
+                          onClick={() => handleActivate(i, b.name)}
+                          title="Approve business"
+                        />
+                        <IoBanSharp
+                          className="manage-actions action-ban"
+                          onClick={() => handleBan(i, b.name)}
+                          title="Reject business"
+                        />
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {filteredBusinesses.length === 0 && (
+                <tr>
+                  <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
+                    Không tồn tại doanh nghiệp.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
         <div className="manage-pagination">
           &lt; <span className="page">1</span><span>2</span><span>3</span><span>4</span>
           <span>5</span><span>6</span><span>7</span><span>8</span> &gt;
