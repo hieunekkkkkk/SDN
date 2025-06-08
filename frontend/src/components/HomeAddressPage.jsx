@@ -3,22 +3,9 @@ import React, { useState } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import '../css/HomeAddressPage.css';
 import { toast } from 'react-toastify';
+import vietnamAddressData from '../data/vietnamAddressData';
 
 const HomeAddressPage = () => {
-  const vietnamAddressData = {
-    "Hồ Chí Minh": {
-      "Quận 1": ["Phường Bến Nghé", "Phường Bến Thành"],
-      "Quận 3": ["Phường 1", "Phường 2"],
-    },
-    "Hà Nội": {
-      "Ba Đình": ["Phường Phúc Xá", "Phường Trúc Bạch"],
-      "Đống Đa": ["Phường Cát Linh", "Phường Văn Miếu"],
-    },
-    "Đà Nẵng": {
-      "Hải Châu": ["Phường Hải Châu 1", "Phường Hải Châu 2"],
-      "Sơn Trà": ["Phường An Hải Bắc", "Phường An Hải Đông"],
-    },
-  };
 
   const { user, isLoaded } = useUser();
   const [address, setAddress] = useState(() => {
