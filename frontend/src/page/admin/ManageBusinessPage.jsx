@@ -4,6 +4,7 @@ import '../../css/AdminManagePage.css';
 import { FaRegCircleCheck } from "react-icons/fa6";
 import { IoBanSharp } from "react-icons/io5";
 import { toast } from 'react-toastify';
+import Header from '../../components/Header';
 
 function ManageUserPage() {
   const [businesses, setBusinesses] = useState([
@@ -44,6 +45,7 @@ function ManageUserPage() {
 
   return (
     <>
+      <Header />
       <HeroSectionAdmin message={<>Trang quản lý <br /> doanh nghiệp</>} />
 
       <div className="manage-container">

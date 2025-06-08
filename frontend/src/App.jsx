@@ -6,9 +6,6 @@ import "@fontsource/montserrat";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import Header from './components/Header';
-import Footer from './components/Footer';
-
 import LandingPage from './page/user/LandingPage';
 import LoginPage from './page/user/LoginPage';
 import SignupPage from './page/user/SignupPage';
@@ -57,7 +54,6 @@ function App() {
   return (
     <BrowserRouter>
       <ToastContainer position="top-right" autoClose={3000} />
-      <Header />
       <AppRoutes />
     </BrowserRouter>
   );

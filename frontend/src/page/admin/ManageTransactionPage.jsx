@@ -4,6 +4,7 @@ import Footer from '../../components/Footer';
 import '../../css/ManageTransactionPage.css';
 import { toast } from 'react-toastify';
 import Chart from 'chart.js/auto';
+import Header from '../../components/Header';
 
 function ManageTransactionPage() {
   const [transactions, setTransactions] = useState([
@@ -174,6 +175,7 @@ function ManageTransactionPage() {
 
   return (
     <>
+    <Header/>
       <HeroSectionAdmin message={<>Trang quản lý <br /> giao dịch</>} />
 
       <div className="manage-transaction-container">

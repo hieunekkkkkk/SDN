@@ -48,30 +48,43 @@ function DiscoverPage() {
     : businesses.filter(b => b.business_category === category);
 
   const handleSeeMore = (categoryName, categoryId) => {
-  const slug = categoryName
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, '-');
+    const slug = categoryName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/\s+/g, '-');
 
-  navigate(`/discover/${slug}`, {
-    state: {
-      category_id: categoryId,
-      category_name: categoryName,
-    },
-  });
-};
+    navigate(`/discover/${slug}`, {
+      state: {
+        category_id: categoryId,
+        category_name: categoryName,
+      },
+    });
+  };
 
   if (loading) {
     return (
-      <LoadingScreen/>
+      <>
+        <Header />
+        <LoadingScreen />
+        <Footer />
+      </>
     )
   }
 
+  if (error || categories.length === 0) {
+    return (
+      <>
+        <Header />
+        <LoadingScreen />
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
-      {/* <Header /> */}
+      <Header />
       <HeroSection />
 
       <div className="discover-page">
