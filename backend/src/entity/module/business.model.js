@@ -1,29 +1,37 @@
 const mongoose = require('mongoose');
 
 const businessSchema = new mongoose.Schema({
-  owner_id: { 
-    type: mongoose.Schema.Types.Mixed,  // Cho phép cả ObjectId và String
-    ref: 'User' 
-  },
+  owner_id: String,
   business_name: String,
   business_address: String,
   business_location: {
-    latitude: Number,
-    longitude: Number
+    type: {
+      type: String,
+      enum: ['Point'],
+      required: true
+    },
+    coordinates: {
+      type: [Number], // [longitude, latitude]
+      required: true
+    }
   },
-  business_category: String,
+  business_category_id: { type: mongoose.Schema.Types.ObjectId, ref: 'category' },
   business_detail: String,
   business_time: {
     open: String,
     close: String
   },
   business_phone: String,
-  business_status: Boolean,
+  business_image: [String],
+  business_stack_id: { type: mongoose.Schema.Types.ObjectId, ref: 'stack' },
+  business_total_vote: Number,
   business_rating: Number,
   business_view: Number,
-  business_image: [String],
-  business_product: Number,
-  business_active: Boolean
+  business_status: Boolean,
+  business_active: { type: String, enum: ['active', 'inactive', 'pending'] },
 });
 
-module.exports = mongoose.model('Business', businessSchema, 'business'); 
+
+businessSchema.index({ business_location: '2dsphere' });
+
+module.exports = mongoose.model('business', businessSchema);

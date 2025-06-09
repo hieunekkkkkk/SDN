@@ -1,50 +1,30 @@
-const Category = require('../entity/module/category.model');
+const CategoryService = require('../services/category.service');
 
-exports.getAll = async (req, res) => {
-  try {
-    const data = await Category.find();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+class CategoryController {
 
-exports.getById = async (req, res) => {
-  try {
-    const data = await Category.findById(req.params.id);
-    if (!data) return res.status(404).json({ error: 'Not found' });
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
 
-exports.create = async (req, res) => {
-  try {
-    const category = new Category(req.body);
-    await category.save();
-    res.status(201).json(category);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+  async getAllCategories(req, res) {
+    try {
+      const { page = 1, limit = 10 } = req.query;
+      const result = await CategoryService.getAllCategories(
+        parseInt(page),
+        parseInt(limit)
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   }
-};
 
-exports.update = async (req, res) => {
-  try {
-    const data = await Category.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!data) return res.status(404).json({ error: 'Not found' });
-    res.json(data);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+  async getCategoryById(req, res) {
+    try {
+      const category = await CategoryService.getCategoryById(req.params.id);
+      res.status(200).json(category);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
   }
-};
 
-exports.delete = async (req, res) => {
-  try {
-    const data = await Category.findByIdAndDelete(req.params.id);
-    if (!data) return res.status(404).json({ error: 'Not found' });
-    res.status(204).send();
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}; 
+}
+
+module.exports = new CategoryController();

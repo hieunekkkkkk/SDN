@@ -1,50 +1,65 @@
-const Payment = require('../entity/module/payment.model');
+const paymentService = require('../services/payment.service');
 
-exports.getAll = async (req, res) => {
-  try {
-    const data = await Payment.find();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+class PaymentController {
+    async createPayment(req, res) {
+        try {
+            const payment = await paymentService.createPayment(req.body);
+            res.status(201).json({ message: 'Payment created successfully', data: payment });
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }
 
-exports.getById = async (req, res) => {
-  try {
-    const data = await Payment.findById(req.params.id);
-    if (!data) return res.status(404).json({ error: 'Not found' });
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+    async getAllPayments(req, res) {
+        try {
+            const { page = 1, limit = 10 } = req.query;
+            const result = await paymentService.getAllPayments(parseInt(page), parseInt(limit));
+            res.status(200).json({ message: 'Payments retrieved successfully', data: result });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    }
 
-exports.create = async (req, res) => {
-  try {
-    const payment = new Payment(req.body);
-    await payment.save();
-    res.status(201).json(payment);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+    async getPaymentById(req, res) {
+        try {
+            const payment = await paymentService.getPaymentById(req.params.id);
+            res.status(200).json({ message: 'Payment retrieved successfully', data: payment });
+        } catch (error) {
+            res.status(404).json({ message: error.message });
+        }
+    }
 
-exports.update = async (req, res) => {
-  try {
-    const data = await Payment.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!data) return res.status(404).json({ error: 'Not found' });
-    res.json(data);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+    async updatePayment(req, res) {
+        try {
+            const payment = await paymentService.updatePayment(req.params.id, req.body);
+            res.status(200).json({ message: 'Payment updated successfully', data: payment });
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }
 
-exports.delete = async (req, res) => {
-  try {
-    const data = await Payment.findByIdAndDelete(req.params.id);
-    if (!data) return res.status(404).json({ error: 'Not found' });
-    res.status(204).send();
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}; 
+    async deletePayment(req, res) {
+        try {
+            const payment = await paymentService.deletePayment(req.params.id);
+            res.status(200).json({ message: 'Payment deleted successfully', data: payment });
+        } catch (error) {
+            res.status(404).json({ message: error.message });
+        }
+    }
+
+    async updateTransactionId(req, res) {
+        try {
+            const { transaction_id } = req.body;
+            if (!transaction_id) {
+                return res.status(400).json({ message: 'Transaction ID is required' });
+            }
+            const payment = await paymentService.updateTransactionId(req.params.id, transaction_id);
+            res.status(200).json({ message: 'Transaction ID updated successfully', data: payment });
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+}
+
+// Export a single instance of the controller
+module.exports = new PaymentController();

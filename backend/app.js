@@ -22,12 +22,11 @@ app.use(metricsMiddleware);
 app.get('/metrics', metricsEndpoint);
 
 // Connect to MongoDB
-// connectDB();
+connectDB();
 
 // Routes
 app.use('/api', router);
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
-app.use('/auth', authRoutes);
 
 module.exports = app;
