@@ -1,47 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import HeroSectionAdmin from '../../components/HeroSectionAdmin';
 import '../../css/AdminManagePage.css';
 import { FaRegCircleCheck } from "react-icons/fa6";
 import { IoBanSharp } from "react-icons/io5";
 import { toast } from 'react-toastify';
 import Header from '../../components/Header';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function ManageUserPage() {
-  const [businesses, setBusinesses] = useState([
-    { name: 'Alice Johnson', owner: 'Alice J.', type: 'Restaurant', register: '2023-05-12', status: 'Active' },
-    { name: 'Bob Smith', owner: 'Bob S.', type: 'Hotel', register: '2024-01-08', status: 'Pending' },
-    { name: 'Carla Gomez', owner: 'Carla G.', type: 'Cafe', register: '2022-11-20', status: 'Deactivate' },
-    { name: 'David Lee', owner: 'David L.', type: 'Motel', register: '2023-07-03', status: 'Active' },
-    { name: 'Emily Chen', owner: 'Emily C.', type: 'Restaurant', register: '2023-03-15', status: 'Deactivate' },
-    { name: 'Frank Ngu', owner: 'Frank N.', type: 'Hotel', register: '2024-02-17', status: 'Pending' },
-    { name: 'Grace Park', owner: 'Grace P.', type: 'Cafe', register: '2023-12-01', status: 'Active' },
-    { name: 'Henry Vu', owner: 'Henry V.', type: 'Restaurant', register: '2024-04-09', status: 'Pending' },
-    { name: 'Isabel Wang', owner: 'Isabel W.', type: 'Motel', register: '2023-09-23', status: 'Active' },
-    { name: 'Jake Tan', owner: 'Jake T.', type: 'Hotel', register: '2022-10-30', status: 'Deactivate' },
-  ]);
-
+  const [businesses, setBusinesses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
   const [sortStatus, setSortStatus] = useState('All');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const limit = 5;
+
+  useEffect(() => {
+    fetchBusinesses(currentPage);
+  }, [currentPage]);
+
+  const fetchBusinesses = async (page) => {
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_BE_URL}/api/business/`, {
+        params: { page, limit }
+      });
+      setBusinesses(res.data.businesses);
+      setTotalPages(res.data.totalPages);
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to fetch businesses');
+    }
+  };
+
+  const updateBusinessStatus = async (index, name, newStatus) => {
+    try {
+      const business = businesses[index];
+      const updatedBusiness = { business_active: newStatus };
+
+      await axios.put(`${import.meta.env.VITE_BE_URL}/api/business/${business._id}`, updatedBusiness);
+
+      const updated = [...businesses];
+      updated[index].business_active = newStatus;
+      setBusinesses(updated);
+
+      toast.success(
+        `${newStatus === 'active' ? 'Activated' : 'Set to inactive'} business "${name}" successfully!`
+      );
+    } catch (err) {
+      console.error('PUT error:', err.response?.data || err.message);
+      toast.error(`Failed to ${newStatus === 'active' ? 'activate' : 'deactivate'} "${name}"`);
+    }
+  };
 
   const handleBan = (index, name) => {
-    const updated = [...businesses];
-    updated[index].status = 'Deactivate';
-    setBusinesses(updated);
-    toast.success(`Deactivated business "${name}" successfully!`);
+    updateBusinessStatus(index, name, 'inactive');
   };
 
   const handleActivate = (index, name) => {
-    const updated = [...businesses];
-    updated[index].status = 'Active';
-    setBusinesses(updated);
-    toast.success(`Activated business "${name}" successfully!`);
+    updateBusinessStatus(index, name, 'active');
   };
 
   const filteredBusinesses = businesses.filter((b) =>
-    (b.name.toLowerCase().includes(search.toLowerCase()) ||
-      b.owner.toLowerCase().includes(search.toLowerCase())) &&
-    (sortStatus === 'All' || b.status === sortStatus)
+    (b.business_name.toLowerCase().includes(search.toLowerCase()) ||
+      b.owner_id.toLowerCase().includes(search.toLowerCase())) &&
+    (sortStatus === 'All' || b.business_active === sortStatus.toLowerCase())
   );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
 
   return (
     <>
@@ -63,7 +95,7 @@ function ManageUserPage() {
             <select value={sortStatus} onChange={(e) => setSortStatus(e.target.value)}>
               <option value="All">Tất cả</option>
               <option value="Active">Kích hoạt</option>
-              <option value="Deactivate">Vô hiệu hóa</option>
+              <option value="Inactive">Vô hiệu hóa</option>
               <option value="Pending">Tạm chờ</option>
             </select>
           </div>
@@ -73,70 +105,83 @@ function ManageUserPage() {
             <thead>
               <tr>
                 <th>Tên doanh nghiệp</th>
-                <th>Tên chủ doanh nghiệp</th>
-                <th>Loại doanh nghiệp</th>
-                <th>Ngày đăng ký</th>
+                <th>Chủ doanh nghiệp</th>
+                <th>Loại</th>
                 <th>Trạng thái</th>
                 <th>Hành động</th>
               </tr>
             </thead>
             <tbody>
-              {filteredBusinesses.map((b, i) => (
-                <tr key={i}>
-                  <td>{b.name}</td>
-                  <td>{b.owner}</td>
-                  <td>{b.type}</td>
-                  <td>{b.register}</td>
-                  <td>
-                    <span className={`manage-status ${b.status.toLowerCase()}`}>
-                      {b.status}
-                    </span>
-                  </td>
-                  <td>
-                    {b.status === 'Deactivate' && (
-                      <FaRegCircleCheck
-                        className="manage-actions action-check"
-                        onClick={() => handleActivate(i, b.name)}
-                        title="Activate business"
-                      />
-                    )}
-                    {b.status === 'Active' && (
-                      <IoBanSharp
-                        className="manage-actions action-ban"
-                        onClick={() => handleBan(i, b.name)}
-                        title="Deactivate business"
-                      />
-                    )}
-                    {b.status === 'Pending' && (
-                      <>
+              <AnimatePresence mode="wait">
+                {filteredBusinesses.map((b, i) => (
+                  <motion.tr
+                    key={b._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    <td>{b.business_name}</td>
+                    <td>{b.owner_id}</td>
+                    <td>{b.business_category_id?.category_name}</td>
+                    <td>
+                      <span className={`manage-status ${b.business_active.toLowerCase()}`}>
+                        {b.business_active}
+                      </span>
+                    </td>
+                    <td>
+                      {b.business_active === 'inactive' && (
                         <FaRegCircleCheck
                           className="manage-actions action-check"
-                          onClick={() => handleActivate(i, b.name)}
-                          title="Approve business"
+                          onClick={() => handleActivate(i, b.business_name)}
+                          title="Activate business"
                         />
+                      )}
+                      {b.business_active === 'active' && (
                         <IoBanSharp
                           className="manage-actions action-ban"
-                          onClick={() => handleBan(i, b.name)}
-                          title="Reject business"
+                          onClick={() => handleBan(i, b.business_name)}
+                          title="Deactivate business"
                         />
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {filteredBusinesses.length === 0 && (
-                <tr>
-                  <td colSpan="6" style={{ textAlign: 'center', padding: '20px' }}>
-                    Không tồn tại doanh nghiệp.
-                  </td>
-                </tr>
-              )}
+                      )}
+                      {b.business_active === 'pending' && (
+                        <>
+                          <FaRegCircleCheck
+                            className="manage-actions action-check"
+                            onClick={() => handleActivate(i, b.business_name)}
+                            title="Approve business"
+                          />
+                          <IoBanSharp
+                            className="manage-actions action-ban"
+                            onClick={() => handleBan(i, b.business_name)}
+                            title="Reject business"
+                          />
+                        </>
+                      )}
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>
+
         <div className="manage-pagination">
-          &lt; <span className="page">1</span><span>2</span><span>3</span><span>4</span>
-          <span>5</span><span>6</span><span>7</span><span>8</span> &gt;
+          <button className="nav-btn" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
+            &lt;
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i + 1}
+              className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
+              onClick={() => handlePageChange(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button className="nav-btn" onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
+            &gt;
+          </button>
         </div>
       </div>
     </>

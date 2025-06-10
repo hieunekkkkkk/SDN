@@ -94,9 +94,9 @@
 
 .checkbox-group {
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   max-width: 300px;
+  flex-direction: column;
 }
 
 .form-group label {
