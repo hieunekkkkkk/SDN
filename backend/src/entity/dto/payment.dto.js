@@ -7,6 +7,8 @@ class PaymentDTO {
     this.payment_number = data.payment_number;
     this.payment_status = data.payment_status;
     this.payment_method = data.payment_method;
+    this.transaction_id = data.transaction_id;
   }
 }
+
 module.exports = PaymentDTO; 

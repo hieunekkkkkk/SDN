@@ -7,7 +7,8 @@ const paymentSchema = new mongoose.Schema({
   payment_date: Date,
   payment_number: Number,
   payment_status: String, // ENUM: pending, completed, failed
-  payment_method: String  // ENUM: momo, zalopay
+  payment_method: String,  // ENUM: momo, zalopay
+  transaction_id: String  // PayOS transaction ID
 });
 
 module.exports = mongoose.model('Payment', paymentSchema, 'payment'); 
