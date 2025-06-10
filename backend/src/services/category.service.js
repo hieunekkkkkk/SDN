@@ -1,30 +1,41 @@
 const Category = require('../entity/module/category.model');
 
 class CategoryService {
-    async getAllCategories() {
-        return await Category.find();
+
+
+    // Get all categories with pagination
+    async getAllCategories(page = 1, limit = 10) {
+        try {
+            const skip = (page - 1) * limit;
+            const categories = await Category.find()
+                .skip(skip)
+                .limit(limit);
+            const total = await Category.countDocuments();
+            return {
+                categories,
+                totalPages: Math.ceil(total / limit),
+                currentPage: page,
+                totalItems: total
+            };
+        } catch (error) {
+            throw new Error(`Error fetching categories: ${error.message}`);
+        }
     }
 
+    // Get category by ID
     async getCategoryById(id) {
-        return await Category.findById(id);
+        try {
+            const category = await Category.findById(id);
+            if (!category) {
+                throw new Error('Category not found');
+            }
+            return category;
+        } catch (error) {
+            throw new Error(`Error fetching category: ${error.message}`);
+        }
     }
 
-    async getCategoryByCategoryId(categoryId) {
-        return await Category.findOne({ category_id: categoryId });
-    }
 
-    async createCategory(categoryData) {
-        const category = new Category(categoryData);
-        return await category.save();
-    }
-
-    async updateCategory(id, categoryData) {
-        return await Category.findByIdAndUpdate(id, categoryData, { new: true });
-    }
-
-    async deleteCategory(id) {
-        return await Category.findByIdAndDelete(id);
-    }
 }
 
-module.exports = new CategoryService(); 
+module.exports = new CategoryService();
