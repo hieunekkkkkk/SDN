@@ -1,28 +1,22 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FaUserCircle } from 'react-icons/fa';
-import { SignedIn, SignedOut, UserButton, SignInButton } from '@clerk/clerk-react'
+import React, { useState, useRef } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { FaUserCircle, FaHome, FaUserCog } from 'react-icons/fa';
+import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import '../css/Header.css';
-import { useUser, useAuth } from '@clerk/clerk-react';
+import AuthTokenReset from '../auth/AuthTokenReset';
+import { useNavigate } from 'react-router-dom';
+import { useUserRole } from '../contexts/UserRoleContext';
 
 const Header = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminPage = location.pathname.startsWith('/admin');
+
+  const { role } = useUserRole();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
   const accountRef = useRef(null);
-  
-  //clear jwt
-  const { user } = useUser();
-  const { getToken, isSignedIn } = useAuth();
-
-  useEffect(() => {
-    const fetchToken = async () => {
-      if(isSignedIn){
-        const token = await getToken({ template: 'node-backend' });
-        console.log("JWT: ", token);
-      }
-    };
-    fetchToken();
-  }, [isSignedIn, getToken]);
 
   return (
     <header className="header">
@@ -33,13 +27,23 @@ const Header = () => {
           </Link>
         </div>
 
-        <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
-          <Link to="/" className="header-nav-link">Home</Link>
-          <Link to="/food" className="header-nav-link">Food</Link>
-          <Link to="/destination" className="header-nav-link">Destination</Link>
-          <Link to="/pages" className="header-nav-link">Pages</Link>
-        </nav>
+        {role === 'admin' && isAdminPage ? (
+          <nav className="header-nav">
+            <Link to="/admin/users" className={`header-nav-link ${location.pathname === '/admin/users' ? 'active' : ''}`}>Người dùng</Link>
+            <Link to="/admin/businesses" className={`header-nav-link ${location.pathname === '/admin/businesses' ? 'active' : ''}`}>Doanh nghiệp</Link>
+            <Link to="/admin/transactions" className={`header-nav-link ${location.pathname === '/admin/transactions' ? 'active' : ''}`}>Giao dịch</Link>
+          </nav>
+        ) : (
+          <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
+            <Link to="/" className={`header-nav-link ${location.pathname === '/' ? 'active' : ''}`}>Trang chủ</Link>
+            <Link to="/discover" className={`header-nav-link ${location.pathname.startsWith('/discover') ? 'active' : ''}`}>Khám phá</Link>
+            <Link to="/personalized" className={`header-nav-link ${location.pathname === '/personalized' ? 'active' : ''}`}>Cá nhân hóa</Link>
+            <Link to="/my-business" className={`header-nav-link ${location.pathname === '/my-business' ? 'active' : ''}`}>Doanh nghiệp của tôi</Link>
+
+          </nav>
+        )}
         <SignedOut>
+          <AuthTokenReset />
           <div
             className="account-menu-wrapper"
             ref={accountRef}
@@ -50,14 +54,30 @@ const Header = () => {
             {showAccountMenu && (
               <ul className="account-dropdown">
                 <li><Link to="/login">Đăng nhập</Link></li>
-                <li><Link to="/logout">Đăng xuất</Link></li>
                 <li><Link to="/signup">Đăng ký</Link></li>
               </ul>
             )}
           </div>
         </SignedOut>
         <SignedIn>
-          <UserButton />
+          <div className="header-user-info">
+            <UserButton userProfileUrl="/user-profile">
+              {role == 'admin' && !isAdminPage && <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Quản trị hệ thống"
+                  labelIcon={<FaUserCog />}
+                  onClick={() => navigate('/admin/users')}
+                />
+              </UserButton.MenuItems>}
+              {role == 'admin' && isAdminPage && <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Trang chủ"
+                  labelIcon={<FaHome />}
+                  onClick={() => navigate('/')}
+                />
+              </UserButton.MenuItems>}
+            </UserButton>
+          </div>
         </SignedIn>
         {/* <button
           className="header-menu-toggle"

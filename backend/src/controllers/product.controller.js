@@ -1,50 +1,68 @@
-const Product = require('../entity/module/product.model');
+const ProductService = require('../services/product.service');
 
-exports.getAll = async (req, res) => {
-  try {
-    const data = await Product.find();
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+class ProductController {
+  async createProduct(req, res) {
+    try {
+      const product = await ProductService.createProduct(req.body);
+      res.status(201).json(product);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   }
-};
 
-exports.getById = async (req, res) => {
-  try {
-    const data = await Product.findById(req.params.id);
-    if (!data) return res.status(404).json({ error: 'Not found' });
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  async getAllProducts(req, res) {
+    try {
+      const { page = 1, limit = 10 } = req.query;
+      const result = await ProductService.getAllProducts(
+        parseInt(page),
+        parseInt(limit)
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   }
-};
 
-exports.create = async (req, res) => {
-  try {
-    const product = new Product(req.body);
-    await product.save();
-    res.status(201).json(product);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+  async getProductById(req, res) {
+    try {
+      const product = await ProductService.getProductById(req.params.id);
+      res.status(200).json(product);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
   }
-};
 
-exports.update = async (req, res) => {
-  try {
-    const data = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!data) return res.status(404).json({ error: 'Not found' });
-    res.json(data);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+  async getProductsByBusinessId(req, res) {
+    try {
+      const { page = 1, limit = 10 } = req.query;
+      const result = await ProductService.getProductsByBusinessId(
+        req.params.businessId,
+        parseInt(page),
+        parseInt(limit)
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   }
-};
 
-exports.delete = async (req, res) => {
-  try {
-    const data = await Product.findByIdAndDelete(req.params.id);
-    if (!data) return res.status(404).json({ error: 'Not found' });
-    res.status(204).send();
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  async updateProduct(req, res) {
+    try {
+      const product = await ProductService.updateProduct(req.params.id, req.body);
+      res.status(200).json(product);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
   }
-}; 
+
+  async deleteProduct(req, res) {
+    try {
+      const result = await ProductService.deleteProduct(req.params.id);
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(404).json({ error: error.message });
+    }
+  }
+}
+
+module.exports = new ProductController();

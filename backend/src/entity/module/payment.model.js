@@ -1,14 +1,14 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-  user_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  user_id: String, // Cho phép cả ObjectId và String
   payment_amount: Number,
-  payment_stack: { type: mongoose.Schema.Types.ObjectId, ref: 'Stack' },
-  payment_date: Date,
+  payment_stack: { type: mongoose.Schema.Types.ObjectId, ref: 'stack' },
+  payment_date: { type: Date, default: Date.now },
   payment_number: Number,
   payment_status: String, // ENUM: pending, completed, failed
   payment_method: String,  // ENUM: momo, zalopay
   transaction_id: String  // PayOS transaction ID
 });
 
-module.exports = mongoose.model('Payment', paymentSchema, 'payment'); 
+module.exports = mongoose.model('payment', paymentSchema);
