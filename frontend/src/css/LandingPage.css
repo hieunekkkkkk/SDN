@@ -23,8 +23,7 @@
 
 /* Category Filter Section - Giống DiscoverPage */
 .category-filter-section {
-  padding: 48px 0;
-  background: #f8f9fa;
+  padding-top: 60px;
 }
 
 .category-filter-container {
@@ -95,7 +94,7 @@
 
 /* Best Places Section */
 .best-places-section {
-  padding: 5rem 0;
+  padding: 1rem 1rem;
   background: white;
 }
 
@@ -228,7 +227,7 @@
 
 /* Services Grid */
 .services-section {
-  padding: 5rem 0;
+  padding: 1rem 1rem;
   background: #f8f9fa;
 }
 
@@ -347,7 +346,7 @@
 
 /* Why Choose Section */
 .why-choose-section {
-  padding: 5rem 0;
+  padding: 5rem 1rem;
   background: white;
 }
 
@@ -472,7 +471,7 @@
 
 /* Feedback Section */
 .feedback-section {
-  padding: 5rem 0;
+  padding: 1rem 1rem;
   background: #f8f9fa;
 }
 
