@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUserCircle, FaHome, FaUserCog } from 'react-icons/fa';
+import { FaUserCircle, FaHome, FaUserCog, FaBuilding } from 'react-icons/fa';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import '../css/Header.css';
 import AuthTokenReset from '../auth/AuthTokenReset';
@@ -73,6 +73,20 @@ const Header = () => {
                 <UserButton.Action
                   label="Trang chủ"
                   labelIcon={<FaHome />}
+                  onClick={() => navigate('/')}
+                />
+              </UserButton.MenuItems>}
+              {role == 'business-owner' && <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Xem doanh nghiệp"
+                  labelIcon={<FaBuilding />}
+                  onClick={() => navigate('/my-business')}
+                />
+              </UserButton.MenuItems>}
+              {role == 'user' && <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Trở thành chủ doanh nghiệp"
+                  labelIcon={<FaBuilding />}
                   onClick={() => navigate('/')}
                 />
               </UserButton.MenuItems>}

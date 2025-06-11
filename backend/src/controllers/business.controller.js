@@ -23,6 +23,19 @@ class BusinessController {
     }
   }
 
+  async getAllBusinessesWithRating(req, res) {
+    try {
+      const { page = 1, limit = 10 } = req.query;
+      const result = await BusinessService.getAllBusinessesWithRating(
+        parseInt(page),
+        parseInt(limit)
+      );
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(400).json({ error: error.message });
+    }
+  }
+
   async getBusinessById(req, res) {
     try {
       const business = await BusinessService.getBusinessById(req.params.id);

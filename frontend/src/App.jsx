@@ -6,9 +6,6 @@ import "@fontsource/montserrat";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-import Header from './components/Header';
-import Footer from './components/Footer';
-
 import LandingPage from './page/user/LandingPage';
 import LoginPage from './page/user/LoginPage';
 import SignupPage from './page/user/SignupPage';
@@ -24,6 +21,7 @@ import BusinessRegistrationPage from './page/user/BusinessRegistrationPage';
 import ManageUserPage from './page/admin/ManageUserPage';
 import ManageBusinessPage from './page/admin/ManageBusinessPage';
 import ManageTransactionPage from './page/admin/ManageTransactionPage'; 
+import AdminRoute from './components/AdminRoute';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -44,9 +42,9 @@ const AppRoutes = () => {
           <Route path="/discover/:category" element={<DiscoverByCategoryPage />} />
           <Route path="/my-business" element={<MyBusinessPage />} />
           <Route path="/business-registration" element={<BusinessRegistrationPage />} />
-          <Route path="/admin/users" element={<ManageUserPage />} />
-          <Route path="/admin/businesses" element={<ManageBusinessPage />} />
-          <Route path="/admin/transactions" element={<ManageTransactionPage />} />
+          <Route path="/admin/users" element={<AdminRoute><ManageUserPage /></AdminRoute>} />
+          <Route path="/admin/businesses" element={<AdminRoute><ManageBusinessPage /></AdminRoute>} />
+          <Route path="/admin/transactions" element={<AdminRoute><ManageTransactionPage /></AdminRoute>} />
         </Route>
       </Routes>
     </AnimatePresence>
@@ -57,7 +55,6 @@ function App() {
   return (
     <BrowserRouter>
       <ToastContainer position="top-right" autoClose={3000} />
-      <Header />
       <AppRoutes />
     </BrowserRouter>
   );

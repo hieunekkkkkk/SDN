@@ -125,7 +125,7 @@ const BusinessPage = () => {
 
   return (
     <>
-      {/* <Header /> */}
+      <Header />
 
       {/* Business Detail Section */}
       <section className="business-detail-section">

@@ -5,6 +5,7 @@ const BusinessController = require('../controllers/business.controller');
 router.post('/', BusinessController.createBusiness);
 router.get('/filter', BusinessController.filterBusinesses);
 router.get('/', BusinessController.getAllBusinesses);
+router.get('/rating', BusinessController.getAllBusinessesWithRating);
 router.get('/search', BusinessController.searchBusinesses);
 router.get('/near', BusinessController.findNearestBusinesses);
 router.get('/:id', BusinessController.getBusinessById);

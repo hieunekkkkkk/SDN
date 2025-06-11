@@ -7,7 +7,6 @@ const paymentRoutes = require('./payment.routes');
 const stackRoutes = require('./stack.routes');
 const categoryRoutes = require('./category.routes');
 const feedbackRoutes = require('./feedback.routes');
-
 // const redisRoutes = require('./redisRouter');
 
 // Tập trung các routes
