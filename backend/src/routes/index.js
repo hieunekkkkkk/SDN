@@ -7,6 +7,7 @@ const paymentRoutes = require('./payment.routes');
 const stackRoutes = require('./stack.routes');
 const categoryRoutes = require('./category.routes');
 const feedbackRoutes = require('./feedback.routes');
+const userRoutes = require('./user.routes');
 
 // const redisRoutes = require('./redisRouter');
 
@@ -18,6 +19,7 @@ router.use('/payment', paymentRoutes);
 router.use('/stack', stackRoutes);
 router.use('/category', categoryRoutes);
 router.use('/feedback', feedbackRoutes);
+router.use('/user', userRoutes);
 
 // router.use('/redis', redisRoutes);
 

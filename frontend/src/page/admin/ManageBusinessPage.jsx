@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import HeroSectionAdmin from '../../components/HeroSectionAdmin';
-import '../../css/AdminManagePage.css';
+import '../../css/ManageBusinessPage.css';
 import { FaRegCircleCheck } from "react-icons/fa6";
 import { IoBanSharp } from "react-icons/io5";
 import { toast } from 'react-toastify';
 import Header from '../../components/Header';
 import { motion, AnimatePresence } from 'framer-motion';
 
-function ManageUserPage() {
+function ManageBusinessPage() {
   const [businesses, setBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
@@ -80,9 +80,9 @@ function ManageUserPage() {
       <Header />
       <HeroSectionAdmin message={<>Trang quản lý <br /> doanh nghiệp</>} />
 
-      <div className="manage-container">
-        <div className="manage-table-header">
-          <div className="manage-search-bar">
+      <div className="manage-business-container">
+        <div className="manage-business-table-header">
+          <div className="manage-business-search-bar">
             <input
               type="text"
               placeholder="Tìm theo tên hoặc chủ doanh nghiệp"
@@ -90,7 +90,7 @@ function ManageUserPage() {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <div className="manage-sort-select">
+          <div className="manage-business-sort-select">
             Sắp xếp:&nbsp;
             <select value={sortStatus} onChange={(e) => setSortStatus(e.target.value)}>
               <option value="All">Tất cả</option>
@@ -100,8 +100,9 @@ function ManageUserPage() {
             </select>
           </div>
         </div>
-        <div className='manage-table-container'>
-          <table className='manage-table'>
+
+        <div className='manage-business-table-container'>
+          <table className='manage-business-table'>
             <thead>
               <tr>
                 <th>Tên doanh nghiệp</th>
@@ -112,7 +113,7 @@ function ManageUserPage() {
               </tr>
             </thead>
             <tbody>
-              <AnimatePresence mode="wait">
+              <AnimatePresence>
                 {filteredBusinesses.map((b, i) => (
                   <motion.tr
                     key={b._id}
@@ -125,21 +126,21 @@ function ManageUserPage() {
                     <td>{b.owner_id}</td>
                     <td>{b.business_category_id?.category_name}</td>
                     <td>
-                      <span className={`manage-status ${b.business_active.toLowerCase()}`}>
+                      <span className={`manage-business-status ${b.business_active.toLowerCase()}`}>
                         {b.business_active}
                       </span>
                     </td>
                     <td>
                       {b.business_active === 'inactive' && (
                         <FaRegCircleCheck
-                          className="manage-actions action-check"
+                          className="manage-business-actions action-check"
                           onClick={() => handleActivate(i, b.business_name)}
                           title="Activate business"
                         />
                       )}
                       {b.business_active === 'active' && (
                         <IoBanSharp
-                          className="manage-actions action-ban"
+                          className="manage-business-actions action-ban"
                           onClick={() => handleBan(i, b.business_name)}
                           title="Deactivate business"
                         />
@@ -147,12 +148,12 @@ function ManageUserPage() {
                       {b.business_active === 'pending' && (
                         <>
                           <FaRegCircleCheck
-                            className="manage-actions action-check"
+                            className="manage-business-actions action-check"
                             onClick={() => handleActivate(i, b.business_name)}
                             title="Approve business"
                           />
                           <IoBanSharp
-                            className="manage-actions action-ban"
+                            className="manage-business-actions action-ban"
                             onClick={() => handleBan(i, b.business_name)}
                             title="Reject business"
                           />
@@ -166,7 +167,7 @@ function ManageUserPage() {
           </table>
         </div>
 
-        <div className="manage-pagination">
+        <div className="manage-business-pagination">
           <button className="nav-btn" onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
             &lt;
           </button>
@@ -188,4 +189,4 @@ function ManageUserPage() {
   );
 }
 
-export default ManageUserPage;
+export default ManageBusinessPage;
