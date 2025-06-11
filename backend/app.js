@@ -25,6 +25,5 @@ app.use('/payment', paymentRoutes);
 app.use('/api', router);
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
-app.use('/auth', authRoutes);
 
 module.exports = app;

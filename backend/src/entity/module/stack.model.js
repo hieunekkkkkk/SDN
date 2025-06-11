@@ -6,4 +6,4 @@ const stackSchema = new mongoose.Schema({
   stack_detail: String
 });
 
-module.exports = mongoose.model('Stack', stackSchema, 'stack'); 
+module.exports = mongoose.model('stack', stackSchema);

@@ -1,56 +1,105 @@
 const Product = require('../entity/module/product.model');
-const FeedbackProduct = require('../entity/module/feedback_product.model');
+const mongoose = require('mongoose');
 
 class ProductService {
+    // Create a new product
+    async createProduct(productData) {
+        try {
+            if (productData.business_id) {
+                productData.business_id = new mongoose.Types.ObjectId(productData.business_id);
+            }
+
+            const product = new Product(productData);
+            return await product.save();
+        } catch (error) {
+            throw new Error(`Error creating product: ${error.message}`);
+        }
+    }
+
+    // Get all products with pagination
+    async getAllProducts(page = 1, limit = 10) {
+        try {
+            const skip = (page - 1) * limit;
+            const products = await Product.find()
+                .skip(skip)
+                .limit(limit)
+                .populate('business_id');
+            const total = await Product.countDocuments();
+            return {
+                products,
+                totalPages: Math.ceil(total / limit),
+                currentPage: page,
+                totalItems: total
+            };
+        } catch (error) {
+            throw new Error(`Error fetching products: ${error.message}`);
+        }
+    }
+
+    // Get product by ID
     async getProductById(id) {
-        return await Product.findById(id);
+        try {
+            const product = await Product.findById(id).populate('business_id');
+            if (!product) {
+                throw new Error('Product not found');
+            }
+            return product;
+        } catch (error) {
+            throw new Error(`Error fetching product: ${error.message}`);
+        }
     }
 
-    async getProductsByBusinessId(businessId) {
-        return await Product.find({ business_id: businessId });
+    async getProductsByBusinessId(businessId, page = 1, limit = 10) {
+        try {
+            const skip = (page - 1) * limit;
+            const products = await Product.find({ business_id: businessId })
+                .skip(skip)
+                .limit(limit)
+                .populate('business_id');
+            const total = await Product.countDocuments({ business_id: businessId });
+            return {
+                products,
+                totalPages: Math.ceil(total / limit),
+                currentPage: page,
+                totalItems: total
+            };
+        } catch (error) {
+            throw new Error(`Error fetching products by business ID: ${error.message}`);
+        }
     }
 
-    async createProduct(data) {
-        const product = new Product(data);
-        return await product.save();
+    // Update product
+    async updateProduct(id, updateData) {
+        try {
+            if (updateData.business_id) {
+                updateData.business_id = new mongoose.Types.ObjectId(updateData.business_id);
+            }
+            const product = await Product.findByIdAndUpdate(
+                id,
+                { $set: updateData },
+                { new: true, runValidators: true }
+            ).populate('business_id');
+            if (!product) {
+                throw new Error('Product not found');
+            }
+            return product;
+        } catch (error) {
+            throw new Error(`Error updating product: ${error.message}`);
+        }
     }
 
-    async updateProduct(id, data) {
-        return await Product.findByIdAndUpdate(id, data, { new: true });
-    }
-
+    // Delete product
     async deleteProduct(id) {
-        // Xóa các feedback liên quan
-        await FeedbackProduct.deleteMany({ product_id: id });
-        // Xóa product
-        return await Product.findByIdAndDelete(id);
-    }
-
-    async getProductWithDetails(id) {
-        const product = await Product.findById(id);
-        if (!product) return null;
-
-        const feedbacks = await FeedbackProduct.find({ product_id: id });
-
-        return {
-            ...product.toObject(),
-            feedbacks
-        };
-    }
-
-    async updateProductRating(id) {
-        const feedbacks = await FeedbackProduct.find({ product_id: id });
-        if (feedbacks.length === 0) return null;
-
-        const totalRating = feedbacks.reduce((sum, feedback) => sum + (feedback.rating || 0), 0);
-        const averageRating = totalRating / feedbacks.length;
-
-        return await Product.findByIdAndUpdate(
-            id,
-            { product_rating: averageRating },
-            { new: true }
-        );
+        try {
+            const product = await Product.findByIdAndDelete(id);
+            if (!product) {
+                throw new Error('Product not found');
+            }
+            return { message: 'Product deleted successfully' };
+        } catch (error) {
+            throw new Error(`Error deleting product: ${error.message}`);
+        }
     }
 }
 
-module.exports = new ProductService(); 
+module.exports = new ProductService();
