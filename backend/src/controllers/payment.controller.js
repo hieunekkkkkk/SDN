@@ -116,7 +116,7 @@ class PaymentController {
         }
     }
 
-    async paymentCallback(req,res) => {
+    async paymentCallback(req,res)  {
          try {
         const { orderCode, status } = req.body;
         
@@ -151,6 +151,7 @@ class PaymentController {
             message: "Failed to process payment callback"
         });
     }
+}
 }
 // Export a single instance of the controller
 module.exports = new PaymentController();
