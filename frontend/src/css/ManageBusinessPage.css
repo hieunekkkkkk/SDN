@@ -196,3 +196,7 @@
 .manage-business-table td:nth-child(2) {
   width: 200px;
 }
+.manage-business-table th:nth-child(4),
+.manage-business-table td:nth-child(4) {
+  width: 200px;
+}

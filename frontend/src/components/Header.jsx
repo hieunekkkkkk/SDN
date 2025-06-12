@@ -76,14 +76,14 @@ const Header = () => {
                   onClick={() => navigate('/')}
                 />
               </UserButton.MenuItems>}
-              {role == 'business-owner' && <UserButton.MenuItems>
+              {role == 'owner' && <UserButton.MenuItems>
                 <UserButton.Action
                   label="Xem doanh nghiệp"
                   labelIcon={<FaBuilding />}
                   onClick={() => navigate('/my-business')}
                 />
               </UserButton.MenuItems>}
-              {role == 'user' && <UserButton.MenuItems>
+              {role == 'client' && <UserButton.MenuItems>
                 <UserButton.Action
                   label="Trở thành chủ doanh nghiệp"
                   labelIcon={<FaBuilding />}

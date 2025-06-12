@@ -107,6 +107,11 @@
   color: red;
 }
 
+.manage-user-actions.disable{
+  color: #ccc;
+  font-size: 40px;
+}
+
 .manage-user-pagination {
   display: flex;
   align-items: center;
@@ -161,4 +166,8 @@
 .manage-user-table th:nth-child(2),
 .manage-user-table td:nth-child(2) {
   width: 300px;
+}
+
+.manage-user-table-role{
+  text-transform: capitalize;
 }

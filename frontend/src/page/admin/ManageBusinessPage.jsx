@@ -138,7 +138,7 @@ function ManageBusinessPage() {
                       <span className={`manage-business-status ${b.business_active.toLowerCase()}`}>
                         {b.business_active == 'active' && <p>Hoạt động</p>}
                         {b.business_active == 'pending' && <p>Chờ kiểm duyệt</p>}
-                        {b.business_active == 'inactive' && <p>Không hoạt động</p>}
+                        {b.business_active == 'inactive' && <p>Bị khóa</p>}
                       </span>
                     </td>
                     <td className='manage-business-actions-icons'>

@@ -13,14 +13,22 @@ const clerk = new Clerk({
 router.post('/', authMiddleware, async (req, res) => {
     try {
         const decoded = req.user;
-        const user = await clerk.users.getUser(decoded.sub);
-
+        let user = await clerk.users.getUser(decoded.sub);
+        if (!user.publicMetadata?.role) {
+            await clerk.users.updateUser(decoded.sub, {
+                publicMetadata: {
+                    ...user.publicMetadata,
+                    role: 'client',
+                },
+            });
+            user = await clerk.users.getUser(decoded.sub);
+        }
         res.json({
             accessToken: req.headers.authorization.split(' ')[1],
             claims: {
                 userId: decoded.sub,
                 email: decoded.email,
-                role: user.publicMetadata.role || decoded.role || 'user',
+                role: user.publicMetadata.role,
                 username: user.username || '',
                 image: user.imageUrl || ''
             }
@@ -30,7 +38,5 @@ router.post('/', authMiddleware, async (req, res) => {
         res.status(500).json({ error: 'Authentication failed' });
     }
 });
-
-
 
 module.exports = router;

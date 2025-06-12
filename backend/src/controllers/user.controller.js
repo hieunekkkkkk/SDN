@@ -31,6 +31,25 @@ class UserController {
       res.status(400).json({ error: err.message });
     }
   }
+
+  async lockUser(req, res) {
+    try {
+      const result = await userService.lockUser(req.params.userId);
+      res.status(200).json({ success: true, message: 'User locked', ...result });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  async unlockUser(req, res) {
+    try {
+      const result = await userService.unlockUser(req.params.userId);
+      res.status(200).json({ success: true, message: 'User unlocked', ...result });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
 }
 
 module.exports = new UserController();
