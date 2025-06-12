@@ -16,7 +16,7 @@ class UserService {
         id: user.id,
         email: user.emailAddresses[0]?.emailAddress,
         fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-        role: user.publicMetadata?.role || 'client', // Prefer publicMetadata here
+        role: user.publicMetadata?.role || '',
         imageUrl: user.imageUrl,
         publicMetadata: user.publicMetadata || {},
         privateMetadata: user.privateMetadata || {}

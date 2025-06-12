@@ -79,12 +79,32 @@
 .manage-user-status.active {
   background-color: #00d100;
 }
+
 .manage-user-status.inactive {
   background-color: #d10000;
 }
-.manage-user-status.pending {
-  background-color: #f9e70b;
-  color: #000;
+
+.manage-user-actions {
+  font-size: 37px;
+  transition: all 0.2s;
+  padding: 0 7px;
+}
+
+.manage-user-actions-icons{
+  display: flex;
+  align-items: center;
+}
+
+.manage-user-actions.action-inactive {
+  font-size: 40px;
+}
+
+.manage-user-actions.action-active:hover {
+  color: green;
+}
+
+.manage-user-actions.action-inactive:hover {
+  color: red;
 }
 
 .manage-user-pagination {
