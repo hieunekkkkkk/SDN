@@ -4,11 +4,16 @@ import HeroSectionAdmin from '../../components/HeroSectionAdmin';
 import '../../css/ManageBusinessPage.css';
 import { FaRegCircleCheck } from "react-icons/fa6";
 import { IoBanSharp } from "react-icons/io5";
+import { RiLoginCircleLine } from "react-icons/ri";
 import { toast } from 'react-toastify';
 import Header from '../../components/Header';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+
 
 function ManageBusinessPage() {
+  const navigate = useNavigate();
+
   const [businesses, setBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
@@ -47,7 +52,7 @@ function ManageBusinessPage() {
       setBusinesses(updated);
 
       toast.success(
-        `${newStatus === 'active' ? 'Activated' : 'Set to inactive'} business "${name}" successfully!`
+        `${newStatus === 'active' ? 'Kích hoạt' : 'Vô hiệu hóa'} doanh nghiệp "${name}" thành công!`
       );
     } catch (err) {
       console.error('PUT error:', err.response?.data || err.message);
@@ -61,6 +66,10 @@ function ManageBusinessPage() {
 
   const handleActivate = (index, name) => {
     updateBusinessStatus(index, name, 'active');
+  };
+
+  const handleEnterBusiness = (index, id) => {
+    navigate(`/business/${id}`)
   };
 
   const filteredBusinesses = businesses.filter((b) =>
@@ -113,7 +122,7 @@ function ManageBusinessPage() {
               </tr>
             </thead>
             <tbody>
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 {filteredBusinesses.map((b, i) => (
                   <motion.tr
                     key={b._id}
@@ -127,22 +136,24 @@ function ManageBusinessPage() {
                     <td>{b.business_category_id?.category_name}</td>
                     <td>
                       <span className={`manage-business-status ${b.business_active.toLowerCase()}`}>
-                        {b.business_active}
+                        {b.business_active == 'active' && <p>Hoạt động</p>}
+                        {b.business_active == 'pending' && <p>Chờ kiểm duyệt</p>}
+                        {b.business_active == 'inactive' && <p>Không hoạt động</p>}
                       </span>
                     </td>
-                    <td>
+                    <td className='manage-business-actions-icons'>
                       {b.business_active === 'inactive' && (
                         <FaRegCircleCheck
                           className="manage-business-actions action-check"
                           onClick={() => handleActivate(i, b.business_name)}
-                          title="Activate business"
+                          title="Kích hoạt doanh nghiệp"
                         />
                       )}
                       {b.business_active === 'active' && (
                         <IoBanSharp
                           className="manage-business-actions action-ban"
                           onClick={() => handleBan(i, b.business_name)}
-                          title="Deactivate business"
+                          title="Vô hiệu hóa doanh nghiệp"
                         />
                       )}
                       {b.business_active === 'pending' && (
@@ -150,15 +161,20 @@ function ManageBusinessPage() {
                           <FaRegCircleCheck
                             className="manage-business-actions action-check"
                             onClick={() => handleActivate(i, b.business_name)}
-                            title="Approve business"
+                            title="Chấp nhận doanh nghiệp"
                           />
                           <IoBanSharp
                             className="manage-business-actions action-ban"
                             onClick={() => handleBan(i, b.business_name)}
-                            title="Reject business"
+                            title="Từ chối doanh nghiệp"
                           />
                         </>
                       )}
+                      <RiLoginCircleLine 
+                        className="manage-business-actions enter"
+                        onClick={() => handleEnterBusiness(i, b._id)}
+                        title="Truy cập doanh nghiệp"
+                      />
                     </td>
                   </motion.tr>
                 ))}

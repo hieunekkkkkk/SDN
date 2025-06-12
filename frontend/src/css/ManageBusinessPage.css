@@ -122,14 +122,24 @@
   transition: all 0.2s;
   padding: 0 7px;
 }
+.manage-business-actions-icons{
+  display: flex;
+  align-items: center;
+}
 .manage-business-actions.action-ban {
-  font-size: 39px;
+  font-size: 40px;
+}
+.manage-business-actions.enter{
+  font-size: 42px;
 }
 .manage-business-actions.action-check:hover {
   color: green;
 }
 .manage-business-actions.action-ban:hover {
   color: red;
+}
+.manage-business-actions.enter:hover{
+  color: #ff6b35;
 }
 .manage-business-pagination {
   display: flex;

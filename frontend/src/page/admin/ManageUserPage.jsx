@@ -6,6 +6,8 @@ import '../../css/ManageUserPage.css';
 import { toast } from 'react-toastify';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
+import { FaRegCircleCheck } from "react-icons/fa6";
+import { IoBanSharp } from "react-icons/io5";
 
 function ManageUserPage() {
   const [users, setUsers] = useState([]);
@@ -43,6 +45,27 @@ function ManageUserPage() {
     }
   };
 
+  const updateUserLock = async (userId, lock) => {
+    try {
+      const currentUser = users.find(user => user.id === userId);
+      const currentMetadata = currentUser?.privateMetadata || {};
+
+      const updatedMetadata = {
+        ...currentMetadata,
+        locked: lock
+      };
+
+      await axios.put(`${import.meta.env.VITE_BE_URL}/api/user/${userId}`, {
+        privateMetadata: updatedMetadata
+      });
+
+      toast.success(lock ? 'Đã khóa người dùng' : 'Đã mở khóa người dùng');
+      fetchUsers(currentPage);
+    } catch (error) {
+      toast.error(lock ? 'Không thể khóa người dùng' : 'Không thể mở khóa người dùng');
+    }
+  };
+
   return (
     <>
       <Header />
@@ -69,10 +92,12 @@ function ManageUserPage() {
                 <th>Email</th>
                 <th>ID</th>
                 <th>Vai trò</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
               </tr>
             </thead>
             <tbody>
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 {filteredUsers.length > 0 ? (
                   filteredUsers.map((user) => (
                     <motion.tr
@@ -93,11 +118,26 @@ function ManageUserPage() {
                       <td>{user.email}</td>
                       <td>{user.id}</td>
                       <td>{user.publicMetadata.role}</td>
+                      <td>
+                        {user.privateMetadata.locked ? (
+                          <span className="manage-user-status inactive">Bị khóa</span>
+                        ) : (
+                          <span className="manage-user-status active">Hoạt động</span>
+                        )}
+                      </td>
+                      <td>
+                        {user.privateMetadata.locked ? (
+                          <FaRegCircleCheck className="manage-user-actions action-active" onClick={() => updateUserLock(user.id, false)}></FaRegCircleCheck>
+                        ) : (
+                          <IoBanSharp className="manage-user-actions action-inactive" onClick={() => updateUserLock(user.id, true)}></IoBanSharp>
+                        )}
+                      </td>
+
                     </motion.tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: '20px' }}>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '20px' }}>
                       Không tồn tại người dùng.
                     </td>
                   </tr>
