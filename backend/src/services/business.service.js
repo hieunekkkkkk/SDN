@@ -43,6 +43,28 @@ class BusinessService {
         }
     }
 
+    async getAllBusinessesWithRating(page = 1, limit = 10) {
+        try {
+            const skip = (page - 1) * limit;
+            const businesses = await Business.find()
+                .skip(skip)
+                .limit(limit)
+                .populate('business_category_id')
+                .populate('business_stack_id')
+                .select('-__v') // Loại bỏ version key
+                .sort({ business_rating: -1 }); // Sắp xếp theo rating cao nhất
+            const total = await Business.countDocuments();
+            return {
+                businesses,
+                totalPages: Math.ceil(total / limit),
+                currentPage: page,
+                totalItems: total
+            };
+        } catch (error) {
+            throw new Error(`Error fetching businesses with rating: ${error.message}`);
+        }
+    }
+
     // Get business by ID
     async getBusinessById(id) {
         try {
