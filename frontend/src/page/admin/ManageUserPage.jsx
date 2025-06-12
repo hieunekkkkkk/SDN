@@ -92,7 +92,7 @@ function ManageUserPage() {
                       <td>{user.fullName}</td>
                       <td>{user.email}</td>
                       <td>{user.id}</td>
-                      <td>{user.role}</td>
+                      <td>{user.publicMetadata.role}</td>
                     </motion.tr>
                   ))
                 ) : (
