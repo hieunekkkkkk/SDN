@@ -355,7 +355,7 @@ const BusinessPage = () => {
               <button className="expand-btn" onClick={toggleExpand}>
                 {isExpanded ? 'Thu gọn' : 'Mở rộng'}
               </button>
-              <Link to="/business-registration" className="add-product-btn">
+              <Link to="/product-registration" className="add-product-btn">
                 Thêm sản phẩm
               </Link>
             </div>
