@@ -3,7 +3,7 @@
   margin: 0 auto;
   font-family: Arial, sans-serif;
   padding: 20px;
-  min-height: 60vh;
+  min-height: 65vh;
 }
 
 .manage-business-table-header {
@@ -125,6 +125,7 @@
 .manage-business-actions-icons{
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 .manage-business-actions.action-ban {
   font-size: 40px;
@@ -199,4 +200,8 @@
 .manage-business-table th:nth-child(4),
 .manage-business-table td:nth-child(4) {
   width: 200px;
+}
+.manage-business-table th:last-child,
+.manage-business-table td:last-child {
+  text-align: center;
 }

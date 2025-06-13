@@ -88,7 +88,6 @@ function ManageUserPage() {
                 <th>Ảnh</th>
                 <th>Tên người dùng</th>
                 <th>Email</th>
-                <th>ID</th>
                 <th>Vai trò</th>
                 <th>Trạng thái</th>
                 <th>Hành động</th>
@@ -114,7 +113,6 @@ function ManageUserPage() {
                       </td>
                       <td>{user.fullName}</td>
                       <td>{user.email}</td>
-                      <td>{user.id}</td>
                       <td className='manage-user-table-role'>{user.publicMetadata.role}</td>
                       <td>
                         {user.publicMetadata.locked ? (
@@ -167,8 +165,6 @@ function ManageUserPage() {
           </button>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }
