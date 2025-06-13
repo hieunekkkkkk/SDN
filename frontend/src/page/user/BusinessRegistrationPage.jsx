@@ -22,6 +22,7 @@ const BusinessRegistrationPage = () => {
 
   return (
     <>
+      <Header />
       <main className="business-registration-container">
         <div className="business-intro-card">
           <h2 className="business-intro-title">
