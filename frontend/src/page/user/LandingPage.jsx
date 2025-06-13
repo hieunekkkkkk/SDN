@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../css/LandingPage.css';
-import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import LoadingScreen from '../../components/LoadingScreen';
 import Header from '../../components/Header';
@@ -11,10 +10,11 @@ function LandingPage() {
   const [businesses, setBusinesses] = useState([]);
   const [bestBusinesses, setBestBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [feedbacks, setFeedbacks] = useState([]); // ✨ Thêm state cho feedbacks
+  const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [currentFeedbackPage, setCurrentFeedbackPage] = useState(0);
   const navigate = useNavigate();
 
   // Memoize filtered businesses để tránh re-calculation
@@ -41,7 +41,7 @@ function LandingPage() {
         axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=20`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating?page=1&limit=8`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`) // ✨ Thêm API call cho feedbacks
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`)
       ]);
 
       const [businessesResult, bestBusinessesResult, categoriesResult, feedbacksResult] = results;
@@ -61,7 +61,6 @@ function LandingPage() {
         setCategories(data?.categories || data || []);
       }
 
-      // ✨ Xử lý feedbacks data
       if (feedbacksResult.status === 'fulfilled') {
         const data = feedbacksResult.value.data;
         setFeedbacks(data?.data || data || []);
@@ -78,7 +77,7 @@ function LandingPage() {
       setBusinesses([]);
       setBestBusinesses([]);
       setCategories([]);
-      setFeedbacks([]); // ✨ Reset feedbacks khi có lỗi
+      setFeedbacks([]);
     } finally {
       setLoading(false);
     }
@@ -120,21 +119,37 @@ function LandingPage() {
 
   // ✨ Process feedbacks từ API backend
   const processedTestimonials = useMemo(() => {
-    // Chỉ lấy và xử lý feedbacks từ API, không có fallback
     return feedbacks
       .filter(feedback => feedback.feedback_type === 'business' && feedback.feedback_comment)
-      .slice(0, 3) // Chỉ lấy 3 feedback đầu tiên
+      .slice(0, 10) // Giới hạn 10 feedback
       .map(feedback => ({
         id: feedback._id,
-        rating: Math.min(5, Math.max(1, Math.floor(Math.random() * 2) + 4)), // Random rating 4-5 sao
+        rating: Math.min(5, Math.max(1, Math.floor(Math.random() * 2) + 4)),
         text: feedback.feedback_comment,
         author: {
           name: feedback.user_id || "Người dùng ẩn danh",
           role: "Khách hàng",
-          avatar: "/1.png" // Default avatar
+          avatar: "/1.png"
         }
       }));
   }, [feedbacks]);
+
+  const handlePrevFeedback = useCallback(() => {
+    setCurrentFeedbackPage(prev => 
+      prev === 0 ? Math.ceil(processedTestimonials.length / 3) - 1 : prev - 1
+    );
+  }, [processedTestimonials.length]);
+
+  const handleNextFeedback = useCallback(() => {
+    setCurrentFeedbackPage(prev => 
+      prev === Math.ceil(processedTestimonials.length / 3) - 1 ? 0 : prev + 1
+    );
+  }, [processedTestimonials.length]);
+
+  const visibleTestimonials = useMemo(() => {
+    const startIndex = currentFeedbackPage * 3;
+    return processedTestimonials.slice(startIndex, startIndex + 3);
+  }, [processedTestimonials, currentFeedbackPage]);
 
   if (loading) {
     return <LoadingScreen />;
@@ -153,8 +168,7 @@ function LandingPage() {
 
   return (
     <>
-    <Header/>
-      <HeroSection />
+      <Header />
       
       {/* Hero Section */}
       <section className="hero-section-landing">
@@ -249,30 +263,44 @@ function LandingPage() {
           {processedTestimonials.length > 0 && (
             <section className="feedback-section">
               <h2>Phản hồi từ người dùng</h2>
-              
-              <div className="testimonials-grid">
-                {processedTestimonials.map((testimonial) => (
-                  <TestimonialCard
-                    key={testimonial.id}
-                    rating={testimonial.rating}
-                    text={testimonial.text}
-                    author={testimonial.author}
-                  />
-                ))}
+
+              <div className="testimonials-container">
+                <button 
+                  className="feedback-nav-btn prev-btn"
+                  onClick={handlePrevFeedback}
+                  aria-label="Xem phản hồi trước"
+                >
+                  ←
+                </button>
+
+                <div className="testimonials-grid">
+                  {visibleTestimonials.map((testimonial) => (
+                    <TestimonialCard
+                      key={testimonial.id}
+                      rating={testimonial.rating}
+                      text={testimonial.text}
+                      author={testimonial.author}
+                    />
+                  ))}
+                </div>
+
+                <button 
+                  className="feedback-nav-btn next-btn"
+                  onClick={handleNextFeedback}
+                  aria-label="Xem phản hồi tiếp theo"
+                >
+                  →
+                </button>
               </div>
 
               <div className="feedback-stats">
                 <div className="feedback-stat">
-                  <h3>4.9</h3>
-                  <p>1000+ reviews on TripAdvisor. Certificate of Excellence</p>
+                  <h3>4.8/5</h3>
+                  <p>Điểm đánh giá trung bình từ hơn 1000 người dùng</p>
                 </div>
                 <div className="feedback-stat">
-                  <h3>16M</h3>
-                  <p>Happy Customers</p>
-                </div>
-                <div className="feedback-stat">
-                  <h3>Award winner</h3>
-                  <p>G2's 2021 Best Software Awards</p>
+                  <h3>95%</h3>
+                  <p>Người dùng hài lòng với dịch vụ</p>
                 </div>
               </div>
             </section>
@@ -436,26 +464,30 @@ const TestimonialCard = React.memo(({ rating, text, author }) => (
 
 // Stats Section
 const StatsSection = React.memo(({ businessesCount, categoriesCount }) => (
-  <div className="stats-section-new">
-    <div className="stats-grid-new">
-      <div className="stat-item-new">
-        <h3>932M</h3>
-        <p>Total Donations</p>
+  <section className="stats-section">
+    <div className="stats-grid">
+      <div className="stat-item">
+        <div className="stat-icon">🏢</div>
+        <h3>{businessesCount}+</h3>
+        <p>Doanh nghiệp</p>
       </div>
-      <div className="stat-item-new">
-        <h3>24M</h3>
-        <p>Campaigns Closed</p>
+      <div className="stat-item">
+        <div className="stat-icon">📍</div>
+        <h3>{categoriesCount}+</h3>
+        <p>Danh mục</p>
       </div>
-      <div className="stat-item-new">
-        <h3>10M</h3>
-        <p>Happy People</p>
+      <div className="stat-item">
+        <div className="stat-icon">👥</div>
+        <h3>1000+</h3>
+        <p>Người dùng</p>
       </div>
-      <div className="stat-item-new">
-        <h3>65M</h3>
-        <p>Our Volunteers</p>
+      <div className="stat-item">
+        <div className="stat-icon">⭐</div>
+        <h3>4.8</h3>
+        <p>Đánh giá trung bình</p>
       </div>
     </div>
-  </div>
+  </section>
 ));
 
 export default LandingPage;
