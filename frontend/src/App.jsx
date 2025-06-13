@@ -36,7 +36,10 @@ const AppRoutes = () => {
           <Route path="/LandingPage" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
-          <Route path="/business" element={<BusinessPage />} />
+          
+          {/* Business detail route with ID parameter */}
+          <Route path="/business/:id" element={<BusinessPage />} />
+          
           <Route path="/user-profile/*" element={<UserProfilePage />} />
           <Route path="/auth-callback" element={<><SignedIn><AuthCallback/></SignedIn><SignedOut><LoginPage/></SignedOut></>} />
           <Route path="/personalized" element={<PersonalizedPage />} />
@@ -50,6 +53,8 @@ const AppRoutes = () => {
             path="/business-registration"
             element={<BusinessRegistrationPage />}
           />
+          
+          {/* Admin Routes */}
           <Route
             path="/admin/users"
             element={
@@ -74,13 +79,10 @@ const AppRoutes = () => {
               </AdminRoute>
             }
           />
+          
           <Route
             path="/product-registration"
             element={<ProductRegistrationPage />}
-          />
-          <Route
-            path="/business-registration"
-            element={<BusinessRegistrationPage />}
           />
         </Route>
       </Routes>
@@ -91,7 +93,18 @@ const AppRoutes = () => {
 function App() {
   return (
     <BrowserRouter>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer 
+        position="top-right" 
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <AppRoutes />
     </BrowserRouter>
   );

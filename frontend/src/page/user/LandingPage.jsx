@@ -15,6 +15,7 @@ function LandingPage() {
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [currentFeedbackPage, setCurrentFeedbackPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   // Memoize filtered businesses để tránh re-calculation
@@ -32,13 +33,21 @@ function LandingPage() {
     loadInitialData();
   }, []);
 
+  // Debug log để kiểm tra dữ liệu categories
+  useEffect(() => {
+    console.log('Categories loaded:', categories);
+    console.log('Businesses loaded:', businesses.length);
+    console.log('Best businesses loaded:', bestBusinesses.length);
+  }, [categories, businesses, bestBusinesses]);
+
   const loadInitialData = async () => {
     try {
       setLoading(true);
       setError(null);
       
+      // Sử dụng Promise.allSettled để không bị fail khi một API lỗi
       const results = await Promise.allSettled([
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=20`),
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=30`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating?page=1&limit=8`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`)
@@ -46,26 +55,39 @@ function LandingPage() {
 
       const [businessesResult, bestBusinessesResult, categoriesResult, feedbacksResult] = results;
 
+      // Xử lý kết quả businesses
       if (businessesResult.status === 'fulfilled') {
         const data = businessesResult.value.data;
         setBusinesses(data?.businesses || data || []);
+      } else {
+        console.warn('Failed to load businesses:', businessesResult.reason);
       }
 
+      // Xử lý kết quả best businesses
       if (bestBusinessesResult.status === 'fulfilled') {
         const data = bestBusinessesResult.value.data;
         setBestBusinesses(data?.businesses || data || []);
+      } else {
+        console.warn('Failed to load best businesses:', bestBusinessesResult.reason);
       }
 
+      // Xử lý kết quả categories
       if (categoriesResult.status === 'fulfilled') {
         const data = categoriesResult.value.data;
         setCategories(data?.categories || data || []);
+      } else {
+        console.warn('Failed to load categories:', categoriesResult.reason);
       }
 
+      // Xử lý kết quả feedbacks
       if (feedbacksResult.status === 'fulfilled') {
         const data = feedbacksResult.value.data;
         setFeedbacks(data?.data || data || []);
+      } else {
+        console.warn('Failed to load feedbacks:', feedbacksResult.reason);
       }
 
+      // Chỉ báo lỗi nếu tất cả API đều fail
       const allFailed = results.every(result => result.status === 'rejected');
       if (allFailed) {
         throw new Error('Không thể tải dữ liệu từ server');
@@ -74,6 +96,7 @@ function LandingPage() {
     } catch (error) {
       console.error('Error loading data:', error);
       setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
+      // Đặt giá trị mặc định để trang vẫn hiển thị được
       setBusinesses([]);
       setBestBusinesses([]);
       setCategories([]);
@@ -88,11 +111,23 @@ function LandingPage() {
   }, []);
 
   const handleSeeMore = useCallback((categoryName, categoryId) => {
+    console.log('handleSeeMore called with:', { categoryName, categoryId });
+    
+    if (!categoryName || !categoryId) {
+      console.error('Missing category data:', { categoryName, categoryId });
+      return;
+    }
+
     const slug = categoryName
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .replace(/\s+/g, '-');
+
+    console.log('Navigating to:', `/discover/${slug}`, 'with state:', {
+      category_id: categoryId,
+      category_name: categoryName,
+    });
 
     navigate(`/discover/${slug}`, {
       state: {
@@ -106,6 +141,16 @@ function LandingPage() {
     navigate(`/business/${businessId}`);
   }, [navigate]);
 
+  const handleSearch = useCallback((e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      // Tìm kiếm trong businesses hiện tại hoặc chuyển đến trang discover với query
+      navigate('/discover', { 
+        state: { searchQuery: searchQuery.trim() }
+      });
+    }
+  }, [searchQuery, navigate]);
+
   // Helper function để convert icon name thành emoji đơn giản
   const getCategoryIcon = (iconName, categoryName) => {
     // Dựa vào icon name hoặc category name để return emoji
@@ -117,11 +162,11 @@ function LandingPage() {
     return '📍';
   };
 
-  // ✨ Process feedbacks từ API backend
+  // ✨ Process feedbacks từ API backend với giới hạn 10 feedback
   const processedTestimonials = useMemo(() => {
     return feedbacks
       .filter(feedback => feedback.feedback_type === 'business' && feedback.feedback_comment)
-      .slice(0, 10) // Giới hạn 10 feedback
+      .slice(0, 10) // Giới hạn tối đa 10 feedback
       .map(feedback => ({
         id: feedback._id,
         rating: Math.min(5, Math.max(1, Math.floor(Math.random() * 2) + 4)),
@@ -135,14 +180,16 @@ function LandingPage() {
   }, [feedbacks]);
 
   const handlePrevFeedback = useCallback(() => {
+    const totalPages = Math.ceil(processedTestimonials.length / 3);
     setCurrentFeedbackPage(prev => 
-      prev === 0 ? Math.ceil(processedTestimonials.length / 3) - 1 : prev - 1
+      prev === 0 ? totalPages - 1 : prev - 1
     );
   }, [processedTestimonials.length]);
 
   const handleNextFeedback = useCallback(() => {
+    const totalPages = Math.ceil(processedTestimonials.length / 3);
     setCurrentFeedbackPage(prev => 
-      prev === Math.ceil(processedTestimonials.length / 3) - 1 ? 0 : prev + 1
+      prev === totalPages - 1 ? 0 : prev + 1
     );
   }, [processedTestimonials.length]);
 
@@ -150,6 +197,9 @@ function LandingPage() {
     const startIndex = currentFeedbackPage * 3;
     return processedTestimonials.slice(startIndex, startIndex + 3);
   }, [processedTestimonials, currentFeedbackPage]);
+
+  // Tính toán có hiển thị navigation buttons hay không
+  const showFeedbackNav = processedTestimonials.length > 3;
 
   if (loading) {
     return <LoadingScreen />;
@@ -183,14 +233,16 @@ function LandingPage() {
           </div>
 
           <div className="search-form">
-            <div className="search-box">
+            <form className="search-box" onSubmit={handleSearch}>
               <input
                 type="text"
                 placeholder="Tìm kiếm địa điểm"
                 className="search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <button className="search-btn">Tìm kiếm</button>
-            </div>
+              <button type="submit" className="search-btn">Tìm kiếm</button>
+            </form>
           </div>
 
           <div className="category-pills">
@@ -222,7 +274,7 @@ function LandingPage() {
         <div className="container">
           {/* Best Places Section */}
           <section className="best-places-section">
-            <h2>Best of Localink</h2>
+            <h2>Best of LocalLink</h2>
             
             <div className="places-grid-new">
               {filteredBusinesses.slice(0, 8).map((business) => (
@@ -238,15 +290,26 @@ function LandingPage() {
           {/* Services Grid */}
           <section className="services-section-new">
             <div className="services-grid-new">
-              {categories.slice(0, 3).map((category, index) => (
-                <ServiceCard 
-                  key={category._id} 
-                  category={category} 
-                  businesses={businesses}
-                  onSeeMore={handleSeeMore}
-                  index={index}
-                />
-              ))}
+              {categories && categories.length > 0 ? (
+                categories.slice(0, 3).map((category, index) => (
+                  <ServiceCard 
+                    key={category._id} 
+                    category={category} 
+                    businesses={businesses}
+                    onSeeMore={handleSeeMore}
+                    index={index}
+                  />
+                ))
+              ) : (
+                <div style={{ 
+                  gridColumn: '1 / -1', 
+                  textAlign: 'center', 
+                  padding: '2rem',
+                  color: '#666' 
+                }}>
+                  <p>Đang tải danh mục...</p>
+                </div>
+              )}
             </div>
           </section>
 
@@ -257,21 +320,24 @@ function LandingPage() {
           <StatsSection
             businessesCount={businesses.length}
             categoriesCount={categories.length}
+            feedbacksCount={feedbacks.length}
           />
 
-          {/* ✨ Feedback Section - Thêm phần feedback từ API */}
+          {/* ✨ Feedback Section - Hiển thị 3 feedback một lần với navigation */}
           {processedTestimonials.length > 0 && (
             <section className="feedback-section">
               <h2>Phản hồi từ người dùng</h2>
 
               <div className="testimonials-container">
-                <button 
-                  className="feedback-nav-btn prev-btn"
-                  onClick={handlePrevFeedback}
-                  aria-label="Xem phản hồi trước"
-                >
-                  ←
-                </button>
+                {showFeedbackNav && (
+                  <button 
+                    className="feedback-nav-btn prev-btn"
+                    onClick={handlePrevFeedback}
+                    aria-label="Xem phản hồi trước"
+                  >
+                    ←
+                  </button>
+                )}
 
                 <div className="testimonials-grid">
                   {visibleTestimonials.map((testimonial) => (
@@ -284,23 +350,29 @@ function LandingPage() {
                   ))}
                 </div>
 
-                <button 
-                  className="feedback-nav-btn next-btn"
-                  onClick={handleNextFeedback}
-                  aria-label="Xem phản hồi tiếp theo"
-                >
-                  →
-                </button>
+                {showFeedbackNav && (
+                  <button 
+                    className="feedback-nav-btn next-btn"
+                    onClick={handleNextFeedback}
+                    aria-label="Xem phản hồi tiếp theo"
+                  >
+                    →
+                  </button>
+                )}
               </div>
 
               <div className="feedback-stats">
                 <div className="feedback-stat">
                   <h3>4.8/5</h3>
-                  <p>Điểm đánh giá trung bình từ hơn 1000 người dùng</p>
+                  <p>Điểm đánh giá trung bình từ hơn {feedbacks.length} người dùng</p>
                 </div>
                 <div className="feedback-stat">
                   <h3>95%</h3>
                   <p>Người dùng hài lòng với dịch vụ</p>
+                </div>
+                <div className="feedback-stat">
+                  <h3>{businesses.length}+</h3>
+                  <p>Doanh nghiệp đã tham gia</p>
                 </div>
               </div>
             </section>
@@ -371,17 +443,29 @@ const ServiceCard = React.memo(({ category, businesses, onSeeMore, index }) => {
     'linear-gradient(135deg, rgba(52,168,83,0.8) 0%, rgba(52,168,83,0.6) 100%)'
   ];
 
-  const handleSeeMore = useCallback(() => {
+  const handleSeeMore = useCallback((e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Navigating to category:', category.category_name, 'ID:', category._id);
+    onSeeMore(category.category_name, category._id);
+  }, [category.category_name, category._id, onSeeMore]);
+
+  const handleCardClick = useCallback((e) => {
+    e.preventDefault();
+    console.log('Card clicked - Category:', category.category_name, 'ID:', category._id);
     onSeeMore(category.category_name, category._id);
   }, [category.category_name, category._id, onSeeMore]);
 
   return (
-    <div className="service-card-new" onClick={handleSeeMore}>
+    <div className="service-card-new" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
       <div className="service-background">
         <img 
           src={backgroundImages[index] || '/1.png'} 
           alt={category.category_name}
           loading="lazy"
+          onError={(e) => {
+            e.target.src = '/1.png';
+          }}
         />
         <div 
           className="service-gradient" 
@@ -391,7 +475,7 @@ const ServiceCard = React.memo(({ category, businesses, onSeeMore, index }) => {
       <div className="service-content-new">
         <h3>{category.category_name}</h3>
         <p>{categoryBusinesses.length} địa điểm</p>
-        <button className="service-btn-new">
+        <button className="service-btn-new" onClick={handleSeeMore}>
           Khám phá →
         </button>
       </div>
@@ -404,33 +488,33 @@ const WhyChooseSection = React.memo(() => (
   <section className="why-choose-section-new">
     <div className="why-choose-content-new">
       <div className="why-choose-left-new">
-        <h2>Why choose Local</h2>
+        <h2>Tại sao chọn LocalLink</h2>
         <div className="features-list-new">
           <div className="feature-item-new">
             <div className="feature-icon-new">📍</div>
             <div className="feature-content-new">
               <h4>Vị trí hoàn hảo</h4>
-              <p>Tìm kiếm chính xác các địa điểm theo nhu cầu của bạn</p>
+              <p>Tìm kiếm chính xác các địa điểm theo nhu cầu và vị trí của bạn với công nghệ GPS hiện đại</p>
             </div>
           </div>
           <div className="feature-item-new">
             <div className="feature-icon-new">🔥</div>
             <div className="feature-content-new">
               <h4>Thông tin đầy đủ</h4>
-              <p>Cập nhật liên tục thông tin mới nhất về dịch vụ</p>
+              <p>Cập nhật liên tục thông tin mới nhất về dịch vụ, giá cả, giờ mở cửa và đánh giá từ người dùng</p>
             </div>
           </div>
           <div className="feature-item-new">
             <div className="feature-icon-new">⭐</div>
             <div className="feature-content-new">
               <h4>Đánh giá tin cậy</h4>
-              <p>Hệ thống đánh giá từ người dùng thực tế</p>
+              <p>Hệ thống đánh giá minh bạch từ người dùng thực tế giúp bạn đưa ra quyết định đúng đắn</p>
             </div>
           </div>
         </div>
       </div>
       <div className="why-choose-right-new">
-        <img src="/1.png" alt="Why choose us" loading="lazy" />
+        <img src="/1.png" alt="Tại sao chọn chúng tôi" loading="lazy" />
       </div>
     </div>
   </section>
@@ -463,23 +547,23 @@ const TestimonialCard = React.memo(({ rating, text, author }) => (
 ));
 
 // Stats Section
-const StatsSection = React.memo(({ businessesCount, categoriesCount }) => (
+const StatsSection = React.memo(({ businessesCount, categoriesCount, feedbacksCount }) => (
   <section className="stats-section">
     <div className="stats-grid">
       <div className="stat-item">
         <div className="stat-icon">🏢</div>
         <h3>{businessesCount}+</h3>
-        <p>Doanh nghiệp</p>
+        <p>Doanh nghiệp đã tham gia</p>
       </div>
       <div className="stat-item">
         <div className="stat-icon">📍</div>
         <h3>{categoriesCount}+</h3>
-        <p>Danh mục</p>
+        <p>Danh mục đa dạng</p>
       </div>
       <div className="stat-item">
         <div className="stat-icon">👥</div>
         <h3>1000+</h3>
-        <p>Người dùng</p>
+        <p>Người dùng tin tưởng</p>
       </div>
       <div className="stat-item">
         <div className="stat-icon">⭐</div>
