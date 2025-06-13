@@ -1,12 +1,35 @@
 const paymentService = require('../services/payment.service');
+const payOS = require("../utils/payos");
+const Stack = require('../entity/module/stack.model');
+const Payment = require('../entity/module/payment.model');
 
 class PaymentController {
     async createPayment(req, res) {
         try {
-            const payment = await paymentService.createPayment(req.body);
-            res.status(201).json({ message: 'Payment created successfully', data: payment });
+          const { stack_id } = req.body;
+          const user_id = req.user?.id || 'demo-user';
+    
+          const result = await paymentService.createPayment(stack_id, user_id);
+          res.status(200).json(result);
         } catch (error) {
-            res.status(400).json({ message: error.message });
+          console.error('Create Payment Error:', error);
+          res.status(500).json({ error: 1, message: error.message });
+        }
+    }
+
+    async handlePaymentCallback(req, res) {
+        try {
+            const callbackData = req.body;
+            console.log('Received payment callback:', callbackData);
+            
+            const result = await paymentService.handlePaymentCallback(callbackData);
+            res.status(200).json(result);
+        } catch (error) {
+            console.error('Payment callback error:', error);
+            res.status(500).json({ 
+                error: 1, 
+                message: error.message || 'Failed to process payment callback'
+            });
         }
     }
 

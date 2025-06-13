@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const PaymentController = require('../controllers/payment.controller');
-
+const authMiddleware = require('../middleware/authMiddleware');
 // Create a new payment
 router.post('/', PaymentController.createPayment);
 
@@ -19,5 +19,7 @@ router.delete('/:id', PaymentController.deletePayment);
 
 // Update transaction ID
 router.patch('/:id/transaction', PaymentController.updateTransactionId);
+
+router.post('/callback', PaymentController.handlePaymentCallback);
 
 module.exports = router;
