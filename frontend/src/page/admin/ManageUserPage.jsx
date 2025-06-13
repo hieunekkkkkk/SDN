@@ -8,8 +8,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { FaRegCircleCheck } from "react-icons/fa6";
 import { IoBanSharp } from "react-icons/io5";
+import { getCurrentUserId } from '../../utils/user';
+
 
 function ManageUserPage() {
+  const currentUserId = getCurrentUserId();
+
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -47,17 +51,11 @@ function ManageUserPage() {
 
   const updateUserLock = async (userId, lock) => {
     try {
-      const currentUser = users.find(user => user.id === userId);
-      const currentMetadata = currentUser?.privateMetadata || {};
+      const endpoint = lock
+        ? `${import.meta.env.VITE_BE_URL}/api/user/${userId}/lock`
+        : `${import.meta.env.VITE_BE_URL}/api/user/${userId}/unlock`;
 
-      const updatedMetadata = {
-        ...currentMetadata,
-        locked: lock
-      };
-
-      await axios.put(`${import.meta.env.VITE_BE_URL}/api/user/${userId}`, {
-        privateMetadata: updatedMetadata
-      });
+      await axios.put(endpoint);
 
       toast.success(lock ? 'Đã khóa người dùng' : 'Đã mở khóa người dùng');
       fetchUsers(currentPage);
@@ -90,7 +88,6 @@ function ManageUserPage() {
                 <th>Ảnh</th>
                 <th>Tên người dùng</th>
                 <th>Email</th>
-                <th>ID</th>
                 <th>Vai trò</th>
                 <th>Trạng thái</th>
                 <th>Hành động</th>
@@ -116,23 +113,26 @@ function ManageUserPage() {
                       </td>
                       <td>{user.fullName}</td>
                       <td>{user.email}</td>
-                      <td>{user.id}</td>
-                      <td>{user.publicMetadata.role}</td>
+                      <td className='manage-user-table-role'>{user.publicMetadata.role}</td>
                       <td>
-                        {user.privateMetadata.locked ? (
+                        {user.publicMetadata.locked ? (
                           <span className="manage-user-status inactive">Bị khóa</span>
                         ) : (
                           <span className="manage-user-status active">Hoạt động</span>
                         )}
                       </td>
                       <td>
-                        {user.privateMetadata.locked ? (
-                          <FaRegCircleCheck className="manage-user-actions action-active" onClick={() => updateUserLock(user.id, false)}></FaRegCircleCheck>
+                        {user.id !== currentUserId && (user.publicMetadata.locked ? (
+                          <FaRegCircleCheck className="manage-user-actions action-active" onClick={() => updateUserLock(user.id, false)} title='Kích hoạt người dùng'></FaRegCircleCheck>
                         ) : (
-                          <IoBanSharp className="manage-user-actions action-inactive" onClick={() => updateUserLock(user.id, true)}></IoBanSharp>
-                        )}
+                          <IoBanSharp className="manage-user-actions action-inactive" onClick={() => updateUserLock(user.id, true)} title='Vô hiệu hóa người dùng'></IoBanSharp>
+                        ))}
+                        {user.id === currentUserId && (user.publicMetadata.locked ? (
+                          <FaRegCircleCheck className="manage-user-actions disable" title='Hành động bị vô hiệu hóa'></FaRegCircleCheck>
+                        ) : (
+                          <IoBanSharp className="manage-user-actions disable" title='Hành động bị vô hiệu hóa'></IoBanSharp>
+                        ))}
                       </td>
-
                     </motion.tr>
                   ))
                 ) : (
@@ -165,8 +165,6 @@ function ManageUserPage() {
           </button>
         </div>
       </div>
-
-      <Footer />
     </>
   );
 }
