@@ -64,8 +64,7 @@ function PersonalizedPage() {
 
     return (
         <>
-            {/* <Header /> */}
-
+            <Header />
             <div className="personalized-page">
                 {/* Welcome Section */}
                 <div className="personalized-welcome-section">

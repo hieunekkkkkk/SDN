@@ -1,13 +1,15 @@
 import React, { useEffect } from 'react';
-import { useUser, useAuth } from '@clerk/clerk-react';
+import { useUser, useAuth, useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import LoadingScreen from '../components/LoadingScreen';
 import { useUserRole } from '../contexts/UserRoleContext';
+import { toast } from 'react-toastify';
 
 const AuthCallback = () => {
   const { user, isSignedIn } = useUser();
   const { getToken } = useAuth();
   const { setRole } = useUserRole();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,12 +27,13 @@ const AuthCallback = () => {
           });
 
           const data = await response.json();
+          
           if (!response.ok) throw new Error(data.message || 'Lỗi xác thực từ server');
 
           localStorage.setItem('accessToken', data.accessToken);
 
-          const role = data.claims?.role || user.publicMetadata?.role || 'user';
-          localStorage.setItem('userRole', role)
+          const role = data.claims?.role || user.publicMetadata?.role;
+          localStorage.setItem('userRole', role);
           setRole(role);
 
           switch (role) {
@@ -42,13 +45,13 @@ const AuthCallback = () => {
 
         } catch (err) {
           console.error('Lỗi xác thực:', err);
-          navigate('/error');
+          await signOut(); //auto logout nếu không start be hoặc k thể gọi tới /auth
         }
       }
     };
 
     handleAuth();
-  }, [isSignedIn, user, getToken, navigate, setRole]);
+  }, [isSignedIn, user, getToken, navigate, setRole, signOut]);
 
   return <LoadingScreen />;
 };

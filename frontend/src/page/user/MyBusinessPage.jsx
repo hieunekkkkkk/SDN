@@ -195,6 +195,7 @@ const BusinessPage = () => {
 
   return (
     <>
+      <Header />
       {/* Business Detail Section */}
       <section className="business-detail-section">
         <div className="business-detail">
@@ -215,9 +216,8 @@ const BusinessPage = () => {
                   {images.map((img, idx) => (
                     <div
                       key={idx}
-                      className={`thumbnail ${
-                        selectedImage === idx ? 'active' : ''
-                      }`}
+                      className={`thumbnail ${selectedImage === idx ? 'active' : ''
+                        }`}
                       onClick={() => setSelectedImage(idx)}
                       style={{ cursor: 'pointer' }}
                     >

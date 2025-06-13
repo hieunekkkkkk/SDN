@@ -2,9 +2,9 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
-
-import Header from './components/Header';
-import Footer from './components/Footer';
+import '@fontsource/montserrat';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import LandingPage from './page/user/LandingPage';
 import LoginPage from './page/user/LoginPage';
@@ -16,10 +16,13 @@ import PersonalizedPage from './page/user/PersonalizedPage';
 import DiscoverPage from './page/user/DiscoverPage';
 import DiscoverByCategoryPage from './page/user/DiscoverByCategoryPage';
 import AnimatedLayout from './components/AnimatedLayout';
-import ManageUserPage from './page/admin/ManageUserPage';
 import MyBusinessPage from './page/user/MyBusinessPage';
 import ProductRegistrationPage from './page/user/ProductRegistrationPage';
 import BusinessRegistrationPage from './page/user/BusinessRegistrationPage';
+import ManageUserPage from './page/admin/ManageUserPage';
+import ManageBusinessPage from './page/admin/ManageBusinessPage';
+import ManageTransactionPage from './page/admin/ManageTransactionPage';
+import AdminRoute from './components/AdminRoute';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -41,8 +44,35 @@ const AppRoutes = () => {
             path="/discover/:category"
             element={<DiscoverByCategoryPage />}
           />
-          <Route path="/admin/users" element={<ManageUserPage />} />
           <Route path="/my-business" element={<MyBusinessPage />} />
+          <Route
+            path="/business-registration"
+            element={<BusinessRegistrationPage />}
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <ManageUserPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/businesses"
+            element={
+              <AdminRoute>
+                <ManageBusinessPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/transactions"
+            element={
+              <AdminRoute>
+                <ManageTransactionPage />
+              </AdminRoute>
+            }
+          />
           <Route
             path="/product-registration"
             element={<ProductRegistrationPage />}
@@ -60,7 +90,7 @@ const AppRoutes = () => {
 function App() {
   return (
     <BrowserRouter>
-      <Header />
+      <ToastContainer position="top-right" autoClose={3000} />
       <AppRoutes />
     </BrowserRouter>
   );

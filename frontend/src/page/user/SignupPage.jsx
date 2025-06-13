@@ -4,7 +4,7 @@ import { SignUp } from '@clerk/clerk-react';
 function SignupPage() {
   return (
     <div className='signupContainer'>
-        <SignUp/>
+        <SignUp forceRedirectUrl="/auth-callback" />
     </div>
   )
 }

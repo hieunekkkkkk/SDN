@@ -91,6 +91,13 @@
   flex-direction: column;
 }
 
+.checkbox-group {
+  display: flex;
+  align-items: flex-start;
+  max-width: 300px;
+  flex-direction: column;
+}
+
 .form-group label {
   font-weight: bold;
   margin-bottom: 0.25rem;

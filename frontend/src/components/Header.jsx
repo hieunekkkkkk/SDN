@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaUserCircle, FaHome, FaUserCog } from 'react-icons/fa';
+import { FaUserCircle, FaHome, FaUserCog, FaBuilding } from 'react-icons/fa';
 import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react'
 import '../css/Header.css';
 import AuthTokenReset from '../auth/AuthTokenReset';
@@ -12,7 +12,7 @@ const Header = () => {
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
 
-  const { role } = useUserRole(); 
+  const { role } = useUserRole();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAccountMenu, setShowAccountMenu] = useState(false);
@@ -29,16 +29,17 @@ const Header = () => {
 
         {role === 'admin' && isAdminPage ? (
           <nav className="header-nav">
-            <Link to="/admin/users" className="header-nav-link">Người dùng</Link>
-            <Link to="/admin/businesses" className="header-nav-link">Doanh nghiệp</Link>
-            <Link to="/admin/transactions" className="header-nav-link">Giao dịch</Link>
+            <Link to="/admin/users" className={`header-nav-link ${location.pathname === '/admin/users' ? 'active' : ''}`}>Người dùng</Link>
+            <Link to="/admin/businesses" className={`header-nav-link ${location.pathname === '/admin/businesses' ? 'active' : ''}`}>Doanh nghiệp</Link>
+            <Link to="/admin/transactions" className={`header-nav-link ${location.pathname === '/admin/transactions' ? 'active' : ''}`}>Giao dịch</Link>
           </nav>
         ) : (
           <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
-            <Link to="/" className="header-nav-link">Trang chủ</Link>
-            <Link to="/discover" className="header-nav-link">Khám phá</Link>
-            <Link to="/personalized" className="header-nav-link">Cá nhân hóa</Link>
-            <Link to="/my-business" className="header-nav-link">Doanh nghiệp của tôi</Link>
+            <Link to="/" className={`header-nav-link ${location.pathname === '/' ? 'active' : ''}`}>Trang chủ</Link>
+            <Link to="/discover" className={`header-nav-link ${location.pathname.startsWith('/discover') ? 'active' : ''}`}>Khám phá</Link>
+            <Link to="/personalized" className={`header-nav-link ${location.pathname === '/personalized' ? 'active' : ''}`}>Cá nhân hóa</Link>
+            <Link to="/my-business" className={`header-nav-link ${location.pathname === '/my-business' ? 'active' : ''}`}>Doanh nghiệp của tôi</Link>
+
           </nav>
         )}
         <SignedOut>
@@ -72,6 +73,20 @@ const Header = () => {
                 <UserButton.Action
                   label="Trang chủ"
                   labelIcon={<FaHome />}
+                  onClick={() => navigate('/')}
+                />
+              </UserButton.MenuItems>}
+              {role == 'owner' && <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Xem doanh nghiệp"
+                  labelIcon={<FaBuilding />}
+                  onClick={() => navigate('/my-business')}
+                />
+              </UserButton.MenuItems>}
+              {role == 'client' && <UserButton.MenuItems>
+                <UserButton.Action
+                  label="Trở thành chủ doanh nghiệp"
+                  labelIcon={<FaBuilding />}
                   onClick={() => navigate('/')}
                 />
               </UserButton.MenuItems>}
