@@ -276,14 +276,21 @@
 
 .personalized-place-meta {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
 }
 
-.personalized-status {
-  color: #28a745;
+.personalized-status{
   font-size: 0.9rem;
   font-weight: 500;
+  padding-bottom: 10px;
+}
+
+.personalized-status.place-open {
+  color: #28a745;
+}
+.personalized-status.place-close {
+  color: red;
 }
 
 .personalized-rating {

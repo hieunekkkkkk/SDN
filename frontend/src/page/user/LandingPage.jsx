@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../css/LandingPage.css';
+import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import HeroSection from '../../components/HeroSection';
 import LoadingScreen from '../../components/LoadingScreen';
@@ -105,6 +106,7 @@ function LandingPage() {
 
   return (
     <>
+    <Header/>
       <HeroSection />
       
       <div className="landing-page2">

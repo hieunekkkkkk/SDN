@@ -19,14 +19,14 @@ function DiscoverPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        console.log('VITE_BE_URL:', import.meta.env.VITE_BE_URL);
-        console.log('Category API URL:', `${import.meta.env.VITE_BE_URL}/api/category`);
+        // console.log('VITE_BE_URL:', import.meta.env.VITE_BE_URL);
+        // console.log('Category API URL:', `${import.meta.env.VITE_BE_URL}/api/category`);
 
         // Fetch categories
         const categoryResponse = await axios.get(`${import.meta.env.VITE_BE_URL}/api/category`, {
           timeout: 10000,
         });
-        console.log('Category Response:', categoryResponse.data);
+        // console.log('Category Response:', categoryResponse.data);
         if (categoryResponse.data.categories && Array.isArray(categoryResponse.data.categories)) {
           setCategories(categoryResponse.data.categories);
         } else {
@@ -38,7 +38,7 @@ function DiscoverPage() {
         const businessResponse = await axios.get(`${import.meta.env.VITE_BE_URL}/api/business`, {
           timeout: 10000,
         });
-        console.log('Business Response:', businessResponse.data);
+        // console.log('Business Response:', businessResponse.data);
         if (businessResponse.data.businesses && Array.isArray(businessResponse.data.businesses)) {
           setBusinesses(businessResponse.data.businesses);
         } else {
@@ -54,10 +54,6 @@ function DiscoverPage() {
 
     fetchData();
   }, []);
-
-  const filteredBusinesses = category === 'All'
-    ? businesses
-    : businesses.filter(b => b.business_category === category);
 
   const handleSeeMore = (categoryName, categoryId) => {
     const slug = categoryName
