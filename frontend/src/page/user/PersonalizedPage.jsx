@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { useNavigate } from 'react-router-dom';
@@ -9,58 +9,29 @@ function PersonalizedPage() {
     const [type, setType] = useState('Boarding');
     const [budget, setBudget] = useState('50,000');
     const [rating, setRating] = useState(5);
+    const [bestPlaces, setBestPlaces] = useState([]);
     const navigate = useNavigate();
 
-    const bestPlaces = [
-        {
-            id: 1,
-            title: 'Molokini and Turtle Town Snorkeling Adventure Aboard',
-            location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-            status: 'Đang mở cửa',
-            image: '1.png',
-            rating: 4.8
-        },
-        {
-            id: 2,
-            title: 'All Inclusive Ultimate Circle Island Day Tour with Lunch',
-            location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-            status: 'Đang mở cửa',
-            image: '1.png',
-            rating: 4.9
-        },
-        {
-            id: 3,
-            title: 'Clear Kayak Tour of Shell Key Preserve and Tampa Bay Area',
-            location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-            status: 'Đang mở cửa',
-            image: '1.png',
-            rating: 4.7
-        },
-        {
-            id: 4,
-            title: 'Mauna Kea Summit Sunset and Stars Free Astro Photos Hilo...',
-            location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-            status: 'Đang mở cửa',
-            image: '1.png',
-            rating: 4.6
-        },
-        {
-            id: 5,
-            title: 'Clear Kayak Tour of Shell Key Preserve and Tampa Bay Area',
-            location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-            status: 'Đang mở cửa',
-            image: '1.png',
-            rating: 4.7
-        },
-        {
-            id: 6,
-            title: 'Clear Kayak Tour of Shell Key Preserve and Tampa Bay Area',
-            location: 'Thon 3 Thach Hoa Thach Thi Ha Noi',
-            status: 'Đang mở cửa',
-            image: '1.png',
-            rating: 4.7
-        },
-    ];
+    useEffect(() => {
+        const fetchBusinesses = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_BE_URL}/api/business`);
+                const data = await res.json();
+                const sorted = data.businesses
+                    .filter(b => b.business_rating) // only businesses with ratings
+                    .sort((a, b) => b.business_rating - a.business_rating)
+                    .slice(0, 6);
+
+                setBestPlaces(sorted);
+                console.log(sorted);
+
+            } catch (error) {
+                console.error('Failed to load businesses:', error);
+            }
+        };
+
+        fetchBusinesses();
+    }, []);
 
     return (
         <>
@@ -198,18 +169,17 @@ function PersonalizedPage() {
                     <div className="container">
                         <h2>Địa điểm gợi ý</h2>
                         <div className="personalized-places-grid">
-                            {bestPlaces.map((place, index) => (
-                                <div key={index} className="personalized-place-card" onClick={() => navigate('/business')} style={{ cursor: 'pointer' }}>
+                            {bestPlaces.map((place) => (
+                                <div key={place.business_id} className="personalized-place-card" onClick={() => navigate(`/business/${place._id}`)} style={{ cursor: 'pointer' }}>
                                     <div className="personalized-place-image">
-                                        <img src={place.image} alt={place.title} />
-                                        <button className="personalized-favorite-btn">❤️</button>
+                                        <img src={place.business_image[0] || 'default-image.png'} alt={place.business_name} />
                                     </div>
                                     <div className="personalized-place-info">
-                                        <h3>{place.title}</h3>
-                                        <p className="personalized-place-location">{place.location}</p>
+                                        <span className="personalized-status">{place.business_active === 'active' ? <p className='personalized-status place-open'>Đang mở cửa</p> : <p className='personalized-status place-close'>Tạm đóng cửa</p>}</span>
+                                        <h3>{place.business_name}</h3>
+                                        <p className="personalized-place-location">{place.business_address}</p>
                                         <div className="personalized-place-meta">
-                                            <span className="personalized-status">{place.status}</span>
-                                            <span className="personalized-rating">⭐ {place.rating}</span>
+                                            <span className="personalized-rating">⭐ {place.business_rating}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -217,12 +187,6 @@ function PersonalizedPage() {
                         </div>
                     </div>
                 </section>
-
-                <style>
-                    {`
-          
-        `}
-                </style>
             </div>
             <Footer />
         </>

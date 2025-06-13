@@ -1,15 +1,14 @@
-// contexts/UserRoleContext.js
 import { createContext, useContext, useState, useEffect } from 'react';
-
+import { getCurrentUserRole } from '../utils/useCurrentUserRole.js'; 
+// lay role tu jwt localstorage
 const UserRoleContext = createContext();
 
 export const UserRoleProvider = ({ children }) => {
   const [role, setRoleState] = useState(() => {
-    return localStorage.getItem('userRole') || null;
+    return getCurrentUserRole(); 
   });
 
   const setRole = (newRole) => {
-    localStorage.setItem('userRole', newRole);
     setRoleState(newRole);
   };
 

@@ -27,13 +27,12 @@ const AuthCallback = () => {
           });
 
           const data = await response.json();
-          
+
           if (!response.ok) throw new Error(data.message || 'Lỗi xác thực từ server');
 
           localStorage.setItem('accessToken', data.accessToken);
 
           const role = data.claims?.role || user.publicMetadata?.role;
-          localStorage.setItem('userRole', role);
           setRole(role);
 
           switch (role) {

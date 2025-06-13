@@ -5,6 +5,7 @@ import './index.css';
 import '@fontsource/montserrat';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { SignedIn, SignedOut } from '@clerk/clerk-react';
 
 import LandingPage from './page/user/LandingPage';
 import LoginPage from './page/user/LoginPage';
@@ -37,7 +38,7 @@ const AppRoutes = () => {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/business" element={<BusinessPage />} />
           <Route path="/user-profile/*" element={<UserProfilePage />} />
-          <Route path="/auth-callback" element={<AuthCallback />} />
+          <Route path="/auth-callback" element={<><SignedIn><AuthCallback/></SignedIn><SignedOut><LoginPage/></SignedOut></>} />
           <Route path="/personalized" element={<PersonalizedPage />} />
           <Route path="/discover/" element={<DiscoverPage />} />
           <Route
