@@ -9,7 +9,7 @@ const AuthCallback = () => {
   const { user, isSignedIn } = useUser();
   const { getToken } = useAuth();
   const { setRole } = useUserRole();
-  const { signOut } = useClerk(); // <- Import signOut
+  const { signOut } = useClerk();
   const navigate = useNavigate();
 
   useEffect(() => {

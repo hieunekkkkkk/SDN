@@ -31,6 +31,17 @@
   background-color: #f8f9fa;
 }
 
+.manage-user-sort-select select {
+  padding: 8px;
+  border: 1px solid #e0e6ed;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  background-color: white;
+  font-weight: 500;
+}
+
 .manage-user-table-container {
   background: white;
   border-radius: 15px;
@@ -90,7 +101,7 @@
   padding: 0 7px;
 }
 
-.manage-user-actions-icons{
+.manage-user-actions-icons {
   display: flex;
   align-items: center;
 }
@@ -107,7 +118,7 @@
   color: red;
 }
 
-.manage-user-actions.disable{
+.manage-user-actions.disable {
   color: #ccc;
   font-size: 40px;
 }
@@ -172,6 +183,6 @@
   text-align: center;
 }
 
-.manage-user-table-role{
+.manage-user-table-role {
   text-transform: capitalize;
 }

@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { FaRegCircleCheck } from "react-icons/fa6";
 import { IoBanSharp } from "react-icons/io5";
-import { getCurrentUserId } from '../../utils/user';
+import { getCurrentUserId } from '../../utils/useCurrentUserId';
 
 
 function ManageUserPage() {
@@ -16,6 +16,7 @@ function ManageUserPage() {
 
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
+  const [sortStatus, setSortStatus] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -39,8 +40,9 @@ function ManageUserPage() {
   };
 
   const filteredUsers = users.filter((user) =>
-    user.fullName.toLowerCase().includes(search.toLowerCase()) ||
-    user.id.toLowerCase().includes(search.toLowerCase())
+    (user.fullName.toLowerCase().includes(search.toLowerCase()) ||
+      user.id.toLowerCase().includes(search.toLowerCase())) &&
+    (sortStatus === 'All' || (user.publicMetadata.locked ?? false) === (sortStatus === 'true'))
   );
 
   const handlePageChange = (page) => {
@@ -78,6 +80,14 @@ function ManageUserPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+          </div>
+          <div className="manage-user-sort-select">
+            Sắp xếp:&nbsp;
+            <select value={sortStatus} onChange={(e) => setSortStatus(e.target.value)}>
+              <option value="All">Tất cả</option>
+              <option value="false">Kích hoạt</option>
+              <option value="true">Vô hiệu hóa</option>
+            </select>
           </div>
         </div>
 
