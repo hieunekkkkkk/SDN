@@ -18,6 +18,7 @@ import DiscoverByCategoryPage from './page/user/DiscoverByCategoryPage';
 import AnimatedLayout from './components/AnimatedLayout';
 import ManageUserPage from './page/admin/ManageUserPage';
 import MyBusinessPage from './page/user/MyBusinessPage';
+import ProductRegistrationPage from './page/user/ProductRegistrationPage';
 import BusinessRegistrationPage from './page/user/BusinessRegistrationPage';
 
 const AppRoutes = () => {
@@ -42,6 +43,10 @@ const AppRoutes = () => {
           />
           <Route path="/admin/users" element={<ManageUserPage />} />
           <Route path="/my-business" element={<MyBusinessPage />} />
+          <Route
+            path="/product-registration"
+            element={<ProductRegistrationPage />}
+          />
           <Route
             path="/business-registration"
             element={<BusinessRegistrationPage />}
