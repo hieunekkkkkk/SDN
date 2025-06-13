@@ -1,4 +1,5 @@
 const Business = require('../entity/module/business.model');
+const BusinessDTO = require('../entity/dto/business.dto');
 
 exports.getAll = async (req, res) => {
   try {
@@ -48,3 +49,13 @@ exports.delete = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 }; 
+
+exports.getByCategory = async (req, res) => {
+  try {
+    const raw = await Business.find({ business_category_id: req.params.category_id });
+    const dtos = raw.map(doc => new BusinessDTO(doc.toObject()));
+    return res.status(200).json(dtos);
+  } catch (err) {
+    return res.status(500).json({ message: 'Error fetching by category', error: err.message });
+  }
+};

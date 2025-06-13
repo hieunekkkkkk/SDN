@@ -11,7 +11,7 @@ const businessSchema = new mongoose.Schema({
     latitude: Number,
     longitude: Number
   },
-  business_category: String,
+  business_category_id: String,
   business_detail: String,
   business_time: {
     open: String,
