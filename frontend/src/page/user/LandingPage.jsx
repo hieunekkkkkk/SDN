@@ -1,18 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../css/LandingPage.css';
 import Footer from '../../components/Footer';
-import HeroSection from '../../components/HeroSection';
 import LoadingScreen from '../../components/LoadingScreen';
+import Header from '../../components/Header';
 
 function LandingPage() {
   const [businesses, setBusinesses] = useState([]);
+  const [bestBusinesses, setBestBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [feedbacks, setFeedbacks] = useState([]); // ✨ Thêm state cho feedbacks
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const navigate = useNavigate();
+
+  // Memoize filtered businesses để tránh re-calculation
+  const filteredBusinesses = useMemo(() => {
+    if (selectedCategory === 'all') {
+      return bestBusinesses;
+    }
+    return bestBusinesses.filter(business => 
+      business.business_category_id?._id === selectedCategory
+    );
+  }, [bestBusinesses, selectedCategory]);
 
   // Load data từ API khi component mount
   useEffect(() => {
@@ -24,56 +36,58 @@ function LandingPage() {
       setLoading(true);
       setError(null);
       
-      // Gọi API để lấy dữ liệu
-      const [businessesResponse, categoriesResponse] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/business`),
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/category`)
+      const results = await Promise.allSettled([
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=20`),
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating?page=1&limit=8`),
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`) // ✨ Thêm API call cho feedbacks
       ]);
 
-      // Xử lý response từ businesses API
-      if (businessesResponse.data && businessesResponse.data.businesses) {
-        setBusinesses(businessesResponse.data.businesses);
-      } else if (Array.isArray(businessesResponse.data)) {
-        setBusinesses(businessesResponse.data);
-      } else {
-        setBusinesses([]);
+      const [businessesResult, bestBusinessesResult, categoriesResult, feedbacksResult] = results;
+
+      if (businessesResult.status === 'fulfilled') {
+        const data = businessesResult.value.data;
+        setBusinesses(data?.businesses || data || []);
       }
 
-      // Xử lý response từ categories API
-      if (categoriesResponse.data && categoriesResponse.data.categories) {
-        setCategories(categoriesResponse.data.categories);
-      } else if (Array.isArray(categoriesResponse.data)) {
-        setCategories(categoriesResponse.data);
-      } else {
-        setCategories([]);
+      if (bestBusinessesResult.status === 'fulfilled') {
+        const data = bestBusinessesResult.value.data;
+        setBestBusinesses(data?.businesses || data || []);
+      }
+
+      if (categoriesResult.status === 'fulfilled') {
+        const data = categoriesResult.value.data;
+        setCategories(data?.categories || data || []);
+      }
+
+      // ✨ Xử lý feedbacks data
+      if (feedbacksResult.status === 'fulfilled') {
+        const data = feedbacksResult.value.data;
+        setFeedbacks(data?.data || data || []);
+      }
+
+      const allFailed = results.every(result => result.status === 'rejected');
+      if (allFailed) {
+        throw new Error('Không thể tải dữ liệu từ server');
       }
 
     } catch (error) {
       console.error('Error loading data:', error);
       setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
-      
-      // Fallback to empty arrays if API fails
       setBusinesses([]);
+      setBestBusinesses([]);
       setCategories([]);
+      setFeedbacks([]); // ✨ Reset feedbacks khi có lỗi
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCategoryClick = (categoryId) => {
-    setSelectedCategory(selectedCategory === categoryId ? 'all' : categoryId);
-  };
+  const handleCategoryClick = useCallback((categoryId) => {
+    setSelectedCategory(prev => prev === categoryId ? 'all' : categoryId);
+  }, []);
 
-  const getFilteredBusinesses = () => {
-    if (selectedCategory === 'all') {
-      return businesses;
-    }
-    return businesses.filter(business => 
-      business.business_category_id === selectedCategory
-    );
-  };
-
-  const handleSeeMore = (categoryName, categoryId) => {
+  const handleSeeMore = useCallback((categoryName, categoryId) => {
     const slug = categoryName
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
@@ -86,7 +100,40 @@ function LandingPage() {
         category_name: categoryName,
       },
     });
+  }, [navigate]);
+
+  const handleBusinessClick = useCallback((businessId) => {
+    navigate(`/business/${businessId}`);
+  }, [navigate]);
+
+  // Helper function để convert icon name thành emoji đơn giản
+  const getCategoryIcon = (iconName, categoryName) => {
+    // Dựa vào icon name hoặc category name để return emoji
+    if (iconName === 'FaCoffee' || categoryName === 'Coffee') return '☕';
+    if (iconName === 'MdFoodBank' || categoryName === 'Hàng ăn') return '🍜';
+    if (iconName === 'RiHotelLine' || categoryName === 'Nhà trọ') return '🏨';
+    if (iconName === 'FaStore' || categoryName === 'Siêu thị') return '🏪';
+    if (iconName === 'FaPills' || categoryName === 'Nhà thuốc') return '💊';
+    return '📍';
   };
+
+  // ✨ Process feedbacks từ API backend
+  const processedTestimonials = useMemo(() => {
+    // Chỉ lấy và xử lý feedbacks từ API, không có fallback
+    return feedbacks
+      .filter(feedback => feedback.feedback_type === 'business' && feedback.feedback_comment)
+      .slice(0, 3) // Chỉ lấy 3 feedback đầu tiên
+      .map(feedback => ({
+        id: feedback._id,
+        rating: Math.min(5, Math.max(1, Math.floor(Math.random() * 2) + 4)), // Random rating 4-5 sao
+        text: feedback.feedback_comment,
+        author: {
+          name: feedback.user_id || "Người dùng ẩn danh",
+          role: "Khách hàng",
+          avatar: "/1.png" // Default avatar
+        }
+      }));
+  }, [feedbacks]);
 
   if (loading) {
     return <LoadingScreen />;
@@ -105,183 +152,129 @@ function LandingPage() {
 
   return (
     <>
-      <HeroSection />
+      <Header />
       
-      <div className="landing-page2">
-        <div className="container">
-          {/* Category Filter Section */}
-          <section className="category-filter-section">
-            <div className="category-filter-container">
-              <h2 className="category-filter-title">Khám phá theo danh mục</h2>
-              <p className="category-filter-subtitle">
-                Chọn danh mục để tìm kiếm địa điểm phù hợp với nhu cầu của bạn
-              </p>
-              
-              <div className="category-filter-options">
-                <button
-                  onClick={() => handleCategoryClick('all')}
-                  className={`category-filter-button ${selectedCategory === 'all' ? 'category-active' : ''}`}
-                >
-                  Tất cả
-                </button>
-                {categories.map((category) => (
-                  <button
-                    key={category._id}
-                    onClick={() => handleCategoryClick(category._id)}
-                    className={`category-filter-button ${selectedCategory === category._id ? 'category-active' : ''}`}
-                  >
-                    <span className="category-icon">{category.icon || '📍'}</span>
-                    {category.category_name}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </section>
+      {/* Hero Section */}
+      <section className="hero-section-landing">
+        <div className="hero-background">
+          <img src="/1.png" alt="Mountains" className="hero-bg-image" />
+          <div className="hero-overlay"></div>
+        </div>
+        <div className="hero-content">
+          <div className="hero-text">
+            <h1>Lựa chọn điểm đến lý tưởng</h1>
+            <p>Cùng cập nhật thông tin hữu ích</p>
+          </div>
 
+          <div className="search-form">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Tìm kiếm địa điểm"
+                className="search-input"
+              />
+              <button className="search-btn">Tìm kiếm</button>
+            </div>
+          </div>
+
+          <div className="category-pills">
+            <p>Đã đăng theo mục điều</p>
+            <div className="pills-container">
+              <button
+                onClick={() => handleCategoryClick('all')}
+                className={`category-pill ${selectedCategory === 'all' ? 'active' : ''}`}
+              >
+                <span className="pill-icon">🏠</span>
+                Tất cả
+              </button>
+              {categories.slice(0, 3).map((category) => (
+                <button
+                  key={category._id}
+                  onClick={() => handleCategoryClick(category._id)}
+                  className={`category-pill ${selectedCategory === category._id ? 'active' : ''}`}
+                >
+                  <span className="pill-icon">{getCategoryIcon(category.icon, category.category_name)}</span>
+                  {category.category_name}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <div className="landing-page-new">
+        <div className="container">
           {/* Best Places Section */}
           <section className="best-places-section">
-            <h2>
-              Khám phá những địa điểm <span className="highlight">phổ biến</span> gần bạn
-            </h2>
+            <h2>Best of Localink</h2>
             
-            <div className="places-grid">
-              {getFilteredBusinesses().slice(0, 8).map((business) => (
+            <div className="places-grid-new">
+              {filteredBusinesses.slice(0, 8).map((business) => (
                 <PlaceCard 
                   key={business._id} 
                   business={business} 
-                  onClick={() => navigate('/business')}
+                  onClick={handleBusinessClick}
                 />
               ))}
             </div>
-            
-            {getFilteredBusinesses().length === 0 && (
-              <div className="no-results">
-                <p>Không tìm thấy địa điểm nào trong danh mục này.</p>
-              </div>
-            )}
           </section>
 
           {/* Services Grid */}
-          <section className="services-section">
-            <h2>Dịch vụ nổi bật</h2>
-            <div className="services-grid">
-              {categories.slice(0, 4).map((category) => (
+          <section className="services-section-new">
+            <div className="services-grid-new">
+              {categories.slice(0, 3).map((category, index) => (
                 <ServiceCard 
                   key={category._id} 
                   category={category} 
                   businesses={businesses}
-                  onSeeMore={() => handleSeeMore(category.category_name, category._id)}
+                  onSeeMore={handleSeeMore}
+                  index={index}
                 />
               ))}
             </div>
           </section>
 
           {/* Why Choose Section */}
-          <section className="why-choose-section">
-            <div className="why-choose-content">
-              <div className="why-choose-left">
-                <h2>Tại sao chọn LocalLink?</h2>
-                <div className="features-list">
-                  <div className="feature-item">
-                    <div className="feature-icon">🎯</div>
-                    <div className="feature-content">
-                      <h3>Tìm kiếm chính xác</h3>
-                      <p>Định vị chính xác các địa điểm gần bạn với thông tin cập nhật realtime.</p>
-                    </div>
-                  </div>
-                  <div className="feature-item">
-                    <div className="feature-icon">⭐</div>
-                    <div className="feature-content">
-                      <h3>Đánh giá tin cậy</h3>
-                      <p>Hệ thống đánh giá từ người dùng thực giúp bạn lựa chọn tốt nhất.</p>
-                    </div>
-                  </div>
-                  <div className="feature-item">
-                    <div className="feature-icon">🚀</div>
-                    <div className="feature-content">
-                      <h3>Trải nghiệm mượt mà</h3>
-                      <p>Giao diện thân thiện, tìm kiếm nhanh chóng và dễ sử dụng.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="why-choose-right">
-                <img src="/1.png" alt="Why choose us" className="choose-image" />
-              </div>
-            </div>
+          <WhyChooseSection />
 
-            {/* Stats Section */}
-            <div className="stats-section">
-              <div className="stats-grid">
-                <div className="stat-item">
-                  <div className="stat-icon">🏢</div>
-                  <h3>{businesses.length}+</h3>
-                  <p>Doanh nghiệp</p>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-icon">📍</div>
-                  <h3>{categories.length}+</h3>
-                  <p>Danh mục</p>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-icon">👥</div>
-                  <h3>1000+</h3>
-                  <p>Người dùng</p>
-                </div>
-                <div className="stat-item">
-                  <div className="stat-icon">⭐</div>
-                  <h3>4.8</h3>
-                  <p>Đánh giá trung bình</p>
-                </div>
-              </div>
-            </div>
-          </section>
+          {/* Stats Section */}
+          <StatsSection
+            businessesCount={businesses.length}
+            categoriesCount={categories.length}
+          />
 
-          {/* Feedback Section */}
-          <section className="feedback-section">
-            <h2>Phản hồi từ người dùng</h2>
-            
-            <div className="testimonials-grid">
-              <TestimonialCard
-                rating={5}
-                text="LocalLink giúp tôi tìm được quán cà phê yêu thích chỉ trong vài phút. Rất tiện lợi!"
-                author={{
-                  name: "Nguyễn Văn A",
-                  role: "Khách hàng thường xuyên",
-                  avatar: "/avatar1.jpg"
-                }}
-              />
-              <TestimonialCard
-                rating={5}
-                text="Thông tin luôn chính xác và cập nhật. Tôi không bao giờ lo lắng về việc tìm địa điểm nữa."
-                author={{
-                  name: "Trần Thị B",
-                  role: "Du khách",
-                  avatar: "/avatar2.jpg"
-                }}
-              />
-              <TestimonialCard
-                rating={4}
-                text="Giao diện đẹp, dễ sử dụng. Đặc biệt thích tính năng lọc theo khoảng cách."
-                author={{
-                  name: "Lê Văn C",
-                  role: "Người địa phương",
-                  avatar: "/avatar3.jpg"
-                }}
-              />
-            </div>
+          {/* ✨ Feedback Section - Thêm phần feedback từ API */}
+          {processedTestimonials.length > 0 && (
+            <section className="feedback-section">
+              <h2>Phản hồi từ người dùng</h2>
+              
+              <div className="testimonials-grid">
+                {processedTestimonials.map((testimonial) => (
+                  <TestimonialCard
+                    key={testimonial.id}
+                    rating={testimonial.rating}
+                    text={testimonial.text}
+                    author={testimonial.author}
+                  />
+                ))}
+              </div>
 
-            <div className="feedback-stats">
-              <div className="feedback-stat">
-                <h3>4.8/5</h3>
-                <p>Điểm đánh giá trung bình từ hơn 1000 người dùng</p>
+              <div className="feedback-stats">
+                <div className="feedback-stat">
+                  <h3>4.9</h3>
+                  <p>1000+ reviews on TripAdvisor. Certificate of Excellence</p>
+                </div>
+                <div className="feedback-stat">
+                  <h3>16M</h3>
+                  <p>Happy Customers</p>
+                </div>
+                <div className="feedback-stat">
+                  <h3>Award winner</h3>
+                  <p>G2's 2021 Best Software Awards</p>
+                </div>
               </div>
-              <div className="feedback-stat">
-                <h3>95%</h3>
-                <p>Người dùng hài lòng với dịch vụ</p>
-              </div>
-            </div>
-          </section>
+            </section>
+          )}
         </div>
       </div>
 
@@ -290,21 +283,17 @@ function LandingPage() {
   );
 }
 
-// Component PlaceCard
-function PlaceCard({ business, onClick }) {
+// Place Card Component
+const PlaceCard = React.memo(({ business, onClick }) => {
   const businessName = business.business_name || 'Tên không có';
   const businessAddress = business.business_address || 'Địa chỉ không có';
   const businessStatus = business.business_status;
   const businessImage = business.business_image;
   const businessRating = business.business_rating || 0;
 
-  const getStatusText = (status) => {
-    return status ? 'Đang mở cửa' : 'Đã đóng cửa';
-  };
-
-  const getStatusClass = (status) => {
-    return status ? 'status-open' : 'status-closed';
-  };
+  const handleClick = useCallback(() => {
+    onClick(business._id);
+  }, [business._id, onClick]);
 
   let imageUrl = '/1.png';
   if (businessImage && Array.isArray(businessImage) && businessImage.length > 0) {
@@ -312,90 +301,159 @@ function PlaceCard({ business, onClick }) {
   }
 
   return (
-    <div className="place-card" onClick={onClick} style={{ cursor: 'pointer' }}>
-      <div className="place-image">
+    <div className="place-card-new" onClick={handleClick}>
+      <div className="place-image-new">
         <img 
           src={imageUrl} 
           alt={businessName}
+          loading="lazy"
           onError={(e) => {
             e.target.src = '/1.png';
           }}
         />
-        <button className="favorite-btn">❤️</button>
-      </div>
-      <div className="place-info">
-        <h3>{businessName}</h3>
-        <p className="place-location">{businessAddress}</p>
-        <div className="place-meta">
-          <span className={`status ${getStatusClass(businessStatus)}`}>
-            {getStatusText(businessStatus)}
-          </span>
-          <span className="rating">⭐ {businessRating.toFixed(1)}</span>
+        <div className="place-overlay">
+          <div className="place-info-overlay">
+            <h3>{businessName}</h3>
+            <p>{businessAddress}</p>
+            <div className="rating-overlay">⭐ {businessRating.toFixed(1)}</div>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+});
 
-// Component ServiceCard
-function ServiceCard({ category, businesses, onSeeMore }) {
+// Service Card Component
+const ServiceCard = React.memo(({ category, businesses, onSeeMore, index }) => {
   const categoryBusinesses = businesses.filter(b => 
-    b.business_category_id === category._id
+    b.business_category_id?._id === category._id
   );
 
-  const colors = [
-    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+  const backgroundImages = [
+    '/1.png',
+    '/2.png', 
+    '/3.png'
   ];
 
-  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+  const gradients = [
+    'linear-gradient(135deg, rgba(255,107,53,0.8) 0%, rgba(255,107,53,0.6) 100%)',
+    'linear-gradient(135deg, rgba(103,92,231,0.8) 0%, rgba(103,92,231,0.6) 100%)',
+    'linear-gradient(135deg, rgba(52,168,83,0.8) 0%, rgba(52,168,83,0.6) 100%)'
+  ];
+
+  const handleSeeMore = useCallback(() => {
+    onSeeMore(category.category_name, category._id);
+  }, [category.category_name, category._id, onSeeMore]);
 
   return (
-    <div className="service-card" style={{ background: randomColor }}>
-      <div className="service-content">
+    <div className="service-card-new" onClick={handleSeeMore}>
+      <div className="service-background">
+        <img 
+          src={backgroundImages[index] || '/1.png'} 
+          alt={category.category_name}
+          loading="lazy"
+        />
+        <div 
+          className="service-gradient" 
+          style={{ background: gradients[index] }}
+        ></div>
+      </div>
+      <div className="service-content-new">
         <h3>{category.category_name}</h3>
-        <p className="service-subtitle">{categoryBusinesses.length} địa điểm</p>
-        <p className="service-description">
-          Khám phá các {category.category_name.toLowerCase()} tốt nhất trong khu vực
-        </p>
-        <button className="service-btn" onClick={onSeeMore}>
-          Xem thêm
+        <p>{categoryBusinesses.length} địa điểm</p>
+        <button className="service-btn-new">
+          Khám phá →
         </button>
       </div>
-      <div className="service-image">
-        <span style={{ fontSize: '3rem' }}>{category.icon || '📍'}</span>
-      </div>
     </div>
   );
-}
+});
 
-// Component TestimonialCard
-function TestimonialCard({ rating, text, author }) {
-  return (
-    <div className="testimonial-card">
-      <div className="testimonial-header">
-        <div className="testimonial-rating">
-          {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+// Why Choose Section
+const WhyChooseSection = React.memo(() => (
+  <section className="why-choose-section-new">
+    <div className="why-choose-content-new">
+      <div className="why-choose-left-new">
+        <h2>Why choose Local</h2>
+        <div className="features-list-new">
+          <div className="feature-item-new">
+            <div className="feature-icon-new">📍</div>
+            <div className="feature-content-new">
+              <h4>Vị trí hoàn hảo</h4>
+              <p>Tìm kiếm chính xác các địa điểm theo nhu cầu của bạn</p>
+            </div>
+          </div>
+          <div className="feature-item-new">
+            <div className="feature-icon-new">🔥</div>
+            <div className="feature-content-new">
+              <h4>Thông tin đầy đủ</h4>
+              <p>Cập nhật liên tục thông tin mới nhất về dịch vụ</p>
+            </div>
+          </div>
+          <div className="feature-item-new">
+            <div className="feature-icon-new">⭐</div>
+            <div className="feature-content-new">
+              <h4>Đánh giá tin cậy</h4>
+              <p>Hệ thống đánh giá từ người dùng thực tế</p>
+            </div>
+          </div>
         </div>
       </div>
-      <p className="testimonial-text">"{text}"</p>
-      <div className="testimonial-author">
-        <img 
-          src={author.avatar} 
-          alt={author.name}
-          onError={(e) => {
-            e.target.src = '/1.png';
-          }}
-        />
-        <div>
-          <h4>{author.name}</h4>
-          <p>{author.role}</p>
-        </div>
+      <div className="why-choose-right-new">
+        <img src="/1.png" alt="Why choose us" loading="lazy" />
       </div>
     </div>
-  );
-}
+  </section>
+));
+
+// ✨ Testimonial Card Component cho feedback từ API
+const TestimonialCard = React.memo(({ rating, text, author }) => (
+  <div className="testimonial-card">
+    <div className="testimonial-header">
+      <div className="testimonial-rating">
+        {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
+      </div>
+    </div>
+    <p className="testimonial-text">"{text}"</p>
+    <div className="testimonial-author">
+      <img 
+        src={author.avatar} 
+        alt={author.name}
+        loading="lazy"
+        onError={(e) => {
+          e.target.src = '/1.png';
+        }}
+      />
+      <div>
+        <h4>{author.name}</h4>
+        <p>{author.role}</p>
+      </div>
+    </div>
+  </div>
+));
+
+// Stats Section
+const StatsSection = React.memo(({ businessesCount, categoriesCount }) => (
+  <div className="stats-section-new">
+    <div className="stats-grid-new">
+      <div className="stat-item-new">
+        <h3>932M</h3>
+        <p>Total Donations</p>
+      </div>
+      <div className="stat-item-new">
+        <h3>24M</h3>
+        <p>Campaigns Closed</p>
+      </div>
+      <div className="stat-item-new">
+        <h3>10M</h3>
+        <p>Happy People</p>
+      </div>
+      <div className="stat-item-new">
+        <h3>65M</h3>
+        <p>Our Volunteers</p>
+      </div>
+    </div>
+  </div>
+));
 
 export default LandingPage;
