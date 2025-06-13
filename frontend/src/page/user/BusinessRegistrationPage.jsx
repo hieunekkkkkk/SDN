@@ -1,18 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../css/BusinessRegistrationPage.css';
 
 const BusinessRegistrationPage = () => {
+  const [selectedOption, setSelectedOption] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
+  const options = [
+    'Lựa chọn...',
+    'Nhà trọ',
+    'Quán ăn',
+    'Cafe',
+    'Supply',
+    'Giải trí',
+  ];
+
+  const handleOptionClick = (option) => {
+    setSelectedOption(option);
+    setIsOpen(false);
+  };
+
   return (
     <>
+      <Header />
       <main className="business-registration-container">
-        <div className="intro-card">
-          <h2 className="intro-title">
-            Đọc kỹ các hướng dẫn trước khi đăng ký sản phẩm của bạn!
+        <div className="business-intro-card">
+          <h2 className="business-intro-title">
+            Chào mừng các doanh nghiệp đến với hệ thống Smearch!
           </h2>
-          <div className="intro-section">
-            <div className="intro-text">
+          <div className="business-intro-section">
+            <div className="business-intro-text">
               <strong>Chính sách đăng tải nội dung và sản phẩm</strong>
               <ul>
                 <li>
@@ -46,36 +63,48 @@ const BusinessRegistrationPage = () => {
                 <li>Vi phạm nhiều lần có thể bị khóa tìa khoản vĩnh viễn.</li>
               </ul>
             </div>
-            <div className="intro-image">
-              <img src="/1.png" alt="Business Illustration" />
+            <div className="business-intro-image">
+              <img src="/1.png" alt="Product Illustration" />
             </div>
           </div>
         </div>
-        <h1 className="page-title">Đăng ký sản phẩm</h1>
+
+        <h1 className="page-title">Đăng ký doanh nghiệp</h1>
         <form className="registration-form">
           <div className="form-columns">
             <div className="form-column left">
               <div className="form-group">
-                <label htmlFor="product-name">Tên sản phẩm</label>
+                <label htmlFor="business-name">Tên doanh nghiệp</label>
                 <input
                   type="text"
-                  id="product-name"
-                  name="product-name"
+                  id="business-name"
+                  name="business-name"
                   placeholder="Nhập ..."
                   required
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="product-description">Mô tả sản phẩm</label>
-                <textarea
-                  id="product-description"
-                  name="product-description"
+                <label htmlFor="business-address">Địa chỉ</label>
+                <input
+                  type="text"
+                  id="business-address"
+                  name="business-address"
                   placeholder="Nhập ..."
                   required
-                ></textarea>
+                />
               </div>
               <div className="form-group">
-                <label htmlFor="product-image">Hình ảnh</label>
+                <label htmlFor="business-description">Mô tả</label>
+                <input
+                  type="text"
+                  id="business-description"
+                  name="business-description"
+                  placeholder="Nhập ..."
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="business-image">Hình ảnh</label>
                 <div className="image-upload">
                   <div className="image-preview"></div>
                   <div className="image-preview"></div>
@@ -87,39 +116,101 @@ const BusinessRegistrationPage = () => {
             </div>
             <div className="form-column right">
               <div className="form-group">
-                <label htmlFor="product-price">Giá thành</label>
+                <label htmlFor="business-type">Loại hình kinh doanh</label>
+                <div className="custom-select">
+                  <div
+                    className="select-selected"
+                    onClick={() => setIsOpen(!isOpen)}
+                  >
+                    {selectedOption || 'Lựa chọn...'}
+                  </div>
+                  {isOpen && (
+                    <div className="select-items">
+                      {options.map((option, index) => (
+                        <div
+                          key={index}
+                          className="select-item"
+                          onClick={() => handleOptionClick(option)}
+                        >
+                          {option}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="business-phone">Số điện thoại</label>
                 <input
                   type="number"
-                  id="product-price"
-                  name="product-price"
+                  id="business-phone"
+                  name="business-phone"
                   placeholder="Nhập ..."
                   required
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="product-price">Số lượng</label>
-                <input
-                  type="number"
-                  id="product-price"
-                  name="product-price"
-                  placeholder="Nhập ..."
-                  required
-                />
-              </div>
-              <div className="form-group checkbox-group">
-                <input
-                  type="checkbox"
-                  id="policy-confirmation"
-                  name="policy-confirmation"
-                  required
-                />
-                <label htmlFor="policy-confirmation" className="checkbox-label">
-                  Xác nhận tuân thủ chính sách nền tảng
-                </label>
+                <label htmlFor="operating-hours">Thời gian hoạt động</label>
+                <div className="operating-hours-inputs">
+                  <input
+                    type="text"
+                    id="operating-hours-from"
+                    name="operating-hours-from"
+                    placeholder="Từ ..."
+                  />
+                  <input
+                    type="text"
+                    id="operating-hours-to"
+                    name="operating-hours-to"
+                    placeholder="Đến ..."
+                  />
+                </div>
               </div>
             </div>
           </div>
-          <button type="submit" className="submit-btn">
+
+          <div className="pricing-plans">
+            <h2 className="plan-title">Lựa chọn gói đăng ký</h2>
+            <div className="plan-options">
+              <div className="plan-card">
+                <h3>Free</h3>
+                <p>
+                  <strong>$0/mo</strong>
+                </p>
+                <ul>
+                  <li>Voice messages anywhere</li>
+                  <li>Voice messages anywhere</li>
+                  <li>Voice messages anywhere</li>
+                </ul>
+                <button className="plan-btn">Already using</button>
+              </div>
+              <div className="plan-card">
+                <h3>Premium</h3>
+                <p>
+                  <strong>100 triệu/tháng</strong>
+                </p>
+                <ul>
+                  <li>Voice messages anywhere</li>
+                  <li>Voice messages anywhere</li>
+                  <li>Voice messages anywhere</li>
+                </ul>
+                <button className="plan-btn">Buy now</button>
+              </div>
+              <div className="plan-card">
+                <h3>Super vip</h3>
+                <p>
+                  <strong>1 tỷ/tháng</strong>
+                </p>
+                <ul>
+                  <li>Voice messages anywhere</li>
+                  <li>Voice messages anywhere</li>
+                  <li>Voice messages anywhere</li>
+                </ul>
+                <button className="plan-btn">Buy now</button>
+              </div>
+            </div>
+          </div>
+          <button type="button" className="submit-btn">
             Đăng ký
           </button>
         </form>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../css/LandingPage.css';
+import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import LoadingScreen from '../../components/LoadingScreen';
 import Header from '../../components/Header';
@@ -152,7 +153,8 @@ function LandingPage() {
 
   return (
     <>
-      <Header />
+    <Header/>
+      <HeroSection />
       
       {/* Hero Section */}
       <section className="hero-section-landing">

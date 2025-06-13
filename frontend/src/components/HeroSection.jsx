@@ -39,7 +39,7 @@ const HeroSection = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
             />
-            <button onClick={handleSearch} className="search-btn">Search</button>
+            <button onClick={handleSearch} className="search-btn">Tìm kiếm</button>
           </div>
         </div>
 
