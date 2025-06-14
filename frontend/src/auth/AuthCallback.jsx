@@ -31,7 +31,7 @@ const AuthCallback = () => {
           if (!response.ok) throw new Error(data.message || 'Lỗi xác thực từ server');
 
           localStorage.setItem('accessToken', data.accessToken);
-
+          
           const role = data.claims?.role || user.publicMetadata?.role;
           setRole(role);
 

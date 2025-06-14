@@ -6,6 +6,7 @@ import '@fontsource/montserrat';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { SignedIn, SignedOut } from '@clerk/clerk-react';
+import ProtectedRoute from './components/ProtectedRoute';
 
 import LandingPage from './page/user/LandingPage';
 import LoginPage from './page/user/LoginPage';
@@ -31,59 +32,37 @@ const AppRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route element={<AnimatedLayout />}>
+        {/* Public routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/auth-callback" element={
+          <>
+            <SignedIn><AuthCallback /></SignedIn>
+            <SignedOut><LoginPage /></SignedOut>
+          </>
+        } />
+
+        {/* Protected Layout with animation and accessToken check */}
+        <Route element={
+          <ProtectedRoute>
+            <AnimatedLayout />
+          </ProtectedRoute>
+        }>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/LandingPage" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          
-          {/* Business detail route with ID parameter */}
+          <Route path="/landingPage" element={<LandingPage />} />
           <Route path="/business/:id" element={<BusinessPage />} />
-          
           <Route path="/user-profile/*" element={<UserProfilePage />} />
-          <Route path="/auth-callback" element={<><SignedIn><AuthCallback/></SignedIn><SignedOut><LoginPage/></SignedOut></>} />
           <Route path="/personalized" element={<PersonalizedPage />} />
           <Route path="/discover/" element={<DiscoverPage />} />
-          <Route
-            path="/discover/:category"
-            element={<DiscoverByCategoryPage />}
-          />
+          <Route path="/discover/:category" element={<DiscoverByCategoryPage />} />
           <Route path="/my-business" element={<MyBusinessPage />} />
-          <Route
-            path="/business-registration"
-            element={<BusinessRegistrationPage />}
-          />
-          
-          {/* Admin Routes */}
-          <Route
-            path="/admin/users"
-            element={
-              <AdminRoute>
-                <ManageUserPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/businesses"
-            element={
-              <AdminRoute>
-                <ManageBusinessPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/transactions"
-            element={
-              <AdminRoute>
-                <ManageTransactionPage />
-              </AdminRoute>
-            }
-          />
-          
-          <Route
-            path="/product-registration"
-            element={<ProductRegistrationPage />}
-          />
+          <Route path="/business-registration" element={<BusinessRegistrationPage />} />
+          <Route path="/product-registration" element={<ProductRegistrationPage />} />
+
+          {/* Admin routes (double protected) */}
+          <Route path="/admin/users" element={<AdminRoute><ManageUserPage /></AdminRoute>} />
+          <Route path="/admin/businesses" element={<AdminRoute><ManageBusinessPage /></AdminRoute>} />
+          <Route path="/admin/transactions" element={<AdminRoute><ManageTransactionPage /></AdminRoute>} />
         </Route>
       </Routes>
     </AnimatePresence>
@@ -93,8 +72,8 @@ const AppRoutes = () => {
 function App() {
   return (
     <BrowserRouter>
-      <ToastContainer 
-        position="top-right" 
+      <ToastContainer
+        position="top-right"
         autoClose={3000}
         hideProgressBar={false}
         newestOnTop={false}
