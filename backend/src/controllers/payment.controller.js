@@ -1,12 +1,29 @@
 const paymentService = require('../services/payment.service');
+require('dotenv').config({ path: process.env.NODE_ENV === 'production' ? '.env.prod' : '.env.dev' });
 
 class PaymentController {
     async createPayment(req, res) {
         try {
-            const payment = await paymentService.createPayment(req.body);
-            res.status(201).json({ message: 'Payment created successfully', data: payment });
+            const { stack_id, user_id } = req.body;
+
+
+            const result = await paymentService.createPayment(stack_id, user_id);
+            res.status(200).json(result);
         } catch (error) {
-            res.status(400).json({ message: error.message });
+            console.error('Create Payment Error:', error);
+            res.status(500).json({ error: 1, message: error.message });
+        }
+    }
+
+    async handlePaymentCallback(req, res) {
+        try {
+            const { orderCode, status } = req.query;
+            const result = await paymentService.handlePaymentCallback(orderCode, status);
+            if (result) {
+                res.redirect(`${process.env.FRONTEND_URL}/`);
+            }
+        } catch (err) {
+            res.status(500).json({ error: 1, message: err.message });
         }
     }
 
