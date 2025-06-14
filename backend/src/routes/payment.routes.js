@@ -5,6 +5,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 // Create a new payment
 router.post('/', PaymentController.createPayment);
 
+router.get('/callback', PaymentController.handlePaymentCallback);
+
 // Get all payments
 router.get('/', PaymentController.getAllPayments);
 
@@ -20,6 +22,6 @@ router.delete('/:id', PaymentController.deletePayment);
 // Update transaction ID
 router.patch('/:id/transaction', PaymentController.updateTransactionId);
 
-router.post('/callback', PaymentController.handlePaymentCallback);
+
 
 module.exports = router;

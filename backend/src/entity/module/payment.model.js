@@ -6,7 +6,8 @@ const paymentSchema = new mongoose.Schema({
   payment_stack: { type: mongoose.Schema.Types.ObjectId, ref: 'stack' },
   payment_date: { type: Date, default: Date.now },
   payment_status: String, // ENUM: pending, completed, failed
-  payment_method: String,  // ENUM: payos
+  payment_method: String, // ENUM: payos
+  transaction_id: String
 });
 
 module.exports = mongoose.model('payment', paymentSchema);
