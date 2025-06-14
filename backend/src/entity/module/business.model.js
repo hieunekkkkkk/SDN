@@ -28,7 +28,7 @@ const businessSchema = new mongoose.Schema({
   business_rating: Number,
   business_view: Number,
   business_status: Boolean,
-  business_active: { type: String, enum: ['active', 'inactive', 'pending'] },
+  business_active: { type: String, enum: ['active', 'inactive', 'pending'], default: 'pending' },
 });
 
 
