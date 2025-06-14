@@ -1,36 +1,31 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../css/HeroSection.css';
-
 
 const HeroSection = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const navigate = useNavigate(); 
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log('Searching for:', searchQuery);
+    if (searchQuery.trim() !== '') {
+      navigate(`/discover?query=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
-
-  const categories = [
-    { icon: '🏠', name: 'Nhà trọ' },
-    { icon: '🍜', name: 'Quán ăn' },
-    { icon: '🛒', name: 'Siêu thị' },
-    { icon: '💊', name: 'Nhà thuốc' }
-  ];
 
   return (
     <section className="hero-section">
       <div className="hero-background">
-        <img src="../public/1.png" alt="Mountains" className="hero-bg-image" />
+        <img src="/1.png" alt="Mountains" className="hero-bg-image" />
         <div className="hero-overlay"></div>
       </div>
       <div className="hero-content">
         <div className="hero-text">
           <h1>Lựa chọn điểm đến lý tưởng ở gần bạn</h1>
-          <p>Cùng cập mới thông tin hữu ích</p>
+          <p>Cùng cập nhật thông tin hữu ích</p>
         </div>
 
-        <div className="search-form">
+        <form onSubmit={handleSearch} className="search-form">
           <div className="search-box">
             <input
               type="text"
@@ -39,25 +34,9 @@ const HeroSection = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
             />
-            <button onClick={handleSearch} className="search-btn">Tìm kiếm</button>
+            <button type="submit" className="search-btn">Tìm kiếm</button>
           </div>
-        </div>
-
-        <div className="category-pills">
-          <p>Đã đăng theo mục điều</p>
-          <div className="pills-container">
-            {categories.map((category, index) => (
-              <button
-                key={index}
-                className={`category-pill ${selectedCategory === category.name ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(category.name)}
-              >
-                <span className="pill-icon">{category.icon}</span>
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </div>
+        </form>
       </div>
     </section>
   );

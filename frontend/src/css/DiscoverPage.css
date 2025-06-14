@@ -340,6 +340,24 @@
   transform: translateY(-1px);
 }
 
+.search-results-section > p{
+  font-size: 32px;
+  padding-bottom: 2rem;
+  display: flex;
+}
+
+.search-results-section > p > span{
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  transition: all 0.2s;
+}
+
+.search-results-section > p > span:hover{
+  color: red;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .discover-hero-section {

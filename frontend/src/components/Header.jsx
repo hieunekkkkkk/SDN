@@ -38,8 +38,11 @@ const Header = () => {
             <Link to="/" className={`header-nav-link ${location.pathname === '/' ? 'active' : ''}`}>Trang chủ</Link>
             <Link to="/discover" className={`header-nav-link ${location.pathname.startsWith('/discover') ? 'active' : ''}`}>Khám phá</Link>
             <Link to="/personalized" className={`header-nav-link ${location.pathname === '/personalized' ? 'active' : ''}`}>Cá nhân hóa</Link>
-            <Link to="/my-business" className={`header-nav-link ${location.pathname === '/my-business' ? 'active' : ''}`}>Doanh nghiệp của tôi</Link>
-
+            {role === 'owner' ? (
+              <Link to="/my-business" className={`header-nav-link ${location.pathname === '/my-business' ? 'active' : ''}`}>Doanh nghiệp của tôi</Link>
+            ) : (
+              <Link to="/business-register" className={`header-nav-link ${location.pathname === '/business-register' ? 'active' : ''}`}>Đăng kí doanh nghiệp</Link>
+            )}
           </nav>
         )}
         <SignedOut>

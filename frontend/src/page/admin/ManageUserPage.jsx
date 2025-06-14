@@ -85,8 +85,8 @@ function ManageUserPage() {
             Sắp xếp:&nbsp;
             <select value={sortStatus} onChange={(e) => setSortStatus(e.target.value)}>
               <option value="All">Tất cả</option>
-              <option value="false">Kích hoạt</option>
-              <option value="true">Vô hiệu hóa</option>
+              <option value="false">Hoạt động</option>
+              <option value="true">Bị Khóa</option>
             </select>
           </div>
         </div>

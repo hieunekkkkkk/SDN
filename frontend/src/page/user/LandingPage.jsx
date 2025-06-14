@@ -141,15 +141,12 @@ function LandingPage() {
     navigate(`/business/${businessId}`);
   }, [navigate]);
 
-  const handleSearch = useCallback((e) => {
+  const handleSearch = (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      // Tìm kiếm trong businesses hiện tại hoặc chuyển đến trang discover với query
-      navigate('/discover', { 
-        state: { searchQuery: searchQuery.trim() }
-      });
+    if (searchQuery.trim() !== '') {
+      navigate(`/discover?query=${encodeURIComponent(searchQuery.trim())}`);
     }
-  }, [searchQuery, navigate]);
+  };
 
   // Helper function để convert icon name thành emoji đơn giản
   const getCategoryIcon = (iconName, categoryName) => {
