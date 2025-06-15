@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import HeroSection from '../../components/HeroSection';
 import FilterSidebar from '../../components/FilterSidebar';
 import LoadingScreen from '../../components/LoadingScreen';
+import { AnimatePresence, motion } from 'framer-motion';
 import '../../css/DiscoverByCategoryPage.css';
 
 function DiscoverByCategoryPage() {
@@ -169,33 +170,41 @@ function DiscoverByCategoryPage() {
 
           <div className="place-grid">
             {filteredBusinesses.length > 0 ? (
-              filteredBusinesses.map((b) => (
-                <div
-                  key={b._id}
-                  className="place-card"
-                  onClick={() => navigate(`/business/${b._id}`)}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <div className="place-image">
-                    <img
-                      src={b.business_image?.[0] || '/placeholder.jpg'}
-                      alt={b.business_name}
-                    />
-                  </div>
-                  <div className="place-info">
-                    <h3>{b.business_name}</h3>
-                    <p>{b.business_address}</p>
-                    <div className="place-meta">
-                      <span className="place-status">{b.status}</span>
-                      <span className="place-rating">⭐ {b.rating}</span>
+              <AnimatePresence mode="wait">
+                {filteredBusinesses.map((b) => (
+                  <motion.div
+                    key={b._id}
+                    className="place-card"
+                    onClick={() => navigate(`/business/${b._id}`)}
+                    style={{ cursor: 'pointer' }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                    layout
+                  >
+                    <div className="place-image">
+                      <img
+                        src={b.business_image?.[0] || '/placeholder.jpg'}
+                        alt={b.business_name}
+                      />
                     </div>
-                  </div>
-                </div>
-              ))
+                    <div className="place-info">
+                      <h3>{b.business_name}</h3>
+                      <p>{b.business_address}</p>
+                      <div className="place-meta">
+                        <span className="place-status">{b.status}</span>
+                        <span className="place-rating">⭐ {b.rating}</span>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             ) : (
               <p>Không có địa điểm nào phù hợp.</p>
             )}
           </div>
+
         </div>
       </div>
 

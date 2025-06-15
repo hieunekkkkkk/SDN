@@ -126,7 +126,6 @@ const BusinessPage = () => {
   const handleViewDetails = (productId) => {
     const product = products.find((p) => p._id === productId);
     if (product) {
-      // Transform product data for modal
       const transformedProduct = {
         id: product._id,
         name: product.product_name,
@@ -135,7 +134,6 @@ const BusinessPage = () => {
         reviews: `${product.product_total_vote || 0} Đánh giá`,
         thumbnails: product.product_image || ['/1.png'],
         description: product.product_description || 'Không có mô tả',
-        isSaved: false,
       };
       setSelectedProduct(transformedProduct);
       setShowModal(true);
