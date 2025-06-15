@@ -47,7 +47,7 @@ function LandingPage() {
       
       // Sử dụng Promise.allSettled để không bị fail khi một API lỗi
       const results = await Promise.allSettled([
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=50`),
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=30`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating?page=1&limit=8`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`)
@@ -170,16 +170,24 @@ function LandingPage() {
     }
   };
 
-  // Helper function để convert icon name thành emoji
+  // Helper function để convert icon name thành emoji - CẬP NHẬT THEO DATABASE
   const getCategoryIcon = (iconName, categoryName) => {
-    // Mapping từ tên category hoặc icon name
+    // Mapping từ database icons và category names
     const iconMap = {
-      'Coffee': '☕',
+      // Database icon names
+      'MdFoodBank': '🍜',
+      'RiHotelLine': '🏨', 
+      'PiPark': '🎡',
+      'GiMaterialsScience': '🧱',
+      
+      // Category names from database
       'Hàng ăn': '🍜',
       'Nhà trọ': '🏨',
-      'Siêu thị': '🏪',
-      'Nhà thuốc': '💊',
-      'Vật liệu xây dựng': '🧱',
+      'Khu vui chơi': '🎡',
+      'Nguyên vật liệu': '🧱',
+      
+      // Fallback mappings
+      'Coffee': '☕',
       'Cafe': '☕',
       'Restaurant': '🍽️',
       'Hotel': '🏨',
@@ -187,15 +195,16 @@ function LandingPage() {
       'Store': '🏪',
       'Construction': '🧱',
       'Building Materials': '🧱',
+      'Entertainment': '🎡',
+      'Park': '🎡',
       'FaCoffee': '☕',
-      'MdFoodBank': '🍜',
-      'RiHotelLine': '🏨',
       'FaStore': '🏪',
       'FaPills': '💊',
       'FaHammer': '🧱',
       'MdConstruction': '🧱'
     };
     
+    // Thử tìm theo icon name trước, sau đó theo category name
     return iconMap[iconName] || iconMap[categoryName] || '📍';
   };
 
@@ -307,18 +316,13 @@ function LandingPage() {
 
           <div className="category-pills">
             <p>Đã đăng theo danh mục</p>
-            <div className="pills-container" style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: '1rem',
-              justifyContent: 'center'
-            }}>
+            <div className="pills-container">
               <button
                 onClick={() => handleCategoryClick('all')}
                 className={`category-pill ${selectedCategory === 'all' ? 'active' : ''}`}
               >
                 <span className="pill-icon">🏠</span>
-                Tất cả
+                <span>Tất cả</span>
               </button>
               {categories.map((category) => (
                 <button
@@ -329,7 +333,7 @@ function LandingPage() {
                   <span className="pill-icon">
                     {getCategoryIcon(category.icon, category.category_name)}
                   </span>
-                  {category.category_name}
+                  <span>{category.category_name}</span>
                 </button>
               ))}
             </div>
@@ -354,7 +358,6 @@ function LandingPage() {
             </div>
           </section>
 
-          {/* Services Grid với Navigation - Hiển thị 4 thẻ/dòng */}
           <section className="services-section-new">
             <h2>Danh mục dịch vụ</h2>
             <div className="services-container" style={{ position: 'relative', maxWidth: '1200px', margin: '0 auto' }}>
@@ -363,46 +366,12 @@ function LandingPage() {
                   className="service-nav-btn prev-btn"
                   onClick={handlePrevService}
                   aria-label="Xem danh mục trước"
-                  style={{
-                    position: 'absolute',
-                    left: '-25px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'white',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '50px',
-                    height: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '1.2rem',
-                    color: '#ff6b35',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s ease',
-                    zIndex: 10
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-50%) scale(1.1)';
-                    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(-50%) scale(1)';
-                    e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
-                  }}
                 >
                   ←
                 </button>
               )}
 
-              <div className="services-grid-new" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(4, 1fr)',
-                gap: '2rem',
-                padding: showServiceNav ? '0 50px' : '0',
-                marginBottom: '2rem'
-              }}>
+              <div className="services-grid-new">
                 {visibleServices.length > 0 ? (
                   visibleServices.map((category, index) => (
                     <ServiceCard 
@@ -430,34 +399,6 @@ function LandingPage() {
                   className="service-nav-btn next-btn"
                   onClick={handleNextService}
                   aria-label="Xem danh mục tiếp theo"
-                  style={{
-                    position: 'absolute',
-                    right: '-25px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'white',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '50px',
-                    height: '50px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: 'pointer',
-                    fontSize: '1.2rem',
-                    color: '#ff6b35',
-                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
-                    transition: 'all 0.3s ease',
-                    zIndex: 10
-                  }}
-                  onMouseEnter={(e) => {
-                    e.target.style.transform = 'translateY(-50%) scale(1.1)';
-                    e.target.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.target.style.transform = 'translateY(-50%) scale(1)';
-                    e.target.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.1)';
-                  }}
                 >
                   →
                 </button>
@@ -465,36 +406,12 @@ function LandingPage() {
 
               {/* Dots indicator nếu có nhiều trang */}
               {showServiceNav && (
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  marginTop: '2rem'
-                }}>
+                <div className="service-dots-container">
                   {Array.from({ length: Math.ceil(categories.length / 4) }).map((_, idx) => (
                     <button
                       key={idx}
                       className={`service-dot ${currentServicePage === idx ? 'active' : ''}`}
                       onClick={() => setCurrentServicePage(idx)}
-                      style={{
-                        width: '12px',
-                        height: '12px',
-                        borderRadius: '50%',
-                        border: 'none',
-                        background: currentServicePage === idx ? '#ff6b35' : '#ddd',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (currentServicePage !== idx) {
-                          e.target.style.background = '#999';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (currentServicePage !== idx) {
-                          e.target.style.background = '#ddd';
-                        }
-                      }}
                     />
                   ))}
                 </div>
@@ -620,8 +537,8 @@ const ServiceCard = React.memo(({ category, businesses, onSeeMore, index }) => {
     '/1.png',
     '/2.png', 
     '/3.png',
-    '/1.png', // Tái sử dụng cho category thứ 4
-    '/2.png'  // Tái sử dụng cho category thứ 5
+    '/1.png', 
+    '/2.png'  
   ];
 
   // Mở rộng danh sách gradients cho 5 categories
@@ -629,8 +546,8 @@ const ServiceCard = React.memo(({ category, businesses, onSeeMore, index }) => {
     'linear-gradient(135deg, rgba(255,107,53,0.8) 0%, rgba(255,107,53,0.6) 100%)',
     'linear-gradient(135deg, rgba(103,92,231,0.8) 0%, rgba(103,92,231,0.6) 100%)',
     'linear-gradient(135deg, rgba(52,168,83,0.8) 0%, rgba(52,168,83,0.6) 100%)',
-    'linear-gradient(135deg, rgba(233,30,99,0.8) 0%, rgba(233,30,99,0.6) 100%)',   // Pink
-    'linear-gradient(135deg, rgba(255,152,0,0.8) 0%, rgba(255,152,0,0.6) 100%)'    // Orange
+    'linear-gradient(135deg, rgba(233,30,99,0.8) 0%, rgba(233,30,99,0.6) 100%)',   
+    'linear-gradient(135deg, rgba(255,152,0,0.8) 0%, rgba(255,152,0,0.6) 100%)'    
   ];
 
   const handleSeeMore = useCallback((e) => {
