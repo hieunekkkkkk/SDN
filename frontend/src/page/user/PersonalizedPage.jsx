@@ -10,6 +10,8 @@ function PersonalizedPage() {
     const [budget, setBudget] = useState('50,000');
     const [rating, setRating] = useState(5);
     const [bestPlaces, setBestPlaces] = useState([]);
+    const [userMessage, setUserMessage] = useState('');
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -18,7 +20,7 @@ function PersonalizedPage() {
                 const res = await fetch(`${import.meta.env.VITE_BE_URL}/api/business`);
                 const data = await res.json();
                 const sorted = data.businesses
-                    .filter(b => b.business_rating) // only businesses with ratings
+                    .filter(b => b.business_rating)
                     .sort((a, b) => b.business_rating - a.business_rating)
                     .slice(0, 6);
 
@@ -32,6 +34,21 @@ function PersonalizedPage() {
 
         fetchBusinesses();
     }, []);
+
+    const handleSendMessage = () => {
+        if (!userMessage.trim()) return;
+
+        const messagePayload = [
+            { prompt: userMessage },
+            { type: type },
+            { budget: budget },
+            { rating: rating }
+        ];
+
+        console.log('Sending message payload:', messagePayload);
+
+        setUserMessage('');
+    };
 
     return (
         <>
@@ -107,60 +124,81 @@ function PersonalizedPage() {
                         </p>
 
                         {/* Type Filter */}
-                        <div className="personalized-filter-group">
-                            <label className="personalized-filter-label">Type:</label>
-                            <div className="personalized-filter-options">
-                                {['Boarding', 'Restaurant', 'Pharmacy', 'Other...'].map((option) => (
-                                    <button
-                                        key={option}
-                                        onClick={() => setType(option)}
-                                        className={`personalized-filter-button ${type === option ? 'personalized-active' : ''}`}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
+                        <div className='personalized-chat-filter'>
+                            <div>
+                                <div className="personalized-filter-group">
+                                    <label className="personalized-filter-label">Loại doanh nghiệp:</label>
+                                    <div className="personalized-filter-options">
+                                        {['Boarding', 'Restaurant', 'Pharmacy', 'Other...'].map((option) => (
+                                            <button
+                                                key={option}
+                                                onClick={() => setType(option)}
+                                                className={`personalized-filter-button ${type === option ? 'personalized-active' : ''}`}
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Budget Filter */}
+                                <div className="personalized-filter-group">
+                                    <label className="personalized-filter-label">Giới hạn số tiền:</label>
+                                    <div className="personalized-filter-options">
+                                        {['50,000', '100,000', '500,000', '1,500,000', 'Above...'].map((option) => (
+                                            <button
+                                                key={option}
+                                                onClick={() => setBudget(option)}
+                                                className={`personalized-filter-button ${budget === option ? 'personalized-active' : ''}`}
+                                            >
+                                                {option}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Rating Filter */}
+                                <div className="personalized-filter-group">
+                                    <label className="personalized-filter-label">Đánh giá:</label>
+                                    <div className="personalized-rating-options">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                            <span
+                                                key={star}
+                                                className={`personalized-star-rating ${star <= rating ? 'personalized-active' : ''}`}
+                                                onClick={() => setRating(star)}
+                                            >
+                                                ★
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Chatbot Prompt */}
+                                <div className="personalized-chatbot-prompt">
+                                    <span className="personalized-prompt-icon">❤️ Câu hỏi nổi bật:</span>
+                                    <p className="personalized-prompt-text">
+                                        📍Lựa chọn tiêu chí giúp trợ lý AI đưa ra lựa chọn phù hợp nhất cho bạn!
+                                    </p>
+                                </div>
+                            </div>
+                            <div className='personalized-chat-box'>
+                                <textarea
+                                    id="userMessage"
+                                    className="personalized-textarea-full"
+                                    placeholder="Hãy mô tả yêu cầu của bạn..."
+                                    value={userMessage}
+                                    onChange={(e) => setUserMessage(e.target.value)}
+                                ></textarea>
+
                             </div>
                         </div>
-
-                        {/* Budget Filter */}
-                        <div className="personalized-filter-group">
-                            <label className="personalized-filter-label">Budget:</label>
-                            <div className="personalized-filter-options">
-                                {['50,000', '100,000', '500,000', '1,500,000', 'Above...'].map((option) => (
-                                    <button
-                                        key={option}
-                                        onClick={() => setBudget(option)}
-                                        className={`personalized-filter-button ${budget === option ? 'personalized-active' : ''}`}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Rating Filter */}
-                        <div className="personalized-filter-group">
-                            <label className="personalized-filter-label">Ratings:</label>
-                            <div className="personalized-rating-options">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                    <span
-                                        key={star}
-                                        className={`personalized-star-rating ${star <= rating ? 'personalized-active' : ''}`}
-                                        onClick={() => setRating(star)}
-                                    >
-                                        ★
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Chatbot Prompt */}
-                        <div className="personalized-chatbot-prompt">
-                            <span className="personalized-prompt-icon">❤️ Câu hỏi nổi bật:</span>
-                            <p className="personalized-prompt-text">
-                                📍Lựa chọn tiêu chí giúp trợ lý AI đưa ra lựa chọn phù hợp nhất cho bạn!
-                            </p>
-                        </div>
+                        <button
+                            className="personalized-send-button"
+                            onClick={handleSendMessage}
+                            disabled={!userMessage.trim()}
+                        >
+                            Gửi yêu cầu
+                        </button>
                     </div>
                 </div>
 
@@ -168,18 +206,32 @@ function PersonalizedPage() {
                 <section className="personalized-best-places-section">
                     <div className="container">
                         <h2>Địa điểm gợi ý</h2>
-                        <div className="personalized-places-grid">
+                        <div className="discover-places-grid">
                             {bestPlaces.map((place) => (
-                                <div key={place.business_id} className="personalized-place-card" onClick={() => navigate(`/business/${place._id}`)} style={{ cursor: 'pointer' }}>
-                                    <div className="personalized-place-image">
-                                        <img src={place.business_image[0] || 'default-image.png'} alt={place.business_name} />
+                                <div
+                                    key={place._id}
+                                    className="discover-place-card"
+                                    onClick={() => handleBusinessClick(place._id)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <div className="discover-place-image">
+                                        <img
+                                            src={place.business_image?.[0] || '/placeholder.jpg'}
+                                            alt={place.business_name}
+                                            loading="lazy"
+                                            onError={(e) => {
+                                                e.target.src = '/1.png';
+                                            }}
+                                        />
                                     </div>
-                                    <div className="personalized-place-info">
-                                        <span className="personalized-status">{place.business_active === 'active' ? <p className='personalized-status place-open'>Đang mở cửa</p> : <p className='personalized-status place-close'>Tạm đóng cửa</p>}</span>
+                                    <div className="discover-place-info">
                                         <h3>{place.business_name}</h3>
-                                        <p className="personalized-place-location">{place.business_address}</p>
-                                        <div className="personalized-place-meta">
-                                            <span className="personalized-rating">⭐ {place.business_rating}</span>
+                                        <p className="discover-place-location">{place.business_address}</p>
+                                        <div className="discover-place-meta">
+                                            <span className="discover-status">
+                                                {place.business_status ? 'Đang mở cửa' : 'Đã đóng cửa'}
+                                            </span>
+                                            <span className="discover-rating">⭐ {place.business_rating || 0}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -187,7 +239,7 @@ function PersonalizedPage() {
                         </div>
                     </div>
                 </section>
-            </div>
+            </div >
             <Footer />
         </>
     );
