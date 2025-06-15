@@ -1,264 +1,4 @@
-/* Responsive styles */
-@media (max-width: 1024px) {
-  .places-grid-new {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .services-grid-new {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .prev-btn {
-    left: -15px;
-  }
-
-  .next-btn {
-    right: -15px;
-  }
-
-  .testimonials-grid {
-    padding: 0 30px;
-  }
-}
-
-@media (max-width: 768px) {
-  .hero-text h1 {
-    font-size: 2.5rem;
-  }
-  
-  .places-grid-new {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-  }
-  
-  .services-grid-new {
-    grid-template-columns: 1fr;
-  }
-  
-  .why-choose-content-new {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .why-choose-left-new h2,
-  .features-list-new {
-    padding-left: 0;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .best-places-section h2,
-  .feedback-section h2 {
-    font-size: 1.8rem;
-  }
-  
-  .container {
-    padding: 0 1rem;
-  }
-
-  .testimonials-grid {
-    flex-direction: column;
-    padding: 0 10px;
-    gap: 1rem;
-  }
-
-  .testimonial-card {
-    flex: none;
-    min-height: auto;
-  }
-
-  .feedback-nav-btn {
-    display: none;
-  }
-
-  .feedback-stats {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .feedback-stat {
-    padding: 1rem 1.5rem;
-    min-width: auto;
-  }
-
-  /* Thu nhỏ Why Choose section trên mobile */
-  .why-choose-section-new {
-    padding: 1rem 0;
-    margin-bottom: 4rem;
-  }
-
-  .why-choose-left-new h2 {
-    font-size: 1.5rem;
-  }
-
-  .feature-content-new h4 {
-    font-size: 0.9rem;
-  }
-
-  .feature-content-new p {
-    font-size: 0.8rem;
-  }
-
-  .why-choose-right-new img {
-    max-width: 250px;
-    height: 200px;
-  }
-
-  .stats-section {
-    padding: 2rem 0;
-    margin-bottom: 4rem;
-    border-radius: 20px;
-  }
-
-  .stat-item {
-    padding: 1rem;
-  }
-
-  .stat-item h3 {
-    font-size: 1.5rem;
-  }
-
-  .stat-item p {
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .places-grid-new {
-    grid-template-columns: 1fr;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .hero-text h1 {
-    font-size: 2rem;
-  }
-  
-  .search-box {
-    flex-direction: column;
-    border-radius: 15px;
-  }
-  
-  .search-btn {
-    border-radius: 0 0 15px 15px;
-  }
-  
-  .pills-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .testimonials-grid {
-    padding: 0;
-  }
-
-  .feedback-stat h3 {
-    font-size: 1.5rem;
-  }
-
-  .feedback-stat p {
-    font-size: 0.75rem;
-  }
-
-  /* Các section được giãn cách rõ ràng trên mobile */
-  .best-places-section {
-    padding: 1rem 0;
-    margin-bottom: 3rem;
-  }
-
-  .services-section-new {
-    padding: 1rem 0;
-    margin-bottom: 3rem;
-  }
-
-  .why-choose-section-new {
-    margin-bottom: 3rem;
-  }
-
-  .stats-section {
-    margin-bottom: 3rem;
-  }
-
-  .feedback-section {
-    padding: 1rem 0;
-  }
-}
-
-/* Original styles from old CSS - keeping compatibility */
-.category-filter-section {
-  padding-top: 60px;
-}
-
-.category-filter-container {
-  background-color: #ffffff;
-  padding: 32px;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.category-filter-title {
-  font-size: 28px;
-  font-weight: bold;
-  color: #1e3a8a;
-  margin-bottom: 12px;
-  text-align: center;
-}
-
-.category-filter-subtitle {
-  font-size: 16px;
-  color: #6b7280;
-  margin-bottom: 32px;
-  text-align: center;
-  line-height: 1.6;
-}
-
-.category-filter-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-}
-
-.category-filter-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: 25px;
-  border: 2px solid #e5e7eb;
-  background-color: #ffffff;
-  color: #374151;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-  font-size: 14px;
-  white-space: nowrap;
-}
-
-.category-filter-button:hover {
-  border-color: #1e3a8a;
-  background-color: #f0f9ff;
-  color: #1e3a8a;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.15);
-}
-
-.category-filter-button.category-active {
-  background-color: #1e3a8a;
-  color: #ffffff;
-  border-color: #1e3a8a;
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
-}
-
-.category-icon {
-  font-size: 18px;
-}/* LandingPage2.css - Updated Version với giao diện cải thiện */
+/* LandingPage.css - Complete Version với Services Navigation */
 
 .landing-page2 {
   margin-top: 0;
@@ -532,31 +272,59 @@
   gap: 0.3rem;
 }
 
-/* Services Section */
+/* Services Section với Navigation - Đồng bộ với Best Places Section */
 .services-section-new {
-  padding: 3rem 0;
+  padding: 2rem 0;
+  background: white;
+}
+
+.services-section-new h2 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  text-align: center;
+  color: #333;
+  position: relative;
+}
+
+.services-section-new h2::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #ff6b35, #e55a2b);
+  border-radius: 2px;
+}
+
+.services-container {
+  position: relative;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .services-grid-new {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2.5rem;
-  margin-bottom: 4rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  margin-bottom: 2rem;
 }
 
 .service-card-new {
   position: relative;
-  height: 350px;
-  border-radius: 25px;
+  height: 280px;
+  border-radius: 20px;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.4s ease;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .service-card-new:hover {
-  transform: translateY(-15px);
-  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
 
 .service-background {
@@ -591,34 +359,37 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 2.5rem;
+  padding: 2rem 1.5rem 1.5rem;
   color: white;
   z-index: 2;
 }
 
 .service-content-new h3 {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 600;
   margin-bottom: 0.5rem;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  line-height: 1.3;
 }
 
 .service-content-new p {
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
   opacity: 0.9;
+  line-height: 1.3;
 }
 
 .service-btn-new {
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: 2px solid rgba(255, 255, 255, 0.4);
-  padding: 0.8rem 2rem;
-  border-radius: 30px;
+  padding: 0.5rem 1.5rem;
+  border-radius: 25px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-weight: 600;
+  font-weight: 500;
   backdrop-filter: blur(10px);
+  font-size: 0.9rem;
 }
 
 .service-btn-new:hover {
@@ -627,7 +398,66 @@
   transform: translateY(-2px);
 }
 
-/* Why Choose Section - Thu nhỏ lại */
+/* Service Navigation Buttons */
+.service-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: #ff6b35;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.service-nav-btn:hover {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.service-nav-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.service-nav-btn.prev-btn {
+  left: -25px;
+}
+
+.service-nav-btn.next-btn {
+  right: -25px;
+}
+
+/* Service Dots */
+.service-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: #ddd;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.service-dot:hover {
+  background: #999;
+  transform: scale(1.2);
+}
+
+.service-dot.active {
+  background: #ff6b35;
+  transform: scale(1.3);
+}
+
+/* Why Choose Section */
 .why-choose-section-new {
   padding: 3rem 0;
   background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -759,9 +589,11 @@
   margin: 0;
 }
 
-/* Feedback Section Styles - Thu nhỏ và cải thiện layout */
+/* Feedback Section Styles */
 .feedback-section {
-  padding: 4rem 0;
+  width: 100%;
+  margin-bottom: 50px; 
+  padding: 20px 0;
   background: linear-gradient(135deg, #f9d8ca 0%, #f4c2a1 100%);
   position: relative;
 }
@@ -865,12 +697,20 @@
 
 .testimonial-header {
   margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .testimonial-rating {
   color: #ffd700;
   font-size: 1rem;
   letter-spacing: 1px;
+}
+
+.testimonial-date {
+  font-size: 0.8rem;
+  color: #666;
 }
 
 .testimonial-text {
@@ -951,118 +791,7 @@
   line-height: 1.3;
 }
 
-/* Responsive styles */
-@media (max-width: 1024px) {
-  .places-grid-new {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .services-grid-new {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .prev-btn {
-    left: -20px;
-  }
-
-  .next-btn {
-    right: -20px;
-  }
-}
-
-@media (max-width: 768px) {
-  .hero-text h1 {
-    font-size: 2.5rem;
-  }
-  
-  .places-grid-new {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-  }
-  
-  .services-grid-new {
-    grid-template-columns: 1fr;
-  }
-  
-  .why-choose-content-new {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
-
-  .why-choose-left-new h2,
-  .features-list-new {
-    padding-left: 0;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .best-places-section h2,
-  .feedback-section h2 {
-    font-size: 2.2rem;
-  }
-  
-  .container {
-    padding: 0 1rem;
-  }
-
-  .testimonials-grid {
-    padding: 0 20px;
-  }
-
-  .feedback-nav-btn {
-    display: none;
-  }
-
-  .feedback-stats {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .feedback-stat {
-    padding: 20px 30px;
-  }
-}
-
-@media (max-width: 480px) {
-  .places-grid-new {
-    grid-template-columns: 1fr;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .hero-text h1 {
-    font-size: 2rem;
-  }
-  
-  .search-box {
-    flex-direction: column;
-    border-radius: 15px;
-  }
-  
-  .search-btn {
-    border-radius: 0 0 15px 15px;
-  }
-  
-  .pills-container {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .testimonials-grid {
-    grid-template-columns: 1fr;
-    padding: 0;
-  }
-
-  .feedback-stat h3 {
-    font-size: 2.5rem;
-  }
-}
-
-/* Original styles from old CSS - keeping compatibility */
+/* Original category filter styles */
 .category-filter-section {
   padding-top: 60px;
 }
@@ -1131,4 +860,240 @@
 
 .category-icon {
   font-size: 18px;
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+  .places-grid-new {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .services-grid-new {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+  
+  .service-nav-btn {
+    left: -20px !important;
+    right: -20px !important;
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 1rem !important;
+  }
+  
+  .services-container {
+    padding: 0 30px !important;
+  }
+
+  .prev-btn {
+    left: -15px;
+  }
+
+  .next-btn {
+    right: -15px;
+  }
+
+  .testimonials-grid {
+    padding: 0 30px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-text h1 {
+    font-size: 2.5rem;
+  }
+  
+  .places-grid-new {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .services-grid-new {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+    padding: 0 !important;
+  }
+  
+  .service-nav-btn {
+    display: none !important;
+  }
+  
+  .services-container {
+    padding: 0 !important;
+  }
+  
+  /* Category pills responsive */
+  .pills-container {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+  }
+  
+  .category-pill {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.85rem !important;
+  }
+  
+  .why-choose-content-new {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .why-choose-left-new h2,
+  .features-list-new {
+    padding-left: 0;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .best-places-section h2,
+  .feedback-section h2 {
+    font-size: 1.8rem;
+  }
+  
+  .container {
+    padding: 0 1rem;
+  }
+
+  .testimonials-grid {
+    flex-direction: column;
+    padding: 0 10px;
+    gap: 1rem;
+  }
+
+  .testimonial-card {
+    flex: none;
+    min-height: auto;
+  }
+
+  .feedback-nav-btn {
+    display: none;
+  }
+
+  .feedback-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .feedback-stat {
+    padding: 1rem 1.5rem;
+    min-width: auto;
+  }
+
+  /* Thu nhỏ Why Choose section trên mobile */
+  .why-choose-section-new {
+    padding: 1rem 0;
+    margin-bottom: 4rem;
+  }
+
+  .why-choose-left-new h2 {
+    font-size: 1.5rem;
+  }
+
+  .feature-content-new h4 {
+    font-size: 0.9rem;
+  }
+
+  .feature-content-new p {
+    font-size: 0.8rem;
+  }
+
+  .why-choose-right-new img {
+    max-width: 250px;
+    height: 200px;
+  }
+
+  .stats-section {
+    padding: 2rem 0;
+    margin-bottom: 4rem;
+    border-radius: 20px;
+  }
+
+  .stat-item {
+    padding: 1rem;
+  }
+
+  .stat-item h3 {
+    font-size: 1.5rem;
+  }
+
+  .stat-item p {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .places-grid-new {
+    grid-template-columns: 1fr;
+  }
+  
+  .services-grid-new {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+  
+  .category-pill {
+    padding: 0.4rem 0.8rem !important;
+    font-size: 0.8rem !important;
+  }
+  
+  .pill-icon {
+    font-size: 1rem !important;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .hero-text h1 {
+    font-size: 2rem;
+  }
+  
+  .search-box {
+    flex-direction: column;
+    border-radius: 15px;
+  }
+  
+  .search-btn {
+    border-radius: 0 0 15px 15px;
+  }
+
+  .testimonials-grid {
+    padding: 0;
+  }
+
+  .feedback-stat h3 {
+    font-size: 1.5rem;
+  }
+
+  .feedback-stat p {
+    font-size: 0.75rem;
+  }
+
+  /* Các section được giãn cách rõ ràng trên mobile */
+  .best-places-section {
+    padding: 1rem 0;
+    margin-bottom: 3rem;
+  }
+
+  .services-section-new {
+    padding: 1rem 0;
+    margin-bottom: 3rem;
+  }
+
+  .why-choose-section-new {
+    margin-bottom: 3rem;
+  }
+
+  .stats-section {
+    margin-bottom: 3rem;
+  }
+
+  .feedback-section {
+    padding: 1rem 0;
+  }
 }
