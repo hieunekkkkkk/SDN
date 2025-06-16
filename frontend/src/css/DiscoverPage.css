@@ -280,17 +280,20 @@
   margin-top: auto;
 }
 
-.discover-status {
+.discover-status{
   font-size: 0.9rem;
   font-weight: 500;
   padding: 4px 12px;
   border-radius: 15px;
-  background: linear-gradient(135deg, #10b981, #059669);
   color: white;
 }
 
-.discover-status:contains("Đã đóng cửa") {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+.discover-status.open {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.discover-status.closed {
+  background: linear-gradient(135deg, #f87171, #dc2626);
 }
 
 .discover-rating {

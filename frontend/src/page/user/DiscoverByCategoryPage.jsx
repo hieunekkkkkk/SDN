@@ -72,7 +72,9 @@ function DiscoverByCategoryPage() {
 
         if (Array.isArray(response.data)) {
           const filtered = response.data.filter(
-            (b) => b.business_category_id?._id === categoryId
+            (b) =>
+              b.business_category_id?._id === categoryId &&
+              b.business_active !== 'inactive'
           );
 
           const enriched = filtered.map((b) => ({
@@ -193,7 +195,9 @@ function DiscoverByCategoryPage() {
                       <h3>{b.business_name}</h3>
                       <p>{b.business_address}</p>
                       <div className="place-meta">
-                        <span className="place-status">{b.status}</span>
+                        <span className={`place-status ${b.status === 'Đang mở cửa' ? 'open' : 'close'}`}>
+                          {b.status}
+                        </span>
                         <span className="place-rating">⭐ {b.rating}</span>
                       </div>
                     </div>

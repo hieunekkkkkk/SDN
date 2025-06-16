@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUserRole } from '../contexts/UserRoleContext';
 import LoadingScreen from './LoadingScreen';
 
-const AdminRoute = ({ children }) => {
+const OwnerRoute = ({ children }) => {
     const navigate = useNavigate();
     const { role } = useUserRole();
     const [checking, setChecking] = useState(true);
@@ -28,4 +28,4 @@ const AdminRoute = ({ children }) => {
     return children;
 };
 
-export default AdminRoute;
+export default OwnerRoute;

@@ -138,11 +138,26 @@
 }
 
 .place-status {
-  color: #28a745;
+  font-size: 0.9rem;
   font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 15px;
+  color: white;
+}
+
+.place-status.open {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.place-status.closed {
+  background: linear-gradient(135deg, #f87171, #dc2626);
 }
 
 .place-rating {
-  color: #ffb400;
-  font-weight: 500;
+  color: #ffc107;
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
