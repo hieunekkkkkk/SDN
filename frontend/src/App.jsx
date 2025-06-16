@@ -68,21 +68,26 @@ const AppRoutes = () => {
             path="/discover/:category"
             element={<DiscoverByCategoryPage />}
           />
+          <Route
+            path="/business-registration"
+            element={
+              <OwnerRoute>
+                <SignedIn>
+                  <BusinessRegistrationPage />
+                </SignedIn>
+                <SignedOut>
+                  <LoginPage />
+                </SignedOut>
+              </OwnerRoute>
+            }
+          />
 
-          {/* Onwer routes */}
+          {/* Owner routes */}
           <Route
             path="/my-business"
             element={
               <OwnerRoute>
                 <MyBusinessPage />
-              </OwnerRoute>
-            }
-          />
-          <Route
-            path="/business-registration"
-            element={
-              <OwnerRoute>
-                <BusinessRegistrationPage />
               </OwnerRoute>
             }
           />
