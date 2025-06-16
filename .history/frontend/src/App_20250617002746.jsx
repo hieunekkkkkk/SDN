@@ -80,19 +80,11 @@ const AppRoutes = () => {
           />
           <Route
             path="/business-registration"
-            element={
-              <OwnerRoute>
-                <BusinessRegistrationPage />
-              </OwnerRoute>
-            }
+            element={<BusinessRegistrationPage />}
           />
           <Route
             path="/product-registration"
-            element={
-              <OwnerRoute>
-                <ProductRegistrationPage />
-              </OwnerRoute>
-            }
+            element={<ProductRegistrationPage />}
           />
 
           {/* Admin routes */}

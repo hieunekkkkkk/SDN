@@ -5,8 +5,6 @@ import './index.css';
 import '@fontsource/montserrat';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { SignedIn, SignedOut } from '@clerk/clerk-react';
-import ProtectedRoute from './components/ProtectedRoute';
 
 import LandingPage from './page/user/LandingPage';
 import LoginPage from './page/user/LoginPage';
@@ -25,7 +23,6 @@ import ManageUserPage from './page/admin/ManageUserPage';
 import ManageBusinessPage from './page/admin/ManageBusinessPage';
 import ManageTransactionPage from './page/admin/ManageTransactionPage';
 import AdminRoute from './components/AdminRoute';
-import OwnerRoute from './components/OwnerRoute';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -33,69 +30,25 @@ const AppRoutes = () => {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        {/* Public routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route
-          path="/auth-callback"
-          element={
-            <>
-              <SignedIn>
-                <AuthCallback />
-              </SignedIn>
-              <SignedOut>
-                <LoginPage />
-              </SignedOut>
-            </>
-          }
-        />
-
-        {/* Protected Layout with animation and accessToken check */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <AnimatedLayout />
-            </ProtectedRoute>
-          }
-        >
+        <Route element={<AnimatedLayout />}>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/landingPage" element={<LandingPage />} />
-          <Route path="/business/:id" element={<BusinessPage />} />
+          <Route path="/LandingPage" element={<LandingPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/business" element={<BusinessPage />} />
           <Route path="/user-profile/*" element={<UserProfilePage />} />
+          <Route path="/auth-callback" element={<AuthCallback />} />
           <Route path="/personalized" element={<PersonalizedPage />} />
           <Route path="/discover/" element={<DiscoverPage />} />
           <Route
             path="/discover/:category"
             element={<DiscoverByCategoryPage />}
           />
-
-          {/* Onwer routes */}
-          <Route
-            path="/my-business"
-            element={
-              <OwnerRoute>
-                <MyBusinessPage />
-              </OwnerRoute>
-            }
-          />
+          <Route path="/my-business" element={<MyBusinessPage />} />
           <Route
             path="/business-registration"
-            element={
-              <OwnerRoute>
-                <BusinessRegistrationPage />
-              </OwnerRoute>
-            }
+            element={<BusinessRegistrationPage />}
           />
-          <Route
-            path="/product-registration"
-            element={
-              <OwnerRoute>
-                <ProductRegistrationPage />
-              </OwnerRoute>
-            }
-          />
-
-          {/* Admin routes */}
           <Route
             path="/admin/users"
             element={
@@ -120,6 +73,14 @@ const AppRoutes = () => {
               </AdminRoute>
             }
           />
+          <Route
+            path="/product-registration"
+            element={<ProductRegistrationPage />}
+          />
+          <Route
+            path="/business-registration"
+            element={<BusinessRegistrationPage />}
+          />
         </Route>
       </Routes>
     </AnimatePresence>
@@ -129,18 +90,7 @@ const AppRoutes = () => {
 function App() {
   return (
     <BrowserRouter>
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
+      <ToastContainer position="top-right" autoClose={3000} />
       <AppRoutes />
     </BrowserRouter>
   );
