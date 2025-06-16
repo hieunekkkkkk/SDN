@@ -5,7 +5,7 @@ class AiService {
     // Helper method to get all businesses
     async getAllBusinesses() {
         try {
-            return await BusinessModel.find().lean(); // Use .lean() for plain JS objects
+            return await BusinessModel.find().lean().populate('business_category_id'); // Use .lean() for plain JS objects
         } catch (error) {
             throw new Error(`Error fetching businesses: ${error.message}`);
         }
@@ -33,7 +33,8 @@ class AiService {
                 "business_detail": business.business_detail,
                 "business_status": business.business_status,
                 "business_image": business.business_image,
-                products: products.filter(product =>
+                "business_category": business.business_category_id.category_name,
+                "products": products.filter(product =>
                     product.business_id.toString() === business._id.toString()
                 ).map(product => ({
                     "product_id": product._id,
