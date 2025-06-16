@@ -1,23 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../css/BusinessRegistrationPage.css';
+import axios from 'axios';
 
 const BusinessRegistrationPage = () => {
   const [selectedOption, setSelectedOption] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const options = [
-    'Lựa chọn...',
-    'Nhà trọ',
-    'Quán ăn',
-    'Cafe',
-    'Supply',
-    'Giải trí',
-  ];
+  const options = ['Nhà trọ', 'Quán ăn', 'Cafe', 'Supply', 'Giải trí'];
 
   const handleOptionClick = (option) => {
     setSelectedOption(option);
     setIsOpen(false);
+  };
+  const [images, setImages] = useState([]);
+  const handleAddImage = (event) => {
+    const files = Array.from(event.target.files);
+    const newImages = files.map((file) => URL.createObjectURL(file));
+    setImages((prevImages) => [...prevImages, ...newImages]);
+  };
+
+  const [stacks, setStacks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchStacks = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BE_URL}/api/stack`
+        );
+        setStacks(response.data.stacks || []);
+      } catch (err) {
+        console.error('Error fetching stacks:', err);
+        setError('Không thể tải dữ liệu gói đăng ký.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStacks();
+  }, []);
+
+  const formatPrice = (price) => {
+    if (price >= 1000000000)
+      return `${(price / 1000000000).toFixed(1)}B / tháng`;
+    if (price >= 1000000) return `${(price / 1000000).toFixed(1)}M / tháng`;
+    if (price >= 1000) return `${(price / 1000).toFixed(1)}K / tháng`;
+    return `${price}/tháng`;
   };
 
   return (
@@ -33,8 +64,8 @@ const BusinessRegistrationPage = () => {
               <strong>Chính sách đăng tải nội dung và sản phẩm</strong>
               <ul>
                 <li>
-                  Chỉ cho phép đăng các sản phẩm và dịch vụ hợp pháp theo q định
-                  pháp luật của Việt Nam.
+                  Chỉ cho phép đăng các sản phẩm và dịch vụ hợp pháp theo quy
+                  định pháp luật của Việt Nam.
                 </li>
                 <li>
                   Cấm quảng cáo sai sự thật, thông tin gây hiểu lầm hoặc gian
@@ -106,9 +137,26 @@ const BusinessRegistrationPage = () => {
               <div className="form-group">
                 <label htmlFor="business-image">Hình ảnh</label>
                 <div className="image-upload">
-                  <div className="image-preview"></div>
-                  <div className="image-preview"></div>
-                  <button type="button" className="add-image-btn">
+                  {images.map((image, index) => (
+                    <div key={index} className="image-preview">
+                      <img src={image} alt={`Preview ${index + 1}`} />
+                    </div>
+                  ))}
+                  <input
+                    type="file"
+                    id="add-image-input"
+                    className="add-image-input"
+                    accept="image/*"
+                    multiple
+                    onChange={handleAddImage}
+                  />
+                  <button
+                    type="button"
+                    className="add-image-btn"
+                    onClick={() =>
+                      document.getElementById('add-image-input').click()
+                    }
+                  >
                     +
                   </button>
                 </div>
@@ -122,7 +170,7 @@ const BusinessRegistrationPage = () => {
                     className="select-selected"
                     onClick={() => setIsOpen(!isOpen)}
                   >
-                    {selectedOption || 'Lựa chọn...'}
+                    {selectedOption || 'Lựa chọn'}
                   </div>
                   {isOpen && (
                     <div className="select-items">
@@ -171,46 +219,26 @@ const BusinessRegistrationPage = () => {
 
           <div className="pricing-plans">
             <h2 className="plan-title">Lựa chọn gói đăng ký</h2>
-            <div className="plan-options">
-              <div className="plan-card">
-                <h3>Free</h3>
-                <p>
-                  <strong>$0/mo</strong>
-                </p>
-                <ul>
-                  <li>Voice messages anywhere</li>
-                  <li>Voice messages anywhere</li>
-                  <li>Voice messages anywhere</li>
-                </ul>
-                <button className="plan-btn">Already using</button>
+            {loading ? (
+              <p>Đang tải...</p>
+            ) : error ? (
+              <p>{error}</p>
+            ) : (
+              <div className="plan-options">
+                {stacks.map((stack) => (
+                  <div key={stack._id} className="plan-card">
+                    <h3>{stack.stack_name}</h3>
+                    <p>
+                      <strong>{formatPrice(stack.stack_price)}</strong>
+                    </p>
+                    <p>{stack.stack_detail}</p>
+                    <button className="plan-btn">Chọn gói</button>
+                  </div>
+                ))}
               </div>
-              <div className="plan-card">
-                <h3>Premium</h3>
-                <p>
-                  <strong>100 triệu/tháng</strong>
-                </p>
-                <ul>
-                  <li>Voice messages anywhere</li>
-                  <li>Voice messages anywhere</li>
-                  <li>Voice messages anywhere</li>
-                </ul>
-                <button className="plan-btn">Buy now</button>
-              </div>
-              <div className="plan-card">
-                <h3>Super vip</h3>
-                <p>
-                  <strong>1 tỷ/tháng</strong>
-                </p>
-                <ul>
-                  <li>Voice messages anywhere</li>
-                  <li>Voice messages anywhere</li>
-                  <li>Voice messages anywhere</li>
-                </ul>
-                <button className="plan-btn">Buy now</button>
-              </div>
-            </div>
+            )}
           </div>
-          <button type="button" className="submit-btn">
+          <button type="submit" className="submit-btn">
             Đăng ký
           </button>
         </form>

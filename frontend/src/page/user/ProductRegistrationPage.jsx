@@ -16,8 +16,8 @@ const ProductRegistrationPage = () => {
               <strong>Chính sách đăng tải nội dung và sản phẩm</strong>
               <ul>
                 <li>
-                  Chỉ cho phép đăng các sản phẩm và dịch vụ hợp pháp theo q định
-                  pháp luật của Việt Nam.
+                  Chỉ cho phép đăng các sản phẩm và dịch vụ hợp pháp theo quy
+                  định pháp luật của Việt Nam.
                 </li>
                 <li>
                   Cấm quảng cáo sai sự thật, thông tin gây hiểu lầm hoặc gian

@@ -31,6 +31,7 @@
 .business-intro-text ul {
   list-style: none;
   padding-left: 0;
+  padding: 20px;
 }
 
 .business-intro-text ul li {
@@ -126,6 +127,15 @@
 .operating-hours-inputs {
   display: flex;
   gap: 1rem;
+  align-items: stretch;
+}
+
+.operating-hours-inputs input {
+  width: 100%; 
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  font-size: 16px;
 }
 
 .custom-select {
@@ -140,10 +150,6 @@
   cursor: pointer;
   background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="%236a1b9a"><path d="M0 0l6 6 6-6"/></svg>') no-repeat right 0.5rem center;
   font-size: 16px;
-}
-
-.select-selected:hover {
-  border-color: #6a1b9a;
 }
 
 .select-items {
@@ -172,26 +178,34 @@
 
 .image-upload {
   display: flex;
-  gap: 1rem;
   align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .image-preview {
   width: 100px;
   height: 100px;
-  background-color: #ccc;
-  border: 1px dashed #999;
-  border-radius: var(--border-radius);
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .add-image-btn {
-  width: 40px;
-  height: 40px;
-  background-color: #ddd;
-  border: none;
-  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  border: 1px dashed #007bff;
+  border-radius: 5px;
+  background-color: transparent;
+  font-size: 24px;
+  color: #007bff;
   cursor: pointer;
-  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -199,6 +213,10 @@
 
 .add-image-btn:hover {
   background-color: #bbb;
+}
+
+.add-image-input {
+  display: none;
 }
 
 .submit-btn {
@@ -218,7 +236,7 @@
 }
 
 .pricing-plans {
-  margin-top: 2rem;
+  text-align: center;
 }
 
 .plan-title {
@@ -230,46 +248,39 @@
 
 .plan-options {
   display: flex;
-  justify-content: space-around;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
 .plan-card {
-  background-color: #1a1a1a;
+  background-color: #3d3b3b;
   color: #fff;
-  border-radius: var(--border-radius);
-  padding: 1.5rem;
-  text-align: left;
-  width: 300px;
+  border-radius: 10px;
+  padding: 2rem;
+  text-align: center;
+  width: 250px;
+  height: 300px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: space-between;
 }
 
 .plan-card h3 {
   font-size: 20px;
-  margin-bottom: 0.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 3rem;
 }
 
 .plan-card p {
   font-size: 18px;
-  margin-bottom: 1rem;
-}
-
-.plan-card ul {
-  list-style: none;
-  padding: 0;
-  margin-bottom: 1rem;
-}
-
-.plan-card ul li {
-  margin-bottom: 0.5rem;
-}
-
-.plan-card ul li:before {
-  content: "✔";
-  margin-right: 0.5rem;
+  margin-bottom: 3rem;
 }
 
 .plan-btn {
+  margin-top: auto;
   padding: 0.5rem 1rem;
   background-color: #6a1b9a;
   color: #fff;
