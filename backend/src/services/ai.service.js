@@ -46,6 +46,19 @@ class AiService {
             throw new Error(`Error fetching businesses with products: ${error.message}`);
         }
     }
+
+    async getRecommendations(text) {
+        try {
+            //Fill service AI in here
+
+
+
+            console.log(text);
+            return "OK";
+        } catch (error) {
+            throw new Error(`Error getting recommendations: ${error.message}`);
+        }
+    }
 }
 
 module.exports = new AiService();
