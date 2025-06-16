@@ -33,7 +33,12 @@ function DiscoverPage() {
     try {
       setLoading(true);
       const res = await axios.get(`${import.meta.env.VITE_BE_URL}/api/business/search?query=${encodeURIComponent(query)}`);
-      setFilteredBusinesses(res.data.businesses || []);
+
+      const filteredBusinesses = res.data.businesses.filter(
+        (b) => b.business_active !== 'inactive'
+      );
+
+      setFilteredBusinesses(filteredBusinesses || []);
       setSearchQuery(query);
     } catch (err) {
       console.error('Search failed:', err);
@@ -51,8 +56,12 @@ function DiscoverPage() {
         axios.get(`${import.meta.env.VITE_BE_URL}/api/business`)
       ]);
 
+      const activeBusinesses = busRes.data.businesses.filter(
+        (b) => b.business_active !== 'inactive'
+      );
+
       setCategories(catRes.data.categories || []);
-      setBusinesses(busRes.data.businesses || []);
+      setBusinesses(activeBusinesses || []);
     } catch (err) {
       console.error('Fetch failed:', err);
       setError('Không thể tải dữ liệu. Vui lòng thử lại sau.');
@@ -145,7 +154,7 @@ function DiscoverPage() {
                         <h3>{business.business_name}</h3>
                         <p className="discover-place-location">{business.business_address}</p>
                         <div className="discover-place-meta">
-                          <span className="discover-status">
+                          <span className={`discover-status ${business.business_status ? 'open' : 'closed'}`}>
                             {business.business_status ? 'Đang mở cửa' : 'Đã đóng cửa'}
                           </span>
                           <span className="discover-rating">⭐ {business.business_rating || 0}</span>
@@ -187,7 +196,7 @@ function DiscoverPage() {
                           <h3>{business.business_name}</h3>
                           <p className="discover-place-location">{business.business_address}</p>
                           <div className="discover-place-meta">
-                            <span className="discover-status">
+                            <span className={`discover-status ${business.business_status ? 'open' : 'closed'}`}>
                               {business.business_status ? 'Đang mở cửa' : 'Đã đóng cửa'}
                             </span>
                             <span className="discover-rating">⭐ {business.business_rating || 0}</span>

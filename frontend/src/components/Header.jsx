@@ -35,25 +35,22 @@ const Header = () => {
           <nav className="header-nav">
             <Link
               to="/admin/users"
-              className={`header-nav-link ${
-                location.pathname === '/admin/users' ? 'active' : ''
-              }`}
+              className={`header-nav-link ${location.pathname === '/admin/users' ? 'active' : ''
+                }`}
             >
               Người dùng
             </Link>
             <Link
               to="/admin/businesses"
-              className={`header-nav-link ${
-                location.pathname === '/admin/businesses' ? 'active' : ''
-              }`}
+              className={`header-nav-link ${location.pathname === '/admin/businesses' ? 'active' : ''
+                }`}
             >
               Doanh nghiệp
             </Link>
             <Link
               to="/admin/transactions"
-              className={`header-nav-link ${
-                location.pathname === '/admin/transactions' ? 'active' : ''
-              }`}
+              className={`header-nav-link ${location.pathname === '/admin/transactions' ? 'active' : ''
+                }`}
             >
               Giao dịch
             </Link>
@@ -62,45 +59,42 @@ const Header = () => {
           <nav className={`header-nav ${isMenuOpen ? 'active' : ''}`}>
             <Link
               to="/"
-              className={`header-nav-link ${
-                location.pathname === '/' ? 'active' : ''
-              }`}
+              className={`header-nav-link ${location.pathname === '/' ? 'active' : ''
+                }`}
             >
               Trang chủ
             </Link>
             <Link
               to="/discover"
-              className={`header-nav-link ${
-                location.pathname.startsWith('/discover') ? 'active' : ''
-              }`}
+              className={`header-nav-link ${location.pathname.startsWith('/discover') ? 'active' : ''
+                }`}
             >
               Khám phá
             </Link>
             <Link
               to="/personalized"
-              className={`header-nav-link ${
-                location.pathname === '/personalized' ? 'active' : ''
-              }`}
+              className={`header-nav-link ${location.pathname === '/personalized' ? 'active' : ''
+                }`}
             >
               Cá nhân hóa
             </Link>
-            {role === 'owner' ? (
+            {role === 'owner' && (
               <Link
                 to="/my-business"
-                className={`header-nav-link ${
-                  location.pathname === '/my-business' ? 'active' : ''
-                }`}
+                className={`header-nav-link ${location.pathname === '/my-business' ? 'active' : ''
+                  }`}
               >
                 Doanh nghiệp của tôi
               </Link>
-            ) : (
+            )}
+
+            {role === 'client' && (
               <Link
                 to="/business-registration"
-                className={`header-nav-link ${
-                  location.pathname === '/business-register' ? 'active' : ''
-                }`}
+                className={`header-nav-link ${location.pathname === '/business-registration' ? 'active' : ''
+                  }`}
               >
-                Đăng kí doanh nghiệp
+                Đăng ký doanh nghiệp
               </Link>
             )}
           </nav>
@@ -129,7 +123,7 @@ const Header = () => {
         <SignedIn>
           <div className="header-user-info">
             <UserButton userProfileUrl="/user-profile">
-              {role == 'admin' && !isAdminPage && (
+              {role === 'admin' && !isAdminPage && (
                 <UserButton.MenuItems>
                   <UserButton.Action
                     label="Quản trị hệ thống"
@@ -138,7 +132,7 @@ const Header = () => {
                   />
                 </UserButton.MenuItems>
               )}
-              {role == 'admin' && isAdminPage && (
+              {role === 'admin' && isAdminPage && (
                 <UserButton.MenuItems>
                   <UserButton.Action
                     label="Trang chủ"
@@ -147,7 +141,7 @@ const Header = () => {
                   />
                 </UserButton.MenuItems>
               )}
-              {role == 'owner' && (
+              {role === 'owner' && (
                 <UserButton.MenuItems>
                   <UserButton.Action
                     label="Xem doanh nghiệp"
@@ -156,7 +150,7 @@ const Header = () => {
                   />
                 </UserButton.MenuItems>
               )}
-              {role == 'client' && (
+              {role === 'client' && (
                 <UserButton.MenuItems>
                   <UserButton.Action
                     label="Trở thành chủ doanh nghiệp"

@@ -59,7 +59,7 @@ const AppRoutes = () => {
           <Route path="/business-registration" element={<BusinessRegistrationPage />} />
           <Route path="/product-registration" element={<ProductRegistrationPage />} />
 
-          {/* Admin routes (double protected) */}
+          {/* Admin routes */}
           <Route path="/admin/users" element={<AdminRoute><ManageUserPage /></AdminRoute>} />
           <Route path="/admin/businesses" element={<AdminRoute><ManageBusinessPage /></AdminRoute>} />
           <Route path="/admin/transactions" element={<AdminRoute><ManageTransactionPage /></AdminRoute>} />
