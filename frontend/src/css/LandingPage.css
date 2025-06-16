@@ -1,4 +1,4 @@
-/* LandingPage.css - Complete Version với chỉ Pills được sửa */
+/* LandingPage.css - Desktop Only */
 
 .landing-page2 {
   margin-top: 0;
@@ -121,7 +121,7 @@
   transform: scale(1.02);
 }
 
-/* FIXED CATEGORY PILLS - CHỈ PHẦN NÀY ĐƯỢC SỬA */
+/* Category Pills */
 .category-pills {
   width: 100%;
   text-align: center;
@@ -161,7 +161,7 @@
   font-weight: 500;
   font-size: 0.9rem;
   white-space: nowrap;
-  min-height: 44px; /* Đảm bảo chiều cao đồng nhất */
+  min-height: 44px;
   text-decoration: none;
   user-select: none;
 }
@@ -186,7 +186,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0; /* Không cho icon bị co lại */
+  flex-shrink: 0;
 }
 
 /* Main Landing Page */
@@ -300,7 +300,7 @@
   gap: 0.3rem;
 }
 
-/* Services Section với Navigation - Đồng bộ với Best Places Section */
+/* Services Section */
 .services-section-new {
   padding: 2rem 0;
   background: white;
@@ -465,6 +465,13 @@
 }
 
 /* Service Dots */
+.service-dots-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
 .service-dot {
   width: 12px;
   height: 12px;
@@ -567,6 +574,7 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
 }
 
+/* Stats Section */
 .stats-section {
   padding: 3rem 0;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -586,7 +594,7 @@
 
 .stat-item {
   text-align: center;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 15px;
   backdrop-filter: blur(10px);
@@ -595,8 +603,8 @@
 }
 
 .stat-item:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .stat-icon {
@@ -617,10 +625,171 @@
   margin: 0;
 }
 
-/* Feedback Section Styles */
+/* Pricing Section */
+.pricing-section {
+  padding: 3rem 0;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  margin-bottom: 6rem;
+  border-radius: 20px;
+}
+
+.pricing-section h2 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 3rem;
+  text-align: center;
+  color: #333;
+  position: relative;
+}
+
+.pricing-section h2::after {
+  content: '';
+  position: absolute;
+  bottom: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(135deg, #ff6b35, #e55a2b);
+  border-radius: 2px;
+}
+
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.pricing-card {
+  background: white;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  border: 2px solid transparent;
+}
+
+.pricing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.pricing-card.featured {
+  border-color: #ff6b35;
+  transform: scale(1.05);
+  background: linear-gradient(135deg, #fff5f2, #ffffff);
+}
+
+.pricing-card.featured::before {
+  content: 'PHỔ BIẾN';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ff6b35;
+  color: white;
+  padding: 0.5rem 1.5rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pricing-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.pricing-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.currency {
+  font-size: 1rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.amount {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #ff6b35;
+}
+
+.period {
+  font-size: 1rem;
+  color: #666;
+}
+
+.pricing-features {
+  margin-bottom: 2rem;
+}
+
+.pricing-features p {
+  text-align: center;
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-style: italic;
+}
+
+.pricing-features ul {
+  list-style: none;
+  padding: 0;
+}
+
+.pricing-features li {
+  padding: 0.5rem 0;
+  color: #555;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.pricing-btn {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #ff6b35, #e55a2b);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pricing-btn:hover {
+  background: linear-gradient(135deg, #e55a2b, #d14d20);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+}
+
+.pricing-card.featured .pricing-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.pricing-card.featured .pricing-btn:hover {
+  background: linear-gradient(135deg, #5a6fd8, #6a4190);
+}
+
+/* Feedback Section */
 .feedback-section {
   width: 100%;
-  margin-bottom: 50px; 
+  margin-bottom: 50px;
   padding: 20px 0;
   background: linear-gradient(135deg, #f9d8ca 0%, #f4c2a1 100%);
   position: relative;
@@ -781,6 +950,32 @@
   color: #636e72;
 }
 
+.testimonial-reactions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+  justify-content: center;
+}
+
+.reaction {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  color: #666;
+  padding: 0.3rem 0.8rem;
+  background: #f8f9fa;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.reaction:hover {
+  background: #e9ecef;
+  transform: scale(1.05);
+}
+
 .feedback-stats {
   display: flex;
   justify-content: center;
@@ -819,7 +1014,6 @@
   line-height: 1.3;
 }
 
-/* Original category filter styles */
 .category-filter-section {
   padding-top: 60px;
 }
@@ -890,264 +1084,130 @@
   font-size: 18px;
 }
 
-/* Responsive styles */
-@media (max-width: 1024px) {
-  .places-grid-new {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .services-grid-new {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-  
-  .service-nav-btn {
-    left: -20px;
-    right: -20px;
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
-  }
-  
-  .services-container {
-    padding: 0 30px;
-  }
+.btn {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: #ff6b35;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
 
-  .prev-btn {
-    left: -15px;
-  }
+.btn:hover {
+  background: #e55a2b;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+}
 
-  .next-btn {
-    right: -15px;
-  }
+/* Top Revenue Section Styles */
+.top-revenue-section {
+  padding: 4rem 0;
+  background-color: #f8f9fa;
+}
 
-  .testimonials-grid {
-    padding: 0 30px;
-  }
+.top-revenue-section h2 {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #333;
+  font-size: 2rem;
+}
+
+.revenue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.revenue-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.revenue-card:hover {
+  transform: translateY(-5px);
+}
+
+.revenue-rank {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #ff6b35;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.revenue-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.revenue-card h3 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.revenue-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  text-align: center;
+}
+
+.revenue-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ff6b35;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
 }
 
 @media (max-width: 768px) {
-  .hero-text h1 {
-    font-size: 2.5rem;
-  }
-  
-  .places-grid-new {
-    grid-template-columns: repeat(2, 1fr);
+  .revenue-grid {
+    grid-template-columns: 1fr;
     gap: 1.5rem;
   }
   
-  .services-grid-new {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    padding: 0;
+  .revenue-card {
+    padding: 1.5rem;
   }
   
-  .service-nav-btn {
-    display: none;
+  .revenue-icon {
+    font-size: 2.5rem;
   }
   
-  .services-container {
-    padding: 0;
+  .revenue-card h3 {
+    font-size: 1.3rem;
   }
   
-  /* Pills responsive - PHẦN NÀY ĐƯỢC SỬA */
-  .category-pills p {
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
+  .stat-value {
+    font-size: 1.3rem;
   }
-  
-  .pills-container {
-    gap: 0.5rem;
-    padding: 0 0.5rem;
-    max-width: 100%;
-  }
-  
-  .category-pill {
-    padding: 0.6rem 1rem;
-    font-size: 0.8rem;
-    min-height: 40px;
-    border-radius: 25px;
-  }
-  
-  .pill-icon {
-    font-size: 1rem;
-  }
-  
-  .why-choose-content-new {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-
-  .why-choose-left-new h2,
-  .features-list-new {
-    padding-left: 0;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .best-places-section h2,
-  .feedback-section h2 {
-    font-size: 1.8rem;
-  }
-  
-  .container {
-    padding: 0 1rem;
-  }
-
-  .testimonials-grid {
-    flex-direction: column;
-    padding: 0 10px;
-    gap: 1rem;
-  }
-
-  .testimonial-card {
-    flex: none;
-    min-height: auto;
-  }
-
-  .feedback-nav-btn {
-    display: none;
-  }
-
-  .feedback-stats {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .feedback-stat {
-    padding: 1rem 1.5rem;
-    min-width: auto;
-  }
-
-  /* Thu nhỏ Why Choose section trên mobile */
-  .why-choose-section-new {
-    padding: 1rem 0;
-    margin-bottom: 4rem;
-  }
-
-  .why-choose-left-new h2 {
-    font-size: 1.5rem;
-  }
-
-  .feature-content-new h4 {
-    font-size: 0.9rem;
-  }
-
-  .feature-content-new p {
-    font-size: 0.8rem;
-  }
-
-  .why-choose-right-new img {
-    max-width: 250px;
-    height: 200px;
-  }
-
-  .stats-section {
-    padding: 2rem 0;
-    margin-bottom: 4rem;
-    border-radius: 20px;
-  }
-
-  .stat-item {
-    padding: 1rem;
-  }
-
-  .stat-item h3 {
-    font-size: 1.5rem;
-  }
-
-  .stat-item p {
-    font-size: 0.8rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .places-grid-new {
-    grid-template-columns: 1fr;
-  }
-  
-  .services-grid-new {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  /* Pills extra small mobile - PHẦN NÀY ĐƯỢC SỬA */
-  .pills-container {
-    gap: 0.4rem;
-    justify-content: center;
-  }
-  
-  .category-pill {
-    padding: 0.5rem 0.8rem;
-    font-size: 0.75rem;
-    min-height: 36px;
-    border-radius: 20px;
-  }
-  
-  .pill-icon {
-    font-size: 0.9rem;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-  
-  .hero-text h1 {
-    font-size: 2rem;
-  }
-  
-  .search-box {
-    flex-direction: column;
-    border-radius: 15px;
-  }
-  
-  .search-btn {
-    border-radius: 0 0 15px 15px;
-  }
-
-  .testimonials-grid {
-    padding: 0;
-  }
-
-  .feedback-stat h3 {
-    font-size: 1.5rem;
-  }
-
-  .feedback-stat p {
-    font-size: 0.75rem;
-  }
-
-  /* Các section được giãn cách rõ ràng trên mobile */
-  .best-places-section {
-    padding: 1rem 0;
-    margin-bottom: 3rem;
-  }
-
-  .services-section-new {
-    padding: 1rem 0;
-    margin-bottom: 3rem;
-  }
-
-  .why-choose-section-new {
-    margin-bottom: 3rem;
-  }
-
-  .stats-section {
-    margin-bottom: 3rem;
-  }
-
-  .feedback-section {
-    padding: 1rem 0;
-  }
-}
-
-/* Service Dots Container */
-.service-dots-container {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 2rem;
 }

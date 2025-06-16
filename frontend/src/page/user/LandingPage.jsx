@@ -21,7 +21,9 @@ function LandingPage() {
     totalBusinesses: 0,
     totalCategories: 0,
     totalFeedbacks: 0,
-    averageRating: 4.8
+    totalLikes: 0,
+    totalDislikes: 0,
+    satisfactionRate: 0
   });
   const navigate = useNavigate();
 
@@ -45,9 +47,9 @@ function LandingPage() {
       setLoading(true);
       setError(null);
       
-      // Sử dụng Promise.allSettled để không bị fail khi một API lỗi
+      // Chỉ sử dụng 4 API có sẵn
       const results = await Promise.allSettled([
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=30`),
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=50`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating?page=1&limit=8`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`)
@@ -93,22 +95,34 @@ function LandingPage() {
         console.warn('Failed to load categories:', categoriesResult.reason);
       }
 
-      // Xử lý kết quả feedbacks
+      // Xử lý kết quả feedbacks - HOÀN TOÀN ĐỘNG
       if (feedbacksResult.status === 'fulfilled') {
         const data = feedbacksResult.value.data;
         const feedbackData = data?.data || data || [];
         setFeedbacks(feedbackData);
         
-        // Cập nhật stats từ feedbacks và tính rating trung bình
+        // Tính toán stats từ feedback thực tế
         const totalFeedbacks = feedbackData.length;
-        const avgRating = totalFeedbacks > 0 
-          ? feedbackData.reduce((sum, feedback) => sum + (feedback.feedback_rating || 5), 0) / totalFeedbacks
-          : 4.8;
+        let totalLikes = 0;
+        let totalDislikes = 0;
+        
+        feedbackData.forEach(feedback => {
+          totalLikes += feedback.feedback_like || 0;
+          totalDislikes += feedback.feedback_dislike || 0;
+        });
+        
+        // Tính tỷ lệ hài lòng từ like/dislike
+        const totalReactions = totalLikes + totalDislikes;
+        const satisfactionRate = totalReactions > 0 
+          ? Math.round((totalLikes / totalReactions) * 100)
+          : 95; // Fallback nếu chưa có reaction
         
         setStats(prev => ({
           ...prev,
           totalFeedbacks: totalFeedbacks,
-          averageRating: avgRating
+          totalLikes: totalLikes,
+          totalDislikes: totalDislikes,
+          satisfactionRate: satisfactionRate
         }));
       } else {
         console.warn('Failed to load feedbacks:', feedbacksResult.reason);
@@ -170,60 +184,49 @@ function LandingPage() {
     }
   };
 
-  // Helper function để convert icon name thành emoji - CẬP NHẬT THEO DATABASE
+  // Helper function để convert icon name thành emoji - ĐỘNG từ database
   const getCategoryIcon = (iconName, categoryName) => {
-    // Mapping từ database icons và category names
     const iconMap = {
       // Database icon names
+      'FaCoffee': '☕',
       'MdFoodBank': '🍜',
       'RiHotelLine': '🏨', 
       'PiPark': '🎡',
       'GiMaterialsScience': '🧱',
       
       // Category names from database
+      'Coffee': '☕',
       'Hàng ăn': '🍜',
       'Nhà trọ': '🏨',
       'Khu vui chơi': '🎡',
       'Nguyên vật liệu': '🧱',
-      
-      // Fallback mappings
-      'Coffee': '☕',
-      'Cafe': '☕',
-      'Restaurant': '🍽️',
-      'Hotel': '🏨',
-      'Pharmacy': '💊',
-      'Store': '🏪',
-      'Construction': '🧱',
-      'Building Materials': '🧱',
-      'Entertainment': '🎡',
-      'Park': '🎡',
-      'FaCoffee': '☕',
-      'FaStore': '🏪',
-      'FaPills': '💊',
-      'FaHammer': '🧱',
-      'MdConstruction': '🧱'
     };
     
-    // Thử tìm theo icon name trước, sau đó theo category name
     return iconMap[iconName] || iconMap[categoryName] || '📍';
   };
 
-  // Process feedbacks từ API backend
+  // Process feedbacks từ API backend - HOÀN TOÀN ĐỘNG với like/dislike
   const processedTestimonials = useMemo(() => {
     return feedbacks
       .filter(feedback => feedback.feedback_comment && feedback.feedback_comment.trim() !== '')
-      .slice(0, 10) // Giới hạn tối đa 10 feedback
-      .map(feedback => ({
-        id: feedback._id,
-        rating: Math.min(5, Math.max(1, 5)), // Mặc định 5 sao vì API không có rating
-        text: feedback.feedback_comment,
-        author: {
-          name: feedback.user_id || "Người dùng ẩn danh",
-          role: "Khách hàng",
-          avatar: "/1.png"
-        },
-        date: new Date(feedback.feedback_date).toLocaleDateString('vi-VN')
-      }));
+      .slice(0, 12) // Lấy 12 feedback để có thể phân trang
+      .map(feedback => {
+        const likes = feedback.feedback_like || 0;
+        const dislikes = feedback.feedback_dislike || 0;
+
+        return {
+          id: feedback._id,
+          text: feedback.feedback_comment,
+          author: {
+            name: feedback.user_id || "Người dùng ẩn danh",
+            role: "Khách hàng",
+            avatar: "/1.png"
+          },
+          date: new Date(feedback.feedback_date).toLocaleDateString('vi-VN'),
+          likes: likes,
+          dislikes: dislikes
+        };
+      });
   }, [feedbacks]);
 
   // Service navigation handlers
@@ -241,7 +244,7 @@ function LandingPage() {
     );
   }, [categories.length]);
 
-  // Get visible services for current page
+  // Get visible services for current page - ĐỘNG từ categories API
   const visibleServices = useMemo(() => {
     const startIndex = currentServicePage * 4;
     return categories.slice(startIndex, startIndex + 4);
@@ -266,7 +269,7 @@ function LandingPage() {
     return processedTestimonials.slice(startIndex, startIndex + 3);
   }, [processedTestimonials, currentFeedbackPage]);
 
-  // Tính toán có hiển thị navigation buttons hay không
+  // Tính toán có hiển thị navigation buttons hay không - ĐỘNG
   const showFeedbackNav = processedTestimonials.length > 3;
   const showServiceNav = categories.length > 4;
 
@@ -314,6 +317,7 @@ function LandingPage() {
             </form>
           </div>
 
+          {/* CATEGORY PILLS - HOÀN TOÀN ĐỘNG từ categories API */}
           <div className="category-pills">
             <p>Đã đăng theo danh mục</p>
             <div className="pills-container">
@@ -343,7 +347,7 @@ function LandingPage() {
       
       <div className="landing-page-new">
         <div className="container">
-          {/* Best Places Section */}
+          {/* Best Places Section - ĐỘNG từ bestBusinesses API */}
           <section className="best-places-section">
             <h2>Best of LocalLink</h2>
             
@@ -358,6 +362,7 @@ function LandingPage() {
             </div>
           </section>
 
+          {/* Services Section - ĐỘNG từ categories API */}
           <section className="services-section-new">
             <h2>Danh mục dịch vụ</h2>
             <div className="services-container" style={{ position: 'relative', maxWidth: '1200px', margin: '0 auto' }}>
@@ -389,7 +394,7 @@ function LandingPage() {
                     padding: '2rem',
                     color: '#666' 
                   }}>
-                    <p>Đang tải danh mục...</p>
+                    <p>Chưa có danh mục nào</p>
                   </div>
                 )}
               </div>
@@ -404,7 +409,7 @@ function LandingPage() {
                 </button>
               )}
 
-              {/* Dots indicator nếu có nhiều trang */}
+              {/* Dots indicator - ĐỘNG theo số categories */}
               {showServiceNav && (
                 <div className="service-dots-container">
                   {Array.from({ length: Math.ceil(categories.length / 4) }).map((_, idx) => (
@@ -422,10 +427,10 @@ function LandingPage() {
           {/* Why Choose Section */}
           <WhyChooseSection />
 
-          {/* Stats Section với dữ liệu thực từ API */}
+          {/* Stats Section - ĐỘNG từ API data */}
           <StatsSection stats={stats} />
 
-          {/* Feedback Section với dữ liệu thực từ API */}
+          {/* Feedback Section - HOÀN TOÀN ĐỘNG từ feedbacks API với like/dislike */}
           {processedTestimonials.length > 0 && (
             <section className="feedback-section">
               <h2>Phản hồi từ người dùng</h2>
@@ -445,10 +450,11 @@ function LandingPage() {
                   {visibleTestimonials.map((testimonial) => (
                     <TestimonialCard
                       key={testimonial.id}
-                      rating={testimonial.rating}
                       text={testimonial.text}
                       author={testimonial.author}
                       date={testimonial.date}
+                      likes={testimonial.likes}
+                      dislikes={testimonial.dislikes}
                     />
                   ))}
                 </div>
@@ -464,19 +470,30 @@ function LandingPage() {
                 )}
               </div>
 
+              {/* Feedback Stats - ĐỘNG từ feedbacks API */}
               <div className="feedback-stats">
                 <div className="feedback-stat">
-                  <h3>{stats.averageRating.toFixed(1)}/5</h3>
-                  <p>Điểm đánh giá trung bình từ hơn {stats.totalFeedbacks} người dùng</p>
+                  <h3>{stats.totalFeedbacks}</h3>
+                  <p>Phản hồi từ người dùng</p>
                 </div>
                 <div className="feedback-stat">
-                  <h3>95%</h3>
+                  <h3>{stats.satisfactionRate}%</h3>
                   <p>Người dùng hài lòng với dịch vụ</p>
                 </div>
                 <div className="feedback-stat">
                   <h3>{stats.totalBusinesses}+</h3>
                   <p>Doanh nghiệp đã tham gia</p>
                 </div>
+              </div>
+            </section>
+          )}
+
+          {/* Hiển thị message nếu không có feedback */}
+          {processedTestimonials.length === 0 && (
+            <section className="feedback-section">
+              <h2>Phản hồi từ người dùng</h2>
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#666' }}>
+                <p>Chưa có phản hồi nào từ người dùng</p>
               </div>
             </section>
           )}
@@ -488,7 +505,7 @@ function LandingPage() {
   );
 }
 
-// Place Card Component với dữ liệu thực từ API
+// Place Card Component - ĐỘNG từ business API
 const PlaceCard = React.memo(({ business, onClick }) => {
   const businessName = business.business_name || 'Tên không có';
   const businessAddress = business.business_address || 'Địa chỉ không có';
@@ -526,13 +543,12 @@ const PlaceCard = React.memo(({ business, onClick }) => {
   );
 });
 
-// Service Card Component với dữ liệu thực từ API - hỗ trợ nhiều background
+// Service Card Component - ĐỘNG từ category và business APIs
 const ServiceCard = React.memo(({ category, businesses, onSeeMore, index }) => {
   const categoryBusinesses = businesses.filter(b => 
     b.business_category_id?._id === category._id
   );
 
-  // Mở rộng danh sách background images cho 5 categories
   const backgroundImages = [
     '/1.png',
     '/2.png', 
@@ -541,7 +557,6 @@ const ServiceCard = React.memo(({ category, businesses, onSeeMore, index }) => {
     '/2.png'  
   ];
 
-  // Mở rộng danh sách gradients cho 5 categories
   const gradients = [
     'linear-gradient(135deg, rgba(255,107,53,0.8) 0%, rgba(255,107,53,0.6) 100%)',
     'linear-gradient(135deg, rgba(103,92,231,0.8) 0%, rgba(103,92,231,0.6) 100%)',
@@ -625,13 +640,10 @@ const WhyChooseSection = React.memo(() => (
   </section>
 ));
 
-// Testimonial Card Component với ngày tháng thực
-const TestimonialCard = React.memo(({ rating, text, author, date }) => (
+// Testimonial Card Component - ĐỘNG với like/dislike từ feedback API
+const TestimonialCard = React.memo(({ text, author, date, likes, dislikes }) => (
   <div className="testimonial-card">
     <div className="testimonial-header">
-      <div className="testimonial-rating">
-        {'★'.repeat(rating)}{'☆'.repeat(5 - rating)}
-      </div>
       <span className="testimonial-date">{date}</span>
     </div>
     <p className="testimonial-text">"{text}"</p>
@@ -649,10 +661,14 @@ const TestimonialCard = React.memo(({ rating, text, author, date }) => (
         <p>{author.role}</p>
       </div>
     </div>
+    <div className="testimonial-reactions">
+      <span className="reaction">👍 {likes}</span>
+      <span className="reaction">👎 {dislikes}</span>
+    </div>
   </div>
 ));
 
-// Stats Section với dữ liệu thực từ API
+// Stats Section - ĐỘNG từ tất cả APIs
 const StatsSection = React.memo(({ stats }) => (
   <section className="stats-section">
     <div className="stats-grid">
@@ -667,14 +683,14 @@ const StatsSection = React.memo(({ stats }) => (
         <p>Danh mục đa dạng</p>
       </div>
       <div className="stat-item">
-        <div className="stat-icon">👥</div>
-        <h3>1000+</h3>
-        <p>Người dùng tin tưởng</p>
+        <div className="stat-icon">💬</div>
+        <h3>{stats.totalFeedbacks}+</h3>
+        <p>Phản hồi từ người dùng</p>
       </div>
       <div className="stat-item">
-        <div className="stat-icon">⭐</div>
-        <h3>{stats.averageRating.toFixed(1)}</h3>
-        <p>Đánh giá trung bình</p>
+        <div className="stat-icon">👍</div>
+        <h3>{stats.totalLikes}+</h3>
+        <p>Lượt thích từ người dùng</p>
       </div>
     </div>
   </section>
