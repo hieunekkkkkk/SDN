@@ -32,7 +32,7 @@ function LandingPage() {
     if (selectedCategory === 'all') {
       return bestBusinesses;
     }
-    return bestBusinesses.filter(business => 
+    return bestBusinesses.filter(business =>
       business.business_category_id?._id === selectedCategory
     );
   }, [bestBusinesses, selectedCategory]);
@@ -46,11 +46,11 @@ function LandingPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Chỉ sử dụng 4 API có sẵn
       const results = await Promise.allSettled([
         axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=50`),
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating?page=1&limit=8`),
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`)
       ]);
@@ -62,7 +62,7 @@ function LandingPage() {
         const data = businessesResult.value.data;
         const businessData = data?.businesses || data || [];
         setBusinesses(businessData);
-        
+
         // Cập nhật stats từ businesses
         setStats(prev => ({
           ...prev,
@@ -85,7 +85,7 @@ function LandingPage() {
         const data = categoriesResult.value.data;
         const categoryData = data?.categories || data || [];
         setCategories(categoryData);
-        
+
         // Cập nhật stats từ categories
         setStats(prev => ({
           ...prev,
@@ -100,23 +100,23 @@ function LandingPage() {
         const data = feedbacksResult.value.data;
         const feedbackData = data?.data || data || [];
         setFeedbacks(feedbackData);
-        
+
         // Tính toán stats từ feedback thực tế
         const totalFeedbacks = feedbackData.length;
         let totalLikes = 0;
         let totalDislikes = 0;
-        
+
         feedbackData.forEach(feedback => {
           totalLikes += feedback.feedback_like || 0;
           totalDislikes += feedback.feedback_dislike || 0;
         });
-        
+
         // Tính tỷ lệ hài lòng từ like/dislike
         const totalReactions = totalLikes + totalDislikes;
-        const satisfactionRate = totalReactions > 0 
+        const satisfactionRate = totalReactions > 0
           ? Math.round((totalLikes / totalReactions) * 100)
           : 95; // Fallback nếu chưa có reaction
-        
+
         setStats(prev => ({
           ...prev,
           totalFeedbacks: totalFeedbacks,
@@ -153,7 +153,7 @@ function LandingPage() {
 
   const handleSeeMore = useCallback((categoryName, categoryId) => {
     console.log('handleSeeMore called with:', { categoryName, categoryId });
-    
+
     if (!categoryName || !categoryId) {
       console.error('Missing category data:', { categoryName, categoryId });
       return;
@@ -190,10 +190,10 @@ function LandingPage() {
       // Database icon names
       'FaCoffee': '☕',
       'MdFoodBank': '🍜',
-      'RiHotelLine': '🏨', 
+      'RiHotelLine': '🏨',
       'PiPark': '🎡',
       'GiMaterialsScience': '🧱',
-      
+
       // Category names from database
       'Coffee': '☕',
       'Hàng ăn': '🍜',
@@ -201,7 +201,7 @@ function LandingPage() {
       'Khu vui chơi': '🎡',
       'Nguyên vật liệu': '🧱',
     };
-    
+
     return iconMap[iconName] || iconMap[categoryName] || '📍';
   };
 
@@ -232,14 +232,14 @@ function LandingPage() {
   // Service navigation handlers
   const handlePrevService = useCallback(() => {
     const totalServicePages = Math.ceil(categories.length / 4);
-    setCurrentServicePage(prev => 
+    setCurrentServicePage(prev =>
       prev === 0 ? totalServicePages - 1 : prev - 1
     );
   }, [categories.length]);
 
   const handleNextService = useCallback(() => {
     const totalServicePages = Math.ceil(categories.length / 4);
-    setCurrentServicePage(prev => 
+    setCurrentServicePage(prev =>
       prev === totalServicePages - 1 ? 0 : prev + 1
     );
   }, [categories.length]);
@@ -252,14 +252,14 @@ function LandingPage() {
 
   const handlePrevFeedback = useCallback(() => {
     const totalPages = Math.ceil(processedTestimonials.length / 3);
-    setCurrentFeedbackPage(prev => 
+    setCurrentFeedbackPage(prev =>
       prev === 0 ? totalPages - 1 : prev - 1
     );
   }, [processedTestimonials.length]);
 
   const handleNextFeedback = useCallback(() => {
     const totalPages = Math.ceil(processedTestimonials.length / 3);
-    setCurrentFeedbackPage(prev => 
+    setCurrentFeedbackPage(prev =>
       prev === totalPages - 1 ? 0 : prev + 1
     );
   }, [processedTestimonials.length]);
@@ -291,7 +291,7 @@ function LandingPage() {
   return (
     <>
       <Header />
-      
+
       {/* Hero Section */}
       <section className="hero-section-landing">
         <div className="hero-background">
@@ -344,18 +344,18 @@ function LandingPage() {
           </div>
         </div>
       </section>
-      
+
       <div className="landing-page-new">
         <div className="container">
           {/* Best Places Section - ĐỘNG từ bestBusinesses API */}
           <section className="best-places-section">
             <h2>Best of LocalLink</h2>
-            
+
             <div className="places-grid-new">
               {filteredBusinesses.slice(0, 8).map((business) => (
-                <PlaceCard 
-                  key={business._id} 
-                  business={business} 
+                <PlaceCard
+                  key={business._id}
+                  business={business}
                   onClick={handleBusinessClick}
                 />
               ))}
@@ -367,7 +367,7 @@ function LandingPage() {
             <h2>Danh mục dịch vụ</h2>
             <div className="services-container" style={{ position: 'relative', maxWidth: '1200px', margin: '0 auto' }}>
               {showServiceNav && (
-                <button 
+                <button
                   className="service-nav-btn prev-btn"
                   onClick={handlePrevService}
                   aria-label="Xem danh mục trước"
@@ -379,20 +379,20 @@ function LandingPage() {
               <div className="services-grid-new">
                 {visibleServices.length > 0 ? (
                   visibleServices.map((category, index) => (
-                    <ServiceCard 
-                      key={category._id} 
-                      category={category} 
+                    <ServiceCard
+                      key={category._id}
+                      category={category}
                       businesses={businesses}
                       onSeeMore={handleSeeMore}
                       index={(currentServicePage * 4) + index}
                     />
                   ))
                 ) : (
-                  <div style={{ 
-                    gridColumn: '1 / -1', 
-                    textAlign: 'center', 
+                  <div style={{
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
                     padding: '2rem',
-                    color: '#666' 
+                    color: '#666'
                   }}>
                     <p>Chưa có danh mục nào</p>
                   </div>
@@ -400,7 +400,7 @@ function LandingPage() {
               </div>
 
               {showServiceNav && (
-                <button 
+                <button
                   className="service-nav-btn next-btn"
                   onClick={handleNextService}
                   aria-label="Xem danh mục tiếp theo"
@@ -430,14 +430,16 @@ function LandingPage() {
           {/* Stats Section - ĐỘNG từ API data */}
           <StatsSection stats={stats} />
 
-          {/* Feedback Section - HOÀN TOÀN ĐỘNG từ feedbacks API với like/dislike */}
-          {processedTestimonials.length > 0 && (
-            <section className="feedback-section">
+        </div>
+        {/* Feedback Section - HOÀN TOÀN ĐỘNG từ feedbacks API với like/dislike */}
+        {processedTestimonials.length > 0 && (
+          <section className="feedback-section">
+            <div className='container'>
               <h2>Phản hồi từ người dùng</h2>
 
               <div className="testimonials-container">
                 {showFeedbackNav && (
-                  <button 
+                  <button
                     className="feedback-nav-btn prev-btn"
                     onClick={handlePrevFeedback}
                     aria-label="Xem phản hồi trước"
@@ -460,7 +462,7 @@ function LandingPage() {
                 </div>
 
                 {showFeedbackNav && (
-                  <button 
+                  <button
                     className="feedback-nav-btn next-btn"
                     onClick={handleNextFeedback}
                     aria-label="Xem phản hồi tiếp theo"
@@ -485,19 +487,21 @@ function LandingPage() {
                   <p>Doanh nghiệp đã tham gia</p>
                 </div>
               </div>
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
-          {/* Hiển thị message nếu không có feedback */}
-          {processedTestimonials.length === 0 && (
-            <section className="feedback-section">
+        {/* Hiển thị message nếu không có feedback */}
+        {processedTestimonials.length === 0 && (
+          <section className="feedback-section">
+            <div className='container'>
               <h2>Phản hồi từ người dùng</h2>
               <div style={{ textAlign: 'center', padding: '3rem', color: '#666' }}>
                 <p>Chưa có phản hồi nào từ người dùng</p>
               </div>
-            </section>
-          )}
-        </div>
+            </div>
+          </section>
+        )}
       </div>
 
       <Footer />
@@ -523,8 +527,8 @@ const PlaceCard = React.memo(({ business, onClick }) => {
   return (
     <div className="place-card-new" onClick={handleClick}>
       <div className="place-image-new">
-        <img 
-          src={imageUrl} 
+        <img
+          src={imageUrl}
           alt={businessName}
           loading="lazy"
           onError={(e) => {
@@ -545,24 +549,24 @@ const PlaceCard = React.memo(({ business, onClick }) => {
 
 // Service Card Component - ĐỘNG từ category và business APIs
 const ServiceCard = React.memo(({ category, businesses, onSeeMore, index }) => {
-  const categoryBusinesses = businesses.filter(b => 
+  const categoryBusinesses = businesses.filter(b =>
     b.business_category_id?._id === category._id
   );
 
   const backgroundImages = [
     '/1.png',
-    '/2.png', 
+    '/2.png',
     '/3.png',
-    '/1.png', 
-    '/2.png'  
+    '/1.png',
+    '/2.png'
   ];
 
   const gradients = [
     'linear-gradient(135deg, rgba(255,107,53,0.8) 0%, rgba(255,107,53,0.6) 100%)',
     'linear-gradient(135deg, rgba(103,92,231,0.8) 0%, rgba(103,92,231,0.6) 100%)',
     'linear-gradient(135deg, rgba(52,168,83,0.8) 0%, rgba(52,168,83,0.6) 100%)',
-    'linear-gradient(135deg, rgba(233,30,99,0.8) 0%, rgba(233,30,99,0.6) 100%)',   
-    'linear-gradient(135deg, rgba(255,152,0,0.8) 0%, rgba(255,152,0,0.6) 100%)'    
+    'linear-gradient(135deg, rgba(233,30,99,0.8) 0%, rgba(233,30,99,0.6) 100%)',
+    'linear-gradient(135deg, rgba(255,152,0,0.8) 0%, rgba(255,152,0,0.6) 100%)'
   ];
 
   const handleSeeMore = useCallback((e) => {
@@ -579,16 +583,16 @@ const ServiceCard = React.memo(({ category, businesses, onSeeMore, index }) => {
   return (
     <div className="service-card-new" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
       <div className="service-background">
-        <img 
-          src={backgroundImages[index % backgroundImages.length] || '/1.png'} 
+        <img
+          src={backgroundImages[index % backgroundImages.length] || '/1.png'}
           alt={category.category_name}
           loading="lazy"
           onError={(e) => {
             e.target.src = '/1.png';
           }}
         />
-        <div 
-          className="service-gradient" 
+        <div
+          className="service-gradient"
           style={{ background: gradients[index % gradients.length] }}
         ></div>
       </div>
@@ -648,8 +652,8 @@ const TestimonialCard = React.memo(({ text, author, date, likes, dislikes }) => 
     </div>
     <p className="testimonial-text">"{text}"</p>
     <div className="testimonial-author">
-      <img 
-        src={author.avatar} 
+      <img
+        src={author.avatar}
         alt={author.name}
         loading="lazy"
         onError={(e) => {
