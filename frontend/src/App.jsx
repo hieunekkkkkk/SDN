@@ -56,10 +56,14 @@ const AppRoutes = () => {
           <Route path="/personalized" element={<PersonalizedPage />} />
           <Route path="/discover/" element={<DiscoverPage />} />
           <Route path="/discover/:category" element={<DiscoverByCategoryPage />} />
+          <Route path="/business-registration" element={
+            <OwnerRoute>
+              <SignedIn><BusinessRegistrationPage /></SignedIn>
+              <SignedOut><LoginPage /></SignedOut>
+            </OwnerRoute>} />
 
-          {/* Onwer routes */}
+          {/* Owner routes */}
           <Route path="/my-business" element={<OwnerRoute><MyBusinessPage /></OwnerRoute>} />
-          <Route path="/business-registration" element={<OwnerRoute><BusinessRegistrationPage /></OwnerRoute>} />
           <Route path="/product-registration" element={<OwnerRoute><ProductRegistrationPage /></OwnerRoute>} />
 
           {/* Admin routes */}
