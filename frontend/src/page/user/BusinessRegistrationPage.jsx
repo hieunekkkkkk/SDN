@@ -80,26 +80,20 @@ const BusinessRegistrationPage = () => {
         alert('Không tìm thấy gói đăng ký.');
         return;
       }
-      // Redirect to PayOS for payment
+
       const paymentResponse = await axios.post(
         `${import.meta.env.VITE_BE_URL}/api/payment`,
         {
           user_id: userId,
-          payment_amount: selectedStack.stack_price,
-          payment_stack: stackId,
-          payment_number: 1,
-          transaction_id: `TXN${Date.now()}`,
-          payment_status: 'pending',
-          payment_method: 'credit_card',
+          stack_id: stackId,
         }
       );
 
-      if (
-        paymentResponse.data &&
-        paymentResponse.data.message === 'Payment created successfully'
-      ) {
-        // Redirect đến PayOS (giả lập)
-        window.location.href = `https://payos.com/checkout?transaction_id=${paymentResponse.data.data.transaction_id}`;
+      console.log(paymentResponse.data);
+
+      if (paymentResponse.data) {
+        // Sử dụng url trả về từ backend
+        window.open(paymentResponse.data.url, '_blank');
       } else {
         throw new Error('Thanh toán thất bại.');
       }
@@ -201,7 +195,7 @@ const BusinessRegistrationPage = () => {
         {paymentSuccess && (
           <p className="payment-success-message">Thanh toán thành công!</p>
         )}
-        <form className="registration-form" onSubmit={handleSubmit}>
+        <form className="registration-form">
           <div className="form-columns">
             <div className="form-column left">
               <div className="form-group">
@@ -209,7 +203,7 @@ const BusinessRegistrationPage = () => {
                 <input
                   type="text"
                   id="business-name"
-                  name="business-name"
+                  name="businessName"
                   placeholder="Nhập ..."
                   value={formData.businessName}
                   onChange={handleInputChange}
@@ -221,7 +215,7 @@ const BusinessRegistrationPage = () => {
                 <input
                   type="text"
                   id="business-address"
-                  name="business-address"
+                  name="businessAddress"
                   placeholder="Nhập ..."
                   value={formData.businessAddress}
                   onChange={handleInputChange}
@@ -233,7 +227,7 @@ const BusinessRegistrationPage = () => {
                 <textarea
                   type="text"
                   id="business-description"
-                  name="business-description"
+                  name="businessDescription"
                   placeholder="Nhập ..."
                   value={formData.businessDescription}
                   onChange={handleInputChange}
@@ -278,7 +272,7 @@ const BusinessRegistrationPage = () => {
                 ) : (
                   <select
                     id="business-type"
-                    name="business-type"
+                    name="businessType"
                     value={formData.businessType}
                     onChange={handleInputChange}
                     required
@@ -297,7 +291,7 @@ const BusinessRegistrationPage = () => {
                 <input
                   type="number"
                   id="business-phone"
-                  name="business-phone"
+                  name="businessPhone"
                   placeholder="Nhập ..."
                   value={formData.businessPhone}
                   onChange={handleInputChange}
@@ -310,7 +304,7 @@ const BusinessRegistrationPage = () => {
                   <input
                     type="text"
                     id="operating-hours-from"
-                    name="operating-hours-from"
+                    name="operatingHoursFrom"
                     placeholder="Từ ..."
                     value={formData.operatingHoursFrom}
                     onChange={handleInputChange}
@@ -318,7 +312,7 @@ const BusinessRegistrationPage = () => {
                   <input
                     type="text"
                     id="operating-hours-to"
-                    name="operating-hours-to"
+                    name="operatingHoursTo"
                     placeholder="Đến ..."
                     value={formData.operatingHoursTo}
                     onChange={handleInputChange}
@@ -354,7 +348,7 @@ const BusinessRegistrationPage = () => {
               </div>
             )}
           </div>
-          <button type="submit" className="submit-btn">
+          <button type="submit" className="submit-btn" onClick={handleSubmit}>
             Đăng ký
           </button>
         </form>
