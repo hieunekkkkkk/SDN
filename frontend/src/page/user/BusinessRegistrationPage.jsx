@@ -3,26 +3,28 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../css/BusinessRegistrationPage.css';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { getCurrentUserId } from '../../utils/useCurrentUserId';
 
 const BusinessRegistrationPage = () => {
-  const [selectedOption, setSelectedOption] = useState('');
-  const [isOpen, setIsOpen] = useState(false);
-  const options = ['Nhà trọ', 'Quán ăn', 'Cafe', 'Supply', 'Giải trí'];
-
-  const handleOptionClick = (option) => {
-    setSelectedOption(option);
-    setIsOpen(false);
-  };
+  const navigate = useNavigate();
   const [images, setImages] = useState([]);
-  const handleAddImage = (event) => {
-    const files = Array.from(event.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file));
-    setImages((prevImages) => [...prevImages, ...newImages]);
-  };
-
   const [stacks, setStacks] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [formData, setFormData] = useState({
+    businessName: '',
+    businessAddress: '',
+    businessDescription: '',
+    businessType: '',
+    businessPhone: '',
+    operatingHoursFrom: '',
+    operatingHoursTo: '',
+  });
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  const userId = getCurrentUserId();
 
   useEffect(() => {
     const fetchStacks = async () => {
@@ -41,7 +43,102 @@ const BusinessRegistrationPage = () => {
     };
 
     fetchStacks();
+
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(
+          `${import.meta.env.VITE_BE_URL}/api/category`
+        );
+        setCategories(response.data.categories || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+        setError('Không thể tải dữ liệu loại hình kinh doanh.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
   }, []);
+
+  const handleAddImage = (event) => {
+    const files = Array.from(event.target.files);
+    const newImages = files.map((file) => URL.createObjectURL(file));
+    setImages((prevImages) => [...prevImages, ...newImages]);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handlePlanClick = async (stackId) => {
+    try {
+      const selectedStack = stacks.find((stack) => stack._id === stackId);
+      if (!selectedStack) {
+        alert('Không tìm thấy gói đăng ký.');
+        return;
+      }
+      // Redirect to PayOS for payment
+      const paymentResponse = await axios.post(
+        `${import.meta.env.VITE_BE_URL}/api/payment`,
+        {
+          user_id: userId,
+          payment_amount: selectedStack.stack_price,
+          payment_stack: stackId,
+          payment_number: 1,
+          transaction_id: `TXN${Date.now()}`,
+          payment_status: 'pending',
+          payment_method: 'credit_card',
+        }
+      );
+
+      if (
+        paymentResponse.data &&
+        paymentResponse.data.message === 'Payment created successfully'
+      ) {
+        // Redirect đến PayOS (giả lập)
+        window.location.href = `https://payos.com/checkout?transaction_id=${paymentResponse.data.data.transaction_id}`;
+      } else {
+        throw new Error('Thanh toán thất bại.');
+      }
+    } catch (err) {
+      console.error('Error during payment:', err);
+      alert('Thanh toán thất bại. Vui lòng thử lại.');
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const businessData = {
+        owner_id: userId,
+        business_name: formData.businessName,
+        business_address: formData.businessAddress,
+        business_category_id: formData.businessType,
+        business_detail: formData.businessDescription,
+        business_phone: formData.businessPhone,
+        business_time: {
+          open: formData.operatingHoursFrom,
+          close: formData.operatingHoursTo,
+        },
+        business_image: images,
+        business_status: false, // Pending status
+      };
+
+      await axios.post(
+        `${import.meta.env.VITE_BE_URL}/api/business`,
+        businessData
+      );
+
+      alert('Doanh nghiệp đã được tạo thành công và đang chờ phê duyệt.');
+      navigate('/');
+    } catch (err) {
+      console.error('Error creating business:', err);
+      alert('Không thể tạo doanh nghiệp. Vui lòng thử lại.');
+    }
+  };
 
   const formatPrice = (price) => {
     if (price >= 1000000000)
@@ -101,7 +198,10 @@ const BusinessRegistrationPage = () => {
         </div>
 
         <h1 className="page-title">Đăng ký doanh nghiệp</h1>
-        <form className="registration-form">
+        {paymentSuccess && (
+          <p className="payment-success-message">Thanh toán thành công!</p>
+        )}
+        <form className="registration-form" onSubmit={handleSubmit}>
           <div className="form-columns">
             <div className="form-column left">
               <div className="form-group">
@@ -111,6 +211,8 @@ const BusinessRegistrationPage = () => {
                   id="business-name"
                   name="business-name"
                   placeholder="Nhập ..."
+                  value={formData.businessName}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -121,16 +223,20 @@ const BusinessRegistrationPage = () => {
                   id="business-address"
                   name="business-address"
                   placeholder="Nhập ..."
+                  value={formData.businessAddress}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
               <div className="form-group">
                 <label htmlFor="business-description">Mô tả</label>
-                <input
+                <textarea
                   type="text"
                   id="business-description"
                   name="business-description"
                   placeholder="Nhập ..."
+                  value={formData.businessDescription}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -165,27 +271,26 @@ const BusinessRegistrationPage = () => {
             <div className="form-column right">
               <div className="form-group">
                 <label htmlFor="business-type">Loại hình kinh doanh</label>
-                <div className="custom-select">
-                  <div
-                    className="select-selected"
-                    onClick={() => setIsOpen(!isOpen)}
+                {loading ? (
+                  <p>Đang tải...</p>
+                ) : error ? (
+                  <p>{error}</p>
+                ) : (
+                  <select
+                    id="business-type"
+                    name="business-type"
+                    value={formData.businessType}
+                    onChange={handleInputChange}
+                    required
                   >
-                    {selectedOption || 'Lựa chọn'}
-                  </div>
-                  {isOpen && (
-                    <div className="select-items">
-                      {options.map((option, index) => (
-                        <div
-                          key={index}
-                          className="select-item"
-                          onClick={() => handleOptionClick(option)}
-                        >
-                          {option}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                    <option value="">Lựa chọn...</option>
+                    {categories.map((category) => (
+                      <option key={category._id} value={category._id}>
+                        {category.category_name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="business-phone">Số điện thoại</label>
@@ -194,6 +299,8 @@ const BusinessRegistrationPage = () => {
                   id="business-phone"
                   name="business-phone"
                   placeholder="Nhập ..."
+                  value={formData.businessPhone}
+                  onChange={handleInputChange}
                   required
                 />
               </div>
@@ -205,12 +312,16 @@ const BusinessRegistrationPage = () => {
                     id="operating-hours-from"
                     name="operating-hours-from"
                     placeholder="Từ ..."
+                    value={formData.operatingHoursFrom}
+                    onChange={handleInputChange}
                   />
                   <input
                     type="text"
                     id="operating-hours-to"
                     name="operating-hours-to"
                     placeholder="Đến ..."
+                    value={formData.operatingHoursTo}
+                    onChange={handleInputChange}
                   />
                 </div>
               </div>
@@ -232,7 +343,12 @@ const BusinessRegistrationPage = () => {
                       <strong>{formatPrice(stack.stack_price)}</strong>
                     </p>
                     <p>{stack.stack_detail}</p>
-                    <button className="plan-btn">Chọn gói</button>
+                    <button
+                      className="plan-btn"
+                      onClick={() => handlePlanClick(stack._id)}
+                    >
+                      Chọn gói
+                    </button>
                   </div>
                 ))}
               </div>
