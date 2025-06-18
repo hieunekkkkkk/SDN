@@ -25,6 +25,7 @@ import ManageUserPage from './page/admin/ManageUserPage';
 import ManageBusinessPage from './page/admin/ManageBusinessPage';
 import ManageTransactionPage from './page/admin/ManageTransactionPage';
 import AdminRoute from './components/AdminRoute';
+import OwnerRoute from './components/OwnerRoute';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -55,11 +56,13 @@ const AppRoutes = () => {
           <Route path="/personalized" element={<PersonalizedPage />} />
           <Route path="/discover/" element={<DiscoverPage />} />
           <Route path="/discover/:category" element={<DiscoverByCategoryPage />} />
-          <Route path="/my-business" element={<MyBusinessPage />} />
-          <Route path="/business-registration" element={<BusinessRegistrationPage />} />
-          <Route path="/product-registration" element={<ProductRegistrationPage />} />
 
-          {/* Admin routes (double protected) */}
+          {/* Onwer routes */}
+          <Route path="/my-business" element={<OwnerRoute><MyBusinessPage /></OwnerRoute>} />
+          <Route path="/business-registration" element={<OwnerRoute><BusinessRegistrationPage /></OwnerRoute>} />
+          <Route path="/product-registration" element={<OwnerRoute><ProductRegistrationPage /></OwnerRoute>} />
+
+          {/* Admin routes */}
           <Route path="/admin/users" element={<AdminRoute><ManageUserPage /></AdminRoute>} />
           <Route path="/admin/businesses" element={<AdminRoute><ManageBusinessPage /></AdminRoute>} />
           <Route path="/admin/transactions" element={<AdminRoute><ManageTransactionPage /></AdminRoute>} />

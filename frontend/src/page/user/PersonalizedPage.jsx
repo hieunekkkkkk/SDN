@@ -6,11 +6,13 @@ import '../../css/PersonalizedPage.css';
 
 
 function PersonalizedPage() {
-    const [type, setType] = useState('Boarding');
+    const [type, setType] = useState('Coffee');
     const [budget, setBudget] = useState('50,000');
+    const [customBudget, setCustomBudget] = useState('');
     const [rating, setRating] = useState(5);
     const [bestPlaces, setBestPlaces] = useState([]);
     const [userMessage, setUserMessage] = useState('');
+    const [categories, setCategories] = useState([]);
 
     const navigate = useNavigate();
 
@@ -20,7 +22,7 @@ function PersonalizedPage() {
                 const res = await fetch(`${import.meta.env.VITE_BE_URL}/api/business`);
                 const data = await res.json();
                 const sorted = data.businesses
-                    .filter(b => b.business_rating)
+                    .filter(b => b.business_rating && b.business_active !== 'inactive')
                     .sort((a, b) => b.business_rating - a.business_rating)
                     .slice(0, 6);
 
@@ -31,8 +33,18 @@ function PersonalizedPage() {
                 console.error('Failed to load businesses:', error);
             }
         };
-
         fetchBusinesses();
+
+        const fetchCategories = async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_BE_URL}/api/category`);
+                const data = await res.json();
+                setCategories(data.categories);
+            } catch (error) {
+                console.error('Failed to load categories:', error);
+            }
+        };
+        fetchCategories();
     }, []);
 
     const handleSendMessage = () => {
@@ -41,7 +53,7 @@ function PersonalizedPage() {
         const messagePayload = [
             { prompt: userMessage },
             { type: type },
-            { budget: budget },
+            { budget: budget.replace(/,/g, '') },
             { rating: rating }
         ];
 
@@ -125,17 +137,17 @@ function PersonalizedPage() {
 
                         {/* Type Filter */}
                         <div className='personalized-chat-filter'>
-                            <div>
+                            <div className='personalized-chat-filter-detail'>
                                 <div className="personalized-filter-group">
                                     <label className="personalized-filter-label">Loại doanh nghiệp:</label>
                                     <div className="personalized-filter-options">
-                                        {['Boarding', 'Restaurant', 'Pharmacy', 'Other...'].map((option) => (
+                                        {categories.map((category) => (
                                             <button
-                                                key={option}
-                                                onClick={() => setType(option)}
-                                                className={`personalized-filter-button ${type === option ? 'personalized-active' : ''}`}
+                                                key={category.category_id}
+                                                onClick={() => setType(category.category_name)}
+                                                className={`personalized-filter-button ${type === category.category_name ? 'personalized-active' : ''}`}
                                             >
-                                                {option}
+                                                {category.category_name}
                                             </button>
                                         ))}
                                     </div>
@@ -145,7 +157,7 @@ function PersonalizedPage() {
                                 <div className="personalized-filter-group">
                                     <label className="personalized-filter-label">Giới hạn số tiền:</label>
                                     <div className="personalized-filter-options">
-                                        {['50,000', '100,000', '500,000', '1,500,000', 'Above...'].map((option) => (
+                                        {['50,000', '100,000', '500,000', '1,500,000', 'Tự chọn...'].map((option) => (
                                             <button
                                                 key={option}
                                                 onClick={() => setBudget(option)}
@@ -155,11 +167,22 @@ function PersonalizedPage() {
                                             </button>
                                         ))}
                                     </div>
+                                    {budget === 'Tự chọn...' && (
+                                        <div className="personalized-custom-budget-input">
+                                            <input
+                                                type="text"
+                                                placeholder="Nhập số tiền của bạn"
+                                                value={customBudget}
+                                                onChange={(e) => setCustomBudget(e.target.value)}
+                                                className="personalized-input-field"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Rating Filter */}
                                 <div className="personalized-filter-group">
-                                    <label className="personalized-filter-label">Đánh giá:</label>
+                                    <label className="personalized-filter-label">Đánh giá: {rating} sao</label>
                                     <div className="personalized-rating-options">
                                         {[1, 2, 3, 4, 5].map((star) => (
                                             <span
@@ -171,14 +194,6 @@ function PersonalizedPage() {
                                             </span>
                                         ))}
                                     </div>
-                                </div>
-
-                                {/* Chatbot Prompt */}
-                                <div className="personalized-chatbot-prompt">
-                                    <span className="personalized-prompt-icon">❤️ Câu hỏi nổi bật:</span>
-                                    <p className="personalized-prompt-text">
-                                        📍Lựa chọn tiêu chí giúp trợ lý AI đưa ra lựa chọn phù hợp nhất cho bạn!
-                                    </p>
                                 </div>
                             </div>
                             <div className='personalized-chat-box'>
@@ -211,7 +226,7 @@ function PersonalizedPage() {
                                 <div
                                     key={place._id}
                                     className="discover-place-card"
-                                    onClick={() => handleBusinessClick(place._id)}
+                                    onClick={() => navigate(`/business/${place._id}`)}
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <div className="discover-place-image">
@@ -228,7 +243,7 @@ function PersonalizedPage() {
                                         <h3>{place.business_name}</h3>
                                         <p className="discover-place-location">{place.business_address}</p>
                                         <div className="discover-place-meta">
-                                            <span className="discover-status">
+                                            <span className={`discover-status ${place.business_status ? 'open' : 'closed'}`}>
                                                 {place.business_status ? 'Đang mở cửa' : 'Đã đóng cửa'}
                                             </span>
                                             <span className="discover-rating">⭐ {place.business_rating || 0}</span>
@@ -239,7 +254,7 @@ function PersonalizedPage() {
                         </div>
                     </div>
                 </section>
-            </div >
+            </div>
             <Footer />
         </>
     );
