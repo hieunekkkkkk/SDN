@@ -100,7 +100,7 @@ function ManageBusinessPage() {
             />
           </div>
           <div className="manage-business-sort-select">
-            Sắp xếp:&nbsp;
+            <label>Sắp xếp:</label>
             <select value={sortStatus} onChange={(e) => setSortStatus(e.target.value)}>
               <option value="All">Tất cả</option>
               <option value="Active">Kích hoạt</option>

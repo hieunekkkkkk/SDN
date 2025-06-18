@@ -31,6 +31,11 @@
   background-color: #f8f9fa;
 }
 
+.manage-business-search-bar input:focus {
+  border-color: #6c5ce7;
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+}
+
 .manage-business-sort-select select {
   padding: 8px;
   border: 1px solid #e0e6ed;
@@ -40,6 +45,12 @@
   cursor: pointer;
   background-color: white;
   font-weight: 500;
+}
+
+.manage-business-sort-select label {
+  font-size: 14px;
+  color: #6c757d;
+  margin-right: 10px;
 }
 
 .manage-business-table-container {
@@ -122,7 +133,7 @@
   transition: all 0.2s;
   padding: 0 7px;
 }
-.manage-business-actions-icons{
+.manage-business-actions-icons {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,7 +141,7 @@
 .manage-business-actions.action-ban {
   font-size: 40px;
 }
-.manage-business-actions.enter{
+.manage-business-actions.enter {
   font-size: 42px;
 }
 .manage-business-actions.action-check:hover {
@@ -139,7 +150,7 @@
 .manage-business-actions.action-ban:hover {
   color: red;
 }
-.manage-business-actions.enter:hover{
+.manage-business-actions.enter:hover {
   color: #ff6b35;
 }
 .manage-business-pagination {
@@ -162,8 +173,8 @@
 }
 
 .manage-business-pagination button:hover:not(.active):not(:disabled) {
-  border-color: #999;
-  background-color: #f5f5f5;
+  background-color: #409444;
+  color: #fff;
 }
 
 .manage-business-pagination button:disabled {

@@ -82,7 +82,7 @@ function ManageUserPage() {
             />
           </div>
           <div className="manage-user-sort-select">
-            Sắp xếp:&nbsp;
+            <label>Sắp xếp:</label>
             <select value={sortStatus} onChange={(e) => setSortStatus(e.target.value)}>
               <option value="All">Tất cả</option>
               <option value="false">Hoạt động</option>
