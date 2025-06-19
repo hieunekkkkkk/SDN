@@ -9,6 +9,8 @@ import { toast } from 'react-toastify';
 import Header from '../../components/Header';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import Modal from 'react-modal';
+import { sendEmail } from '../../utils/sendEmail';
 
 
 function ManageBusinessPage() {
@@ -20,6 +22,9 @@ function ManageBusinessPage() {
   const [sortStatus, setSortStatus] = useState('All');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [banReason, setBanReason] = useState('');
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
+  const [isBanModalOpen, setIsBanModalOpen] = useState(false);
 
   const limit = 5;
 
@@ -64,12 +69,65 @@ function ManageBusinessPage() {
     updateBusinessStatus(index, name, 'inactive');
   };
 
+  const handleBanPending = (index, name) => {
+    setSelectedBusiness({ index, name });
+    setIsBanModalOpen(true);
+  };
+
   const handleActivate = (index, name) => {
     updateBusinessStatus(index, name, 'active');
   };
 
   const handleEnterBusiness = (index, id) => {
     navigate(`/business/${id}`)
+  };
+
+  const submitBanReason = async () => {
+    if (!banReason.trim()) {
+      toast.error('Vui lòng nhập lý do từ chối.');
+      return;
+    }
+
+    const { index, name } = selectedBusiness;
+    const business = businesses[index];
+
+    try {
+      const userRes = await axios.get(`${import.meta.env.VITE_BE_URL}/api/user/${business.owner_id}`);
+      const owner = userRes.data.users;
+
+      if (!owner?.email || !owner?.fullName) {
+        toast.error('Không tìm thấy thông tin người dùng.');
+        return;
+      }
+
+      const emailParams = {
+        email: owner.email,
+        owner_name: owner.fullName,
+        business_name: business.business_name,
+        rejection_reason: banReason,
+      };
+
+      console.log(emailParams);
+
+
+      await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REJECT_ID, emailParams);
+
+      toast.success(`Đã từ chối doanh nghiệp "${name}" và gửi email thành công`);
+
+      setIsBanModalOpen(false);
+      setBanReason('');
+      setSelectedBusiness(null);
+    } catch (err) {
+      console.error('Lỗi từ chối doanh nghiệp hoặc gửi email:', err);
+      toast.error('Từ chối doanh nghiệp hoặc gửi email thất bại');
+    }
+    try {
+      await updateBusinessStatus(index, name, 'inactive');
+    }
+    catch (err) {
+      console.error('Không thể tắt trạng thái doanh nghiệp:', err);
+      toast.error('Không thể tắt trạng thái doanh nghiệp');
+    }
   };
 
   const filteredBusinesses = businesses.filter((b) =>
@@ -88,7 +146,48 @@ function ManageBusinessPage() {
     <>
       <Header />
       <HeroSectionAdmin message={<>Trang quản lý <br /> doanh nghiệp</>} />
+      <Modal
+        isOpen={isBanModalOpen}
+        onRequestClose={() => setIsBanModalOpen(false)}
+        contentLabel="Từ chối doanh nghiệp"
+        style={{
+          content: {
+            maxWidth: '700px',
+            maxHeight: '300px',
+            margin: 'auto',
+            padding: '20px',
+            borderRadius: '10px',
+          },
+          overlay: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        }}
+      >
+        <h2 className='business-ban-title'>Từ chối doanh nghiệp</h2>
+        <p>Nhập lý do từ chối doanh nghiệp <strong>"{selectedBusiness?.name}"</strong>:</p>
+        <textarea
+          value={banReason}
+          onChange={(e) => setBanReason(e.target.value)}
+          placeholder="Lý do từ chối..."
+          rows={4}
+          className='business-ban-text-area'
+        ></textarea>
 
+        <div style={{ marginTop: '20px', textAlign: 'right' }}>
+          <button
+            onClick={() => setIsBanModalOpen(false)}
+            className="business-ban-modal-btn cancel"
+          >
+            Hủy
+          </button>
+          <button
+            onClick={submitBanReason}
+            className="business-ban-modal-btn confirm"
+          >
+            Xác nhận từ chối
+          </button>
+        </div>
+      </Modal>
       <div className="manage-business-container">
         <div className="manage-business-table-header">
           <div className="manage-business-search-bar">
@@ -100,7 +199,7 @@ function ManageBusinessPage() {
             />
           </div>
           <div className="manage-business-sort-select">
-            Sắp xếp:&nbsp;
+            <label>Sắp xếp:</label>
             <select value={sortStatus} onChange={(e) => setSortStatus(e.target.value)}>
               <option value="All">Tất cả</option>
               <option value="Active">Kích hoạt</option>
@@ -165,12 +264,12 @@ function ManageBusinessPage() {
                           />
                           <IoBanSharp
                             className="manage-business-actions action-ban"
-                            onClick={() => handleBan(i, b.business_name)}
+                            onClick={() => handleBanPending(i, b.business_name)}
                             title="Từ chối doanh nghiệp"
                           />
                         </>
                       )}
-                      <RiLoginCircleLine 
+                      <RiLoginCircleLine
                         className="manage-business-actions enter"
                         onClick={() => handleEnterBusiness(i, b._id)}
                         title="Truy cập doanh nghiệp"

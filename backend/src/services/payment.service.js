@@ -77,14 +77,32 @@ class PaymentService {
         };
     }
 
-    async getAllPayments(page = 1, limit = 10) {
+    async getAllPayments(page = 1, limit = 10, sortBy = 'payment_date', sortOrder = 'desc', startDate, endDate) {
         try {
             const skip = (page - 1) * limit;
-            const payments = await Payment.find()
+
+            const sortOptions = {};
+            const allowedSortFields = ['payment_date', 'payment_amount'];
+            if (allowedSortFields.includes(sortBy)) {
+                sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+            }
+
+            const filter = {};
+            if (startDate || endDate) {
+                filter.payment_date = {};
+                if (startDate) filter.payment_date.$gte = new Date(startDate);
+                if (endDate) filter.payment_date.$lte = new Date(endDate);
+            }
+
+            const payments = await Payment.find(filter)
+                .sort(sortOptions)
                 .skip(skip)
                 .limit(limit)
-                .populate('payment_stack', 'stack_name');
-            const total = await Payment.countDocuments();
+                .populate('payment_stack', 'stack_name')
+                .populate('user_id', 'fullName');
+
+            const total = await Payment.countDocuments(filter);
+
             return {
                 payments,
                 totalPages: Math.ceil(total / limit),
@@ -95,7 +113,6 @@ class PaymentService {
             throw new Error(`Error fetching payments: ${error.message}`);
         }
     }
-
 
     async getPaymentById(id) {
         try {

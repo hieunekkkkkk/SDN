@@ -35,7 +35,7 @@ function DiscoverPage() {
       const res = await axios.get(`${import.meta.env.VITE_BE_URL}/api/business/search?query=${encodeURIComponent(query)}`);
 
       const filteredBusinesses = res.data.businesses.filter(
-        (b) => b.business_active !== 'inactive'
+        (b) => b.business_active === 'active'
       );
 
       setFilteredBusinesses(filteredBusinesses || []);
@@ -57,7 +57,7 @@ function DiscoverPage() {
       ]);
 
       const activeBusinesses = busRes.data.businesses.filter(
-        (b) => b.business_active !== 'inactive'
+        (b) => b.business_active === 'active'
       );
 
       setCategories(catRes.data.categories || []);

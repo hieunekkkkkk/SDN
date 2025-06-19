@@ -22,7 +22,7 @@ function PersonalizedPage() {
                 const res = await fetch(`${import.meta.env.VITE_BE_URL}/api/business`);
                 const data = await res.json();
                 const sorted = data.businesses
-                    .filter(b => b.business_rating && b.business_active !== 'inactive')
+                    .filter(b => b.business_rating && b.business_active === 'active')
                     .sort((a, b) => b.business_rating - a.business_rating)
                     .slice(0, 6);
 

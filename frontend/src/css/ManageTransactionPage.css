@@ -13,9 +13,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
   gap: 20px;
   flex-wrap: wrap;
+  margin-bottom: 10px;
 }
 
 .transaction-search-bar {
@@ -62,6 +62,8 @@
   align-items: center;
   gap: 15px;
   flex-wrap: wrap;
+  justify-content: right;
+  margin-bottom: 30px;
 }
 
 .total-value {
@@ -133,7 +135,7 @@
 .tx-id {
   color: #6c5ce7;
   font-weight: 600;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
 }
 
 .transaction-amount {
@@ -163,16 +165,21 @@
   border-radius: 6px;
   transition: all 0.2s ease;
   display: inline-block;
+  font-weight: bolder;
+  border: 1px solid #ccc;
+  padding-left: 14px;
+  padding-right: 14px;
 }
 
 .transaction-pagination span:hover {
-  background-color: #f8f9fa;
+  background-color: #409444;
+  color: #fff;
 }
 
 .transaction-pagination .page-active {
-  background: #6c5ce7;
-  color: white;
-  font-weight: bold;
+  background-color: #4caf50;
+  color: #fff;
+  border-color: #4caf50;
 }
 
 /* Charts Section */
@@ -297,18 +304,78 @@
   line-height: 1.2;
 }
 
+.delete-button {
+  text-align: center;
+  font-size: 20px;
+}
+.delete-button svg {
+  transition: all 0.2s;
+}
+.delete-button svg:hover {
+  color: red;
+}
+
+.chart-container {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.chart-wrapper {
+  width: 100%;
+  height: 300px; /* Adjust height as needed */
+}
+
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 20px;
+}
+
+.date-filter label {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.date-filter input[type="date"] {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.sort-select label {
+  font-size: 14px;
+  color: #6c757d;
+  padding-right: 10px;
+}
+
+.date-input-wrapper {
+  display: flex;
+  align-items: center;
+}
+.clear-date-btn {
+  padding-top: 4px;
+  transition: all 0.2s;
+}
+.clear-date-btn:hover {
+  color: red;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .charts-section {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .revenue-bars {
     gap: 10px;
     padding: 0 10px;
   }
-  
+
   .business-name {
     font-size: 11px;
   }

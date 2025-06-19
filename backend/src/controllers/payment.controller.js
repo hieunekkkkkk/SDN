@@ -53,8 +53,24 @@ class PaymentController {
 
     async getAllPayments(req, res) {
         try {
-            const { page = 1, limit = 10 } = req.query;
-            const result = await paymentService.getAllPayments(parseInt(page), parseInt(limit));
+            const {
+                page = 1,
+                limit = 10,
+                sortBy = 'payment_date',
+                sortOrder = 'desc',
+                startDate,
+                endDate
+            } = req.query;
+
+            const result = await paymentService.getAllPayments(
+                parseInt(page),
+                parseInt(limit),
+                sortBy,
+                sortOrder,
+                startDate,
+                endDate
+            );
+
             res.status(200).json({ message: 'Payments retrieved successfully', data: result });
         } catch (error) {
             res.status(500).json({ message: error.message });
