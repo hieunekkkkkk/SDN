@@ -216,3 +216,44 @@
 .manage-business-table td:last-child {
   text-align: center;
 }
+
+.business-ban-text-area {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 15px;
+}
+
+.business-ban-title {
+  margin-top: 20px;
+}
+
+.business-ban-modal-btn {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 10px;
+  font-weight: normal;
+  transition: all 0.2s;
+}
+
+.business-ban-modal-btn.cancel {
+  background-color: #ddd;
+}
+
+.business-ban-modal-btn.confirm {
+  background-color: #e53935;
+  color: white;
+}
+
+.business-ban-modal-btn.cancel:hover{
+  background-color: #ccc;
+}
+
+.business-ban-modal-btn.confirm:hover{
+  background-color: #c02e2c;
+}
+
+
