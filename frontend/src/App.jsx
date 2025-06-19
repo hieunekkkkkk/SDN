@@ -71,14 +71,14 @@ const AppRoutes = () => {
           <Route
             path="/business-registration"
             element={
-              <OwnerRoute>
+              <>
                 <SignedIn>
                   <BusinessRegistrationPage />
                 </SignedIn>
                 <SignedOut>
                   <LoginPage />
                 </SignedOut>
-              </OwnerRoute>
+              </>
             }
           />
 

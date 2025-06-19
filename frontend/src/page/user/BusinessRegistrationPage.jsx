@@ -5,10 +5,12 @@ import '../../css/BusinessRegistrationPage.css';
 import axios from 'axios';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
+import { PuffLoader } from 'react-spinners';
+import { toast } from 'react-toastify';
+import useGeolocation from '../../utils/useGeolocation';
 
 const BusinessRegistrationPage = () => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const [images, setImages] = useState(() => {
     const savedImages = localStorage.getItem('businessImages');
     return savedImages ? JSON.parse(savedImages) : [];
@@ -32,6 +34,9 @@ const BusinessRegistrationPage = () => {
         };
   });
   const [paymentStatus, setPaymentStatus] = useState(null);
+  const [paymentStack, setPaymentStack] = useState(null);
+  const [loadingPayment, setLoadingPayment] = useState(false);
+  const { location, fetchLocation } = useGeolocation();
 
   const userId = getCurrentUserId();
 
@@ -39,9 +44,7 @@ const BusinessRegistrationPage = () => {
     const fetchStacks = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `${import.meta.env.VITE_BE_URL}/api/stack`
-        );
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/stack`);
         setStacks(response.data.stacks || []);
       } catch (err) {
         console.error('Error fetching stacks:', err);
@@ -51,14 +54,10 @@ const BusinessRegistrationPage = () => {
       }
     };
 
-    fetchStacks();
-
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `${import.meta.env.VITE_BE_URL}/api/category`
-        );
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/category`);
         setCategories(response.data.categories || []);
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -68,36 +67,25 @@ const BusinessRegistrationPage = () => {
       }
     };
 
-    fetchCategories();
-
-    const payment = searchParams.get('payment');
-    if (payment === 'success') {
-      setPaymentStatus('completed');
-      searchParams.delete('payment');
-      setSearchParams(searchParams);
-    } else if (payment === 'failed') {
-      setPaymentStatus('failed');
-      searchParams.delete('payment');
-      setSearchParams(searchParams);
-    }
-
     const checkPaymentStatus = async () => {
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BE_URL}/api/payment/status?user_id=${userId}`
-        );
-        if (response.data.status === 'completed') {
-          setPaymentStatus('completed');
-        } else if (response.data.status === 'failed') {
-          setPaymentStatus('failed');
-        }
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/payment/userid/${userId}`);
+        const completedPayment = response.data.data.find(payment => payment.payment_status === 'completed');
+        setPaymentStatus(completedPayment.payment_status);
+        setPaymentStack(completedPayment.payment_stack._id);
       } catch (err) {
         console.error('Error checking payment status:', err);
+        toast.error('Đã xảy ra lỗi khi kiểm tra trạng thái thanh toán.');
       }
     };
-    const interval = setInterval(checkPaymentStatus, 5000);
-    return () => clearInterval(interval);
-  }, [userId, searchParams, setSearchParams]);
+
+
+    fetchStacks();
+    fetchCategories();
+    checkPaymentStatus();
+
+  }, [userId]);
+
 
   const handleAddImage = (event) => {
     const files = Array.from(event.target.files);
@@ -112,231 +100,251 @@ const BusinessRegistrationPage = () => {
 
   const handlePlanClick = async (stackId) => {
     try {
+      setLoadingPayment(true);
       const selectedStack = stacks.find((stack) => stack._id === stackId);
       if (!selectedStack) {
         alert('Không tìm thấy gói đăng ký.');
+        setLoadingPayment(false);
         return;
       }
 
-      const paymentResponse = await axios.post(
-        `${import.meta.env.VITE_BE_URL}/api/payment`,
-        {
-          user_id: userId,
-          stack_id: stackId,
-        }
-      );
-
-      console.log(paymentResponse.data);
+      const paymentResponse = await axios.post(`${import.meta.env.VITE_BE_URL}/api/payment`, {
+        user_id: userId,
+        stack_id: stackId,
+      });
 
       if (paymentResponse.data && paymentResponse.data.url) {
-        window.location.href = paymentResponse.data.url;
+        window.open(paymentResponse.data.url, '_blank');
+        setLoadingPayment(false);
       } else {
         throw new Error('Thanh toán thất bại.');
       }
     } catch (err) {
-      console.error(
-        'Error during payment:',
-        err.response ? err.response.data : err.message
-      );
+      console.error('Error during payment:', err.response ? err.response.data : err.message);
       alert(`Thanh toán thất bại. Vui lòng thử lại. Chi tiết: ${err.message}`);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (paymentStatus !== 'completed') {
-      alert('Vui lòng hoàn tất thanh toán trước khi đăng ký.');
+      toast.error('Vui lòng hoàn tất thanh toán trước khi đăng ký.');
       return;
     }
+
     if (!formData.businessAddress || !formData.businessAddress.trim()) {
-      alert('Địa chỉ doanh nghiệp là bắt buộc và phải có nội dung.');
+      toast.error('Địa chỉ doanh nghiệp là bắt buộc và phải có nội dung.');
       return;
     }
+
+    if (!location) {
+      toast.error('Vui lòng lấy vị trí địa lý (kinh độ/vĩ độ) trước khi đăng ký.');
+      return;
+    }
+
     try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BE_URL}/api/payment/status?user_id=${userId}`
-      );
-      const { payment_id, status } = response.data;
-      if (status !== 'completed') {
-        alert('Thanh toán chưa hoàn tất. Vui lòng kiểm tra lại.');
-        return;
-      }
-
-      const paymentDetails = await axios.get(
-        `${import.meta.env.VITE_BE_URL}/api/payment/${payment_id}`
-      );
-      const business_stack_id = paymentDetails.data.payment_stack;
-
       const businessData = {
         owner_id: userId,
         business_name: formData.businessName,
         business_address: formData.businessAddress,
+        business_location: {
+          type: 'Point',
+          coordinates: [location.longitude, location.latitude], // [lng, lat]
+        },
         business_category_id: formData.businessType,
         business_detail: formData.businessDescription,
-        business_phone: formData.businessPhone,
         business_time: {
           open: formData.operatingHoursFrom,
           close: formData.operatingHoursTo,
         },
+        business_phone: formData.businessPhone,
         business_image: images,
-        business_stack_id, // Lấy từ payment
+        business_stack_id: paymentStack,
+        business_total_vote: 0,
+        business_rating: 0,
+        business_view: 0,
+        business_status: false,
+        business_active: 'pending',
       };
 
-      await axios.post(
-        `${import.meta.env.VITE_BE_URL}/api/business`,
-        businessData
-      );
+      await axios.post(`${import.meta.env.VITE_BE_URL}/api/business`, businessData);
 
-      alert('Doanh nghiệp đã được tạo thành công và đang chờ phê duyệt.');
-      navigate('/');
+      await axios.put(`${import.meta.env.VITE_BE_URL}/api/user/${userId}`, {
+        "publicMetadata": {
+          "role": "owner"
+        }
+      });
+
+      toast.success('Doanh nghiệp đã được tạo thành công và đang chờ phê duyệt.');
+      // navigate('/');
       localStorage.removeItem('businessFormData');
       localStorage.removeItem('businessImages');
     } catch (err) {
-      console.error(
-        'Error creating business:',
-        err.response ? err.response.data : err.message
-      );
-      alert(
-        `Không thể tạo doanh nghiệp. Vui lòng thử lại. Chi tiết: ${err.message}`
-      );
+      console.error('Error creating business:', err.response ? err.response.data : err.message);
+      toast.error(`Không thể tạo doanh nghiệp. Chi tiết: ${err.message}`);
     }
   };
 
+
   const formatPrice = (price) => {
-    if (price >= 1000000000)
-      return `${(price / 1000000000).toFixed(1)}B / tháng`;
+    if (price >= 1000000000) return `${(price / 1000000000).toFixed(1)}B / tháng`;
     if (price >= 1000000) return `${(price / 1000000).toFixed(1)}M / tháng`;
     if (price >= 1000) return `${(price / 1000).toFixed(1)}K / tháng`;
     return `${price}/tháng`;
   };
+  console.log(paymentStack);
 
   return (
     <>
       <Header />
-      <main className="business-registration-container">
-        <div className="business-intro-card">
-          <h2 className="business-intro-title">
-            Chào mừng các doanh nghiệp đến với hệ thống Smearch!
+      <main className="business-register-container">
+        <div className="business-register-intro-card">
+          <h2 className="business-register-intro-title">
+            Chào mừng các doanh nghiệp đến với hệ thống LocalLink!
           </h2>
-          <div className="business-intro-section">
-            <div className="business-intro-text">
+          <div className="business-register-intro-section">
+            <div className="business-register-intro-text">
               <strong>Chính sách đăng tải nội dung và sản phẩm</strong>
               <ul>
-                <li>
-                  Chỉ cho phép đăng các sản phẩm và dịch vụ hợp pháp theo quy
-                  định pháp luật của Việt Nam.
-                </li>
-                <li>
-                  Cấm quảng cáo sai sự thật, thông tin gây hiểu lầm hoặc gian
-                  lận.
-                </li>
-                <li>
-                  Không được đăng sản phẩm vi phạm pháp luật như hàng giả, hàng
-                  cấm, vũ khí, nội dung nhạy cảm, ...
-                </li>
-                <li>
-                  Hình ảnh và mô tả sản phẩm phỉa chính xác, rõ ràng và do doanh
-                  nghiệp sở hữu.
-                </li>
+                <li>Chỉ cho phép đăng các sản phẩm và dịch vụ hợp pháp theo quy định pháp luật của Việt Nam.</li>
+                <li>Cấm quảng cáo sai sự thật, thông tin gây hiểu lầm hoặc gian lận.</li>
+                <li>Không được đăng sản phẩm vi phạm pháp luật như hàng giả, hàng cấm, vũ khí, nội dung nhạy cảm, ...</li>
+                <li>Hình ảnh và mô tả sản phẩm phải chính xác, rõ ràng và do doanh nghiệp sở hữu.</li>
               </ul>
-
               <strong>Chính sách ứng xử của người dùng và doanh nghiệp</strong>
               <ul>
-                <li>
-                  Cấm hành vi spam, quấy rối, hoặc sử dụng hình thức tiếp thị
-                  quá mức gây phiền hà.
-                </li>
-                <li>
-                  Doanh nghiệp tự chịu trách nhiệm về dịch vụ khách hàng và xử
-                  lý khiếu nại.
-                </li>
-                <li>Vi phạm nhiều lần có thể bị khóa tìa khoản vĩnh viễn.</li>
+                <li>Cấm hành vi spam, quấy rối, hoặc sử dụng hình thức tiếp thị quá mức gây phiền hà.</li>
+                <li>Doanh nghiệp tự chịu trách nhiệm về dịch vụ khách hàng và xử lý khiếu nại.</li>
+                <li>Vi phạm nhiều lần có thể bị khóa tài khoản vĩnh viễn.</li>
               </ul>
             </div>
-            <div className="business-intro-image">
+            <div className="business-register-intro-image">
               <img src="/1.png" alt="Product Illustration" />
             </div>
           </div>
         </div>
 
-        <h1 className="page-title">Đăng ký doanh nghiệp</h1>
-        {paymentStatus === 'completed' && (
-          <p className="payment-success-message">Thanh toán thành công!</p>
-        )}
-        {paymentStatus === 'failed' && (
-          <p className="payment-failed-message">
-            Thanh toán thất bại. Vui lòng thử lại.
-          </p>
-        )}
-        <form className="registration-form" onSubmit={handleSubmit}>
-          <div className="form-columns">
-            <div className="form-column left">
-              <div className="form-group">
+        <div className="business-register-pricing-plans">
+          <h3 className="business-register-plan-title-step">Bước 1</h3>
+          <h2 className="business-register-plan-title">Lựa chọn gói đăng ký</h2>
+          {loadingPayment ? (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              opacity: 0.3,
+              height: '428px'
+            }}>
+              <PuffLoader size={90} />
+              <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
+            </div>
+          ) : loading ? (
+            <p>Đang tải...</p>
+          ) : error ? (
+            <p>{error}</p>
+          ) : (
+            <div className="business-register-plan-options">
+              {stacks.map((stack) => (
+                <div key={stack._id} className="business-register-plan-card">
+                  <h3>{stack.stack_name}</h3>
+                  <p>
+                    <strong>{formatPrice(stack.stack_price)}</strong>
+                  </p>
+                  <p>{stack.stack_detail}</p>
+                  {paymentStack !== stack._id ? (
+                    <button
+                      type="button"
+                      className="business-register-plan-btn"
+                      onClick={() => handlePlanClick(stack._id)}
+                    >
+                      Chọn gói
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="business-register-plan-btn inactive"
+                      onClick={() => handlePlanClick(stack._id)}
+                    >
+                      Đang dùng
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <h3 className="business-register-plan-title-step">Bước 2</h3>
+        <h2 className="business-register-page-title">Điền thông tin doanh nghiệp</h2>
+        <form className="business-register-form" onSubmit={handleSubmit}>
+          <div className="business-register-form-columns">
+            <div className="business-register-form-column left">
+              <div className="business-register-form-group">
                 <label htmlFor="business-name">Tên doanh nghiệp</label>
                 <input
                   type="text"
                   id="business-name"
                   name="businessName"
-                  placeholder="Nhập ..."
+                  placeholder="Nhập tên doanh nghiệp..."
                   value={formData.businessName}
                   onChange={handleInputChange}
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="business-register-form-group">
                 <label htmlFor="business-address">Địa chỉ</label>
                 <input
                   type="text"
                   id="business-address"
                   name="businessAddress"
-                  placeholder="Nhập ..."
+                  placeholder="Nhập địa chỉ..."
                   value={formData.businessAddress}
                   onChange={handleInputChange}
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="business-register-form-group">
                 <label htmlFor="business-description">Mô tả</label>
                 <textarea
-                  type="text"
                   id="business-description"
                   name="businessDescription"
-                  placeholder="Nhập ..."
+                  placeholder="Nhập mô tả..."
                   value={formData.businessDescription}
                   onChange={handleInputChange}
-                  required
+                  rows="6"
                 />
               </div>
-              <div className="form-group">
+              <div className="business-register-form-group">
                 <label htmlFor="business-image">Hình ảnh</label>
-                <div className="image-upload">
+                <div className="business-register-image-upload">
                   {images.map((image, index) => (
-                    <div key={index} className="image-preview">
+                    <div key={index} className="business-register-image-preview">
                       <img src={image} alt={`Preview ${index + 1}`} />
                     </div>
                   ))}
                   <input
                     type="file"
                     id="add-image-input"
-                    className="add-image-input"
+                    className="business-register-add-image-input"
                     accept="image/*"
                     multiple
                     onChange={handleAddImage}
                   />
                   <button
                     type="button"
-                    className="add-image-btn"
-                    onClick={() =>
-                      document.getElementById('add-image-input').click()
-                    }
+                    className="business-register-add-image-btn"
+                    onClick={() => document.getElementById('add-image-input').click()}
                   >
                     +
                   </button>
                 </div>
               </div>
             </div>
-            <div className="form-column right">
-              <div className="form-group">
+
+            <div className="business-register-form-column right">
+              <div className="business-register-form-group">
                 <label htmlFor="business-type">Loại hình kinh doanh</label>
                 {loading ? (
                   <p>Đang tải...</p>
@@ -359,23 +367,45 @@ const BusinessRegistrationPage = () => {
                   </select>
                 )}
               </div>
-              <div className="form-group">
+              <div className="business-register-form-group">
+                <label htmlFor="geolocate">Kinh độ/Vĩ độ</label>
+                <div className="business-register-geolocate">
+                  <input
+                    type="text"
+                    value={
+                      location
+                        ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`
+                        : ''
+                    }
+                    readOnly
+                  />
+                  <button
+                    type="button"
+                    className="business-register-geolocate-btn"
+                    onClick={fetchLocation}
+                  >
+                    Lấy Kinh độ/Vĩ độ
+                  </button>
+                </div>
+
+              </div>
+              <div className="business-register-form-group">
                 <label htmlFor="business-phone">Số điện thoại</label>
                 <input
                   type="number"
                   id="business-phone"
                   name="businessPhone"
-                  placeholder="Nhập ..."
+                  placeholder="Nhập số điện thoại..."
                   value={formData.businessPhone}
                   onChange={handleInputChange}
                   required
                 />
               </div>
-              <div className="form-group">
+              <div className="business-register-form-group">
                 <label htmlFor="operating-hours">Thời gian hoạt động</label>
-                <div className="operating-hours-inputs">
+                <div className="business-register-operating-hours-inputs">
                   <input
-                    type="text"
+                    type="time"
                     id="operating-hours-from"
                     name="operatingHoursFrom"
                     placeholder="Từ ..."
@@ -383,7 +413,7 @@ const BusinessRegistrationPage = () => {
                     onChange={handleInputChange}
                   />
                   <input
-                    type="text"
+                    type="time"
                     id="operating-hours-to"
                     name="operatingHoursTo"
                     placeholder="Đến ..."
@@ -395,42 +425,15 @@ const BusinessRegistrationPage = () => {
             </div>
           </div>
 
-          <div className="pricing-plans">
-            <h2 className="plan-title">Lựa chọn gói đăng ký</h2>
-            {loading ? (
-              <p>Đang tải...</p>
-            ) : error ? (
-              <p>{error}</p>
-            ) : (
-              <div className="plan-options">
-                {stacks.map((stack) => (
-                  <div key={stack._id} className="plan-card">
-                    <h3>{stack.stack_name}</h3>
-                    <p>
-                      <strong>{formatPrice(stack.stack_price)}</strong>
-                    </p>
-                    <p>{stack.stack_detail}</p>
-                    <button
-                      type="button"
-                      className="plan-btn"
-                      onClick={() => handlePlanClick(stack._id)}
-                    >
-                      Chọn gói
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
           <button
             type="submit"
-            className="submit-btn"
+            className="business-register-submit-btn"
             disabled={paymentStatus !== 'completed'}
           >
             Đăng ký
           </button>
         </form>
-      </main>
+      </main >
       <Footer />
     </>
   );

@@ -7,9 +7,6 @@ router.post('/', PaymentController.createPayment);
 
 router.get('/callback', PaymentController.handlePaymentCallback);
 
-// Get payment status
-router.get('/status', PaymentController.getPaymentStatus);
-
 // Get all payments
 router.get('/', PaymentController.getAllPayments);
 
@@ -25,6 +22,7 @@ router.delete('/:id', PaymentController.deletePayment);
 // Update transaction ID
 router.patch('/:id/transaction', PaymentController.updateTransactionId);
 
-
+// Search by user_id
+router.get('/userid/:user_id', PaymentController.getPaymentsByUserId);
 
 module.exports = router;

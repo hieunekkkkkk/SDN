@@ -26,6 +26,7 @@ function ManageBusinessPage() {
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
 
+  Modal.setAppElement('#root');
   const limit = 5;
 
   useEffect(() => {

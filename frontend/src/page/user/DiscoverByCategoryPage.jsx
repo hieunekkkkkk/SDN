@@ -26,6 +26,7 @@ function DiscoverByCategoryPage() {
       cheapest: false,
       mostExpensive: false,
       opening: false,
+      closed: false,
     },
     rating: {
       lowest: false,
@@ -74,9 +75,10 @@ function DiscoverByCategoryPage() {
           const filtered = response.data.filter(
             (b) =>
               b.business_category_id?._id === categoryId &&
-              b.business_active === 'active'
+              b.business_active == "active"
           );
-
+          console.log(response.data);
+          
           const enriched = filtered.map((b) => ({
             ...b,
             price: b.business_stack_id?.stack_price
@@ -105,13 +107,14 @@ function DiscoverByCategoryPage() {
   const filteredBusinesses = businesses.filter((b) => {
     const { price, rating, status } = b;
 
-    const { cheapest, mostExpensive, opening } = filters.price;
+    const { cheapest, mostExpensive, opening, closed } = filters.price;
     const { lowest, highest, fourStars, fiveStars } = filters.rating;
 
     let pricePass =
       (!cheapest || price <= 50000) &&
       (!mostExpensive || price >= 50000) &&
-      (!opening || status === 'Đang mở cửa');
+      (!opening || status === 'Đang mở cửa') &&
+      (!closed || status === 'Đã đóng cửa');
 
     let ratingPass =
       (!lowest || rating <= 2) &&

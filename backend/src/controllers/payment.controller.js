@@ -6,7 +6,6 @@ class PaymentController {
         try {
             const { stack_id, user_id } = req.body;
 
-
             const result = await paymentService.createPayment(stack_id, user_id);
             res.status(200).json(result);
         } catch (error) {
@@ -17,37 +16,13 @@ class PaymentController {
 
     async handlePaymentCallback(req, res) {
         try {
-            const { code, status, orderCode } = req.query;
-            if (!code || !status) {
-                return res.status(400).json({ error: 1, message: 'Missing required parameters (code or status)' });
+            const { orderCode, status } = req.query;
+            const result = await paymentService.handlePaymentCallback(orderCode, status);
+            if (result) {
+                res.redirect(`${process.env.FRONTEND_URL}/`);
             }
-
-            const payment = await paymentService.getPaymentByTransactionId(code);
-            if (!payment) {
-                return res.status(404).json({ error: 1, message: 'Payment not found' });
-            }
-
-            // Ánh xạ trạng thái từ Payos
-            let paymentStatus;
-            switch (status.toUpperCase()) {
-                case 'PAID':
-                    paymentStatus = 'completed';
-                    break;
-                case 'CANCELLED':
-                case 'FAILED':
-                    paymentStatus = 'failed';
-                    break;
-                default:
-                    paymentStatus = 'pending';
-            }
-
-            payment.payment_status = paymentStatus;
-            if (orderCode) payment.orderCode = orderCode; // Lưu orderCode nếu có
-            await payment.save();
-
-            res.status(200).json({ error: 0, message: 'Payment status updated' });
-        } catch (error) {
-            res.status(500).json({ error: 1, message: error.message });
+        } catch (err) {
+            res.status(500).json({ error: 1, message: err.message });
         }
     }
 
@@ -117,16 +92,18 @@ class PaymentController {
         }
     }
 
-    async getPaymentStatus(req, res) {
+    async getPaymentsByUserId(req, res) {
         try {
-            const { user_id } = req.query;
+            const { user_id } = req.params;
+
             if (!user_id) {
-                return res.status(400).json({ error: 1, message: 'User ID is required' });
+                return res.status(400).json({ message: 'user_id is required' });
             }
-            const result = await paymentService.getPaymentStatus(user_id);
-            res.status(200).json(result);
+
+            const results = await paymentService.searchPaymentsByUserId(user_id);
+            res.status(200).json({ message: 'Payments retrieved successfully', data: results });
         } catch (error) {
-            res.status(500).json({ error: 1, message: error.message });
+            res.status(500).json({ message: error.message });
         }
     }
 }
