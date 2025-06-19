@@ -24,19 +24,20 @@ const BusinessRegistrationPage = () => {
     return savedData
       ? JSON.parse(savedData)
       : {
-          businessName: '',
-          businessAddress: '',
-          businessDescription: '',
-          businessType: '',
-          businessPhone: '',
-          operatingHoursFrom: '',
-          operatingHoursTo: '',
-        };
+        businessName: '',
+        businessAddress: '',
+        businessDescription: '',
+        businessType: '',
+        businessPhone: '',
+        operatingHoursFrom: '',
+        operatingHoursTo: '',
+      };
   });
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [paymentStack, setPaymentStack] = useState(null);
   const [loadingPayment, setLoadingPayment] = useState(false);
   const { location, fetchLocation } = useGeolocation();
+  const [paymentError, setPaymentError] = useState(false);
 
   const userId = getCurrentUserId();
 
@@ -75,7 +76,7 @@ const BusinessRegistrationPage = () => {
         setPaymentStack(completedPayment.payment_stack._id);
       } catch (err) {
         console.error('Error checking payment status:', err);
-        toast.error('Đã xảy ra lỗi khi kiểm tra trạng thái thanh toán.');
+        setPaymentError(true); // trigger blur
       }
     };
 
@@ -193,7 +194,6 @@ const BusinessRegistrationPage = () => {
     if (price >= 1000) return `${(price / 1000).toFixed(1)}K / tháng`;
     return `${price}/tháng`;
   };
-  console.log(paymentStack);
 
   return (
     <>
@@ -279,159 +279,184 @@ const BusinessRegistrationPage = () => {
         <h3 className="business-register-plan-title-step">Bước 2</h3>
         <h2 className="business-register-page-title">Điền thông tin doanh nghiệp</h2>
         <form className="business-register-form" onSubmit={handleSubmit}>
-          <div className="business-register-form-columns">
-            <div className="business-register-form-column left">
-              <div className="business-register-form-group">
-                <label htmlFor="business-name">Tên doanh nghiệp</label>
-                <input
-                  type="text"
-                  id="business-name"
-                  name="businessName"
-                  placeholder="Nhập tên doanh nghiệp..."
-                  value={formData.businessName}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="business-register-form-group">
-                <label htmlFor="business-address">Địa chỉ</label>
-                <input
-                  type="text"
-                  id="business-address"
-                  name="businessAddress"
-                  placeholder="Nhập địa chỉ..."
-                  value={formData.businessAddress}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="business-register-form-group">
-                <label htmlFor="business-description">Mô tả</label>
-                <textarea
-                  id="business-description"
-                  name="businessDescription"
-                  placeholder="Nhập mô tả..."
-                  value={formData.businessDescription}
-                  onChange={handleInputChange}
-                  rows="6"
-                />
-              </div>
-              <div className="business-register-form-group">
-                <label htmlFor="business-image">Hình ảnh</label>
-                <div className="business-register-image-upload">
-                  {images.map((image, index) => (
-                    <div key={index} className="business-register-image-preview">
-                      <img src={image} alt={`Preview ${index + 1}`} />
-                    </div>
-                  ))}
-                  <input
-                    type="file"
-                    id="add-image-input"
-                    className="business-register-add-image-input"
-                    accept="image/*"
-                    multiple
-                    onChange={handleAddImage}
-                  />
-                  <button
-                    type="button"
-                    className="business-register-add-image-btn"
-                    onClick={() => document.getElementById('add-image-input').click()}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="business-register-form-column right">
-              <div className="business-register-form-group">
-                <label htmlFor="business-type">Loại hình kinh doanh</label>
-                {loading ? (
-                  <p>Đang tải...</p>
-                ) : error ? (
-                  <p>{error}</p>
-                ) : (
-                  <select
-                    id="business-type"
-                    name="businessType"
-                    value={formData.businessType}
-                    onChange={handleInputChange}
-                    required
-                  >
-                    <option value="">Lựa chọn...</option>
-                    {categories.map((category) => (
-                      <option key={category._id} value={category._id}>
-                        {category.category_name}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-              <div className="business-register-form-group">
-                <label htmlFor="geolocate">Kinh độ/Vĩ độ</label>
-                <div className="business-register-geolocate">
+          <div className={`business-register-form-wrapper ${paymentError ? 'blurred' : ''}`}>
+            <div className="business-register-form-columns">
+              <div className="business-register-form-column left">
+                <div className="business-register-form-group">
+                  <label htmlFor="business-name">Tên doanh nghiệp</label>
                   <input
                     type="text"
-                    value={
-                      location
-                        ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`
-                        : ''
-                    }
-                    readOnly
+                    id="business-name"
+                    name="businessName"
+                    placeholder="Nhập tên doanh nghiệp..."
+                    value={formData.businessName}
+                    onChange={handleInputChange}
+                    disabled={paymentError}
+                    required
                   />
-                  <button
-                    type="button"
-                    className="business-register-geolocate-btn"
-                    onClick={fetchLocation}
-                  >
-                    Lấy Kinh độ/Vĩ độ
-                  </button>
                 </div>
+                <div className="business-register-form-group">
+                  <label htmlFor="business-address">Địa chỉ</label>
+                  <input
+                    type="text"
+                    id="business-address"
+                    name="businessAddress"
+                    placeholder="Nhập địa chỉ..."
+                    value={formData.businessAddress}
+                    onChange={handleInputChange}
+                    disabled={paymentError}
+                    required
+                  />
+                </div>
+                <div className="business-register-form-group">
+                  <label htmlFor="business-description">Mô tả</label>
+                  <textarea
+                    id="business-description"
+                    name="businessDescription"
+                    placeholder="Nhập mô tả..."
+                    value={formData.businessDescription}
+                    onChange={handleInputChange}
+                    rows="6"
+                    disabled={paymentError}
+                  />
+                </div>
+                <div className="business-register-form-group">
+                  <label htmlFor="business-image">Hình ảnh</label>
+                  <div className="business-register-image-upload">
+                    {images.map((image, index) => (
+                      <div key={index} className="business-register-image-preview">
+                        <button
+                          type="button"
+                          className="remove-image-btn"
+                          onClick={() => {
+                            const newImages = [...images];
+                            newImages.splice(index, 1);
+                            setImages(newImages);
+                          }}
+                          disabled={paymentError}
+                        >
+                          ×
+                        </button>
+                        <img src={image} alt={`Preview ${index + 1}`} />
+                      </div>
+                    ))}
+                    <input
+                      type="file"
+                      id="add-image-input"
+                      className="business-register-add-image-input"
+                      accept="image/*"
+                      multiple
+                      onChange={handleAddImage}
+                      disabled={paymentError}
+                    />
+                    <button
+                      type="button"
+                      className="business-register-add-image-btn"
+                      onClick={() => document.getElementById('add-image-input').click()}
+                      disabled={paymentError}
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
 
-              </div>
-              <div className="business-register-form-group">
-                <label htmlFor="business-phone">Số điện thoại</label>
-                <input
-                  type="number"
-                  id="business-phone"
-                  name="businessPhone"
-                  placeholder="Nhập số điện thoại..."
-                  value={formData.businessPhone}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="business-register-form-group">
-                <label htmlFor="operating-hours">Thời gian hoạt động</label>
-                <div className="business-register-operating-hours-inputs">
+              <div className="business-register-form-column right">
+                <div className="business-register-form-group">
+                  <label htmlFor="business-type">Loại hình kinh doanh</label>
+                  {loading ? (
+                    <p>Đang tải...</p>
+                  ) : error ? (
+                    <p>{error}</p>
+                  ) : (
+                    <select
+                      id="business-type"
+                      name="businessType"
+                      value={formData.businessType}
+                      onChange={handleInputChange}
+                      disabled={paymentError}
+                      required
+                    >
+                      <option value="">Lựa chọn...</option>
+                      {categories.map((category) => (
+                        <option key={category._id} value={category._id}>
+                          {category.category_name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+                <div className="business-register-form-group">
+                  <label htmlFor="geolocate">Kinh độ/Vĩ độ</label>
+                  <div className="business-register-geolocate">
+                    <input
+                      type="text"
+                      value={
+                        location
+                          ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`
+                          : ''
+                      }
+                      readOnly
+                      disabled={paymentError}
+                    />
+                    <button
+                      type="button"
+                      className="business-register-geolocate-btn"
+                      onClick={fetchLocation}
+                      disabled={paymentError}
+                    >
+                      Lấy Kinh độ/Vĩ độ
+                    </button>
+                  </div>
+                </div>
+                <div className="business-register-form-group">
+                  <label htmlFor="business-phone">Số điện thoại</label>
                   <input
-                    type="time"
-                    id="operating-hours-from"
-                    name="operatingHoursFrom"
-                    placeholder="Từ ..."
-                    value={formData.operatingHoursFrom}
+                    type="number"
+                    id="business-phone"
+                    name="businessPhone"
+                    placeholder="Nhập số điện thoại..."
+                    value={formData.businessPhone}
                     onChange={handleInputChange}
+                    disabled={paymentError}
+                    required
                   />
-                  <input
-                    type="time"
-                    id="operating-hours-to"
-                    name="operatingHoursTo"
-                    placeholder="Đến ..."
-                    value={formData.operatingHoursTo}
-                    onChange={handleInputChange}
-                  />
+                </div>
+                <div className="business-register-form-group">
+                  <label htmlFor="operating-hours">Thời gian hoạt động</label>
+                  <div className="business-register-operating-hours-inputs">
+                    <input
+                      type="time"
+                      id="operating-hours-from"
+                      name="operatingHoursFrom"
+                      placeholder="Từ ..."
+                      value={formData.operatingHoursFrom}
+                      onChange={handleInputChange}
+                      disabled={paymentError}
+                    />
+                    <input
+                      type="time"
+                      id="operating-hours-to"
+                      name="operatingHoursTo"
+                      placeholder="Đến ..."
+                      value={formData.operatingHoursTo}
+                      onChange={handleInputChange}
+                      disabled={paymentError}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
+            <div className='business-register-submit-btn-container'>
+              <button
+                type="submit"
+                className="business-register-submit-btn"
+                disabled={paymentStatus !== 'completed' || paymentError}
+              >
+                Đăng ký
+              </button>
+            </div>
           </div>
-
-          <button
-            type="submit"
-            className="business-register-submit-btn"
-            disabled={paymentStatus !== 'completed'}
-          >
-            Đăng ký
-          </button>
         </form>
       </main >
       <Footer />

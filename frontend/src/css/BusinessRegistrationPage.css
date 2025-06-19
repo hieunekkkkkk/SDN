@@ -225,6 +225,10 @@
   font-weight: bold;
 }
 
+.business-register-submit-btn-container{
+  text-align: center;
+}
+
 .business-register-submit-btn:hover {
   background-color: #4a148c;
 }
@@ -298,6 +302,44 @@
 
 .business-register-plan-btn.inactive {
   background-color: #ccc;
+}
+
+.business-register-image-preview {
+  position: relative;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.business-register-image-preview img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.business-register-form-wrapper.blurred {
+  filter: blur(4px);
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.7;
+  position: relative;
 }
 
 :root {
