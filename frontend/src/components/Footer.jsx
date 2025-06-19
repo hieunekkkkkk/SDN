@@ -108,12 +108,12 @@ const Footer = () => {
                   Gửi
                 </button>
               </form>
-              <div className="payment-methods">
+              {/* <div className="payment-methods">
                 <img src="/visa.png" alt="Visa" />
                 <img src="/mastercard.png" alt="Mastercard" />
                 <img src="/paypal.png" alt="PayPal" />
                 <img src="/amex.png" alt="American Express" />
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

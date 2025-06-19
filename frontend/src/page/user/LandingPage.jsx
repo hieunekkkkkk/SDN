@@ -5,6 +5,13 @@ import '../../css/LandingPage.css';
 import Footer from '../../components/Footer';
 import LoadingScreen from '../../components/LoadingScreen';
 import Header from '../../components/Header';
+import { FaCoffee } from 'react-icons/fa';
+import { MdFoodBank } from 'react-icons/md';
+import { RiHotelLine } from 'react-icons/ri';
+import { PiPark } from 'react-icons/pi';
+import { GiMaterialsScience } from 'react-icons/gi';
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 function LandingPage() {
   const [businesses, setBusinesses] = useState([]);
@@ -26,6 +33,8 @@ function LandingPage() {
     satisfactionRate: 0
   });
   const navigate = useNavigate();
+  const [direction, setDirection] = useState(0); // 1 = next, -1 = prev
+  const [feedbackDirection, setFeedbackDirection] = useState(0); // -1 = prev, 1 = next
 
   // Memoize filtered businesses để tránh re-calculation
   const filteredBusinesses = useMemo(() => {
@@ -187,22 +196,22 @@ function LandingPage() {
   // Helper function để convert icon name thành emoji - ĐỘNG từ database
   const getCategoryIcon = (iconName, categoryName) => {
     const iconMap = {
-      // Database icon names
-      'FaCoffee': '☕',
-      'MdFoodBank': '🍜',
-      'RiHotelLine': '🏨',
-      'PiPark': '🎡',
-      'GiMaterialsScience': '🧱',
+      // icon name strings from the DB mapped to actual React components
+      'FaCoffee': <FaCoffee />,
+      'MdFoodBank': <MdFoodBank />,
+      'RiHotelLine': <RiHotelLine />,
+      'PiPark': <PiPark />,
+      'GiMaterialsScience': <GiMaterialsScience />,
 
-      // Category names from database
-      'Coffee': '☕',
-      'Hàng ăn': '🍜',
-      'Nhà trọ': '🏨',
-      'Khu vui chơi': '🎡',
-      'Nguyên vật liệu': '🧱',
+      // fallback by category name
+      'Coffee': <FaCoffee />,
+      'Hàng ăn': <MdFoodBank />,
+      'Nhà trọ': <RiHotelLine />,
+      'Khu vui chơi': <PiPark />,
+      'Nguyên vật liệu': <GiMaterialsScience />,
     };
 
-    return iconMap[iconName] || iconMap[categoryName] || '📍';
+    return iconMap[iconName] || iconMap[categoryName] || <span>📍</span>;
   };
 
   // Process feedbacks từ API backend - HOÀN TOÀN ĐỘNG với like/dislike
@@ -231,6 +240,7 @@ function LandingPage() {
 
   // Service navigation handlers
   const handlePrevService = useCallback(() => {
+    setDirection(-1); // ← slide
     const totalServicePages = Math.ceil(categories.length / 4);
     setCurrentServicePage(prev =>
       prev === 0 ? totalServicePages - 1 : prev - 1
@@ -238,11 +248,13 @@ function LandingPage() {
   }, [categories.length]);
 
   const handleNextService = useCallback(() => {
+    setDirection(1); // → slide
     const totalServicePages = Math.ceil(categories.length / 4);
     setCurrentServicePage(prev =>
       prev === totalServicePages - 1 ? 0 : prev + 1
     );
   }, [categories.length]);
+
 
   // Get visible services for current page - ĐỘNG từ categories API
   const visibleServices = useMemo(() => {
@@ -251,6 +263,7 @@ function LandingPage() {
   }, [categories, currentServicePage]);
 
   const handlePrevFeedback = useCallback(() => {
+    setFeedbackDirection(-1);
     const totalPages = Math.ceil(processedTestimonials.length / 3);
     setCurrentFeedbackPage(prev =>
       prev === 0 ? totalPages - 1 : prev - 1
@@ -258,11 +271,13 @@ function LandingPage() {
   }, [processedTestimonials.length]);
 
   const handleNextFeedback = useCallback(() => {
+    setFeedbackDirection(1);
     const totalPages = Math.ceil(processedTestimonials.length / 3);
     setCurrentFeedbackPage(prev =>
       prev === totalPages - 1 ? 0 : prev + 1
     );
   }, [processedTestimonials.length]);
+
 
   const visibleTestimonials = useMemo(() => {
     const startIndex = currentFeedbackPage * 3;
@@ -376,28 +391,40 @@ function LandingPage() {
                 </button>
               )}
 
-              <div className="services-grid-new">
-                {visibleServices.length > 0 ? (
-                  visibleServices.map((category, index) => (
-                    <ServiceCard
-                      key={category._id}
-                      category={category}
-                      businesses={businesses}
-                      onSeeMore={handleSeeMore}
-                      index={(currentServicePage * 4) + index}
-                    />
-                  ))
-                ) : (
-                  <div style={{
-                    gridColumn: '1 / -1',
-                    textAlign: 'center',
-                    padding: '2rem',
-                    color: '#666'
-                  }}>
-                    <p>Chưa có danh mục nào</p>
-                  </div>
-                )}
-              </div>
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={currentServicePage}
+                  className="services-grid-new"
+                  custom={direction}
+                  initial={{ x: direction > 0 ? 100 : -100, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: direction > 0 ? -100 : 100, opacity: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  {visibleServices.length > 0 ? (
+                    visibleServices.map((category, index) => (
+                      <ServiceCard
+                        key={category._id}
+                        category={category}
+                        businesses={businesses}
+                        onSeeMore={handleSeeMore}
+                        index={(currentServicePage * 4) + index}
+                      />
+                    ))
+                  ) : (
+                    <div
+                      style={{
+                        gridColumn: '1 / -1',
+                        textAlign: 'center',
+                        padding: '2rem',
+                        color: '#666',
+                      }}
+                    >
+                      <p>Chưa có danh mục nào</p>
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
 
               {showServiceNav && (
                 <button
@@ -448,18 +475,28 @@ function LandingPage() {
                   </button>
                 )}
 
-                <div className="testimonials-grid">
-                  {visibleTestimonials.map((testimonial) => (
-                    <TestimonialCard
-                      key={testimonial.id}
-                      text={testimonial.text}
-                      author={testimonial.author}
-                      date={testimonial.date}
-                      likes={testimonial.likes}
-                      dislikes={testimonial.dislikes}
-                    />
-                  ))}
-                </div>
+                <AnimatePresence mode="wait" custom={feedbackDirection}>
+                  <motion.div
+                    key={currentFeedbackPage}
+                    className="testimonials-grid"
+                    custom={feedbackDirection}
+                    initial={{ x: feedbackDirection > 0 ? 100 : -100, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: feedbackDirection > 0 ? -100 : 100, opacity: 0 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {visibleTestimonials.map((testimonial) => (
+                      <TestimonialCard
+                        key={testimonial.id}
+                        text={testimonial.text}
+                        author={testimonial.author}
+                        date={testimonial.date}
+                        likes={testimonial.likes}
+                        dislikes={testimonial.dislikes}
+                      />
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
 
                 {showFeedbackNav && (
                   <button
