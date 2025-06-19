@@ -4,16 +4,30 @@ services:
   ollama:
     image: ollama/ollama
     container_name: ollama
+    restart: unless-stopped
     ports:
       - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    volumes:
+      - ollama_data:/root/.ollama
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     deploy:
       resources:
         reservations:
           devices:
-            - capabilities: [gpu]   # Only needed if you're using GPU
-    volumes:
-      - ollama_data:/root/.ollama  # Persist models across restarts
-    restart: unless-stopped
+            - driver: nvidia
+              capabilities: [gpu]
+
+    entrypoint: >
+      sh -c "
+        ollama serve & 
+        sleep 5 && 
+        ollama pull qwen3:1.7b &&
+        wait
+      "
 
 volumes:
   ollama_data:

@@ -2,8 +2,8 @@ const BusinessModel = require('../entity/module/business.model');
 const ProductModel = require('../entity/module/product.model');
 const Ollama = require("@langchain/ollama");
 
-SYSTEM_PROMPT = 
-`Bạn là một Trợ lý AI chuyên nghiệp trong việc tư vấn và đề xuất các doanh nghiệp phù hợp với nhu cầu của khách hàng.
+SYSTEM_PROMPT =
+    `Bạn là một Trợ lý AI chuyên nghiệp trong việc tư vấn và đề xuất các doanh nghiệp phù hợp với nhu cầu của khách hàng.
 
 Dữ liệu bạn sẽ nhận được là danh sách các sản phẩm, trong đó mỗi sản phẩm bao gồm các thông tin:
 - Tên sản phẩm
@@ -106,10 +106,62 @@ class AiService {
         }
     }
 
+    async getBussinessWithProductsById(businessId) {
+        try {
+            const business = await BusinessModel.findById(businessId).lean().populate('business_category_id');
+            if (!business) {
+                throw new Error(`Business with ID ${businessId} not found`);
+            }
+            const products = await ProductModel.find({ business_id: businessId }).lean();
+            return {
+                "business_id": business._id,
+                "business_name": business.business_name,
+                "business_address": business.business_address,
+                "business_detail": business.business_detail,
+                "business_status": business.business_status,
+                "business_image": business.business_image,
+                "business_category": business.business_category_id.category_name,
+                "products": products.map(product => ({
+                    "product_id": product._id,
+                    "product_name": product.product_name,
+                    "product_description": product.product_description,
+                    "product_price": product.product_price
+                })),
+            };
+        } catch (error) {
+            throw new Error(`Error fetching business with products by ID ${businessId}: ${error.message}`);
+        }
+    }
+
+    // async checkOllamaConnection() {
+    //     try {
+    //         const model = new Ollama.ChatOllama({
+    //             baseUrl: "http://localhost:11434",
+    //             model: "qwen3:1.7b",
+    //         });
+    //         // Gửi yêu cầu thử đơn giản
+    //         const response = await model.invoke([
+    //             {
+    //                 role: "user",
+    //                 content: "Ping",
+    //             },
+    //         ]);
+    //         console.log("Kết nối tới Ollama thành công! Phản hồi:", response.content);
+    //         return true;
+    //     } catch (error) {
+    //         console.error("Lỗi kết nối tới Ollama:", error.message);
+    //         return false;
+    //     }
+    // }
+
     async getRecommendations(text) {
         try {
+            // const isConnected = await this.checkOllamaConnection();
+            // if (!isConnected) {
+            //     throw new Error("Không thể kết nối tới Ollama server");
+            // }
             const data = await this.getAllBusinessWithProducts();
-            const products = data.flatMap(business => 
+            const products = data.flatMap(business =>
                 business.products.map(product => ({
                     business_id: business.business_id.toString(),
                     product_id: product.product_id.toString(),
@@ -118,8 +170,9 @@ class AiService {
                     product_price: product.product_price
                 }))
             );
-            console.log("Products:", products);
+            
             const model = new Ollama.ChatOllama({
+                baseUrl: "http://localhost:11434",
                 model: "qwen3:1.7b",
                 temperature: 0.1,
                 maxTokens: 1000,
@@ -143,8 +196,13 @@ class AiService {
             const recommendations = response.content;
             // console.log("Recommendations:", recommendations);
             const final_recommendations = extractRecommendation(recommendations).split('\n');
-            return final_recommendations;
-        } 
+
+            const results = await Promise.all(
+                final_recommendations.map(id => this.getBussinessWithProductsById(id))
+            );
+
+            return results;
+        }
         catch (error) {
             throw new Error(`Error getting recommendations: ${error.message}`);
         }
