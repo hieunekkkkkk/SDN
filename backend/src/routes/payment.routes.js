@@ -7,6 +7,9 @@ router.post('/', PaymentController.createPayment);
 
 router.get('/callback', PaymentController.handlePaymentCallback);
 
+// Get payment status
+router.get('/status', PaymentController.getPaymentStatus);
+
 // Get all payments
 router.get('/', PaymentController.getAllPayments);
 

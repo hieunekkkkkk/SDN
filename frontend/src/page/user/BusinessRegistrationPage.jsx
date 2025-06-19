@@ -3,26 +3,35 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../css/BusinessRegistrationPage.css';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
 
 const BusinessRegistrationPage = () => {
   const navigate = useNavigate();
-  const [images, setImages] = useState([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [images, setImages] = useState(() => {
+    const savedImages = localStorage.getItem('businessImages');
+    return savedImages ? JSON.parse(savedImages) : [];
+  });
   const [stacks, setStacks] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [formData, setFormData] = useState({
-    businessName: '',
-    businessAddress: '',
-    businessDescription: '',
-    businessType: '',
-    businessPhone: '',
-    operatingHoursFrom: '',
-    operatingHoursTo: '',
+  const [formData, setFormData] = useState(() => {
+    const savedData = localStorage.getItem('businessFormData');
+    return savedData
+      ? JSON.parse(savedData)
+      : {
+          businessName: '',
+          businessAddress: '',
+          businessDescription: '',
+          businessType: '',
+          businessPhone: '',
+          operatingHoursFrom: '',
+          operatingHoursTo: '',
+        };
   });
-  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(null);
 
   const userId = getCurrentUserId();
 
@@ -60,7 +69,35 @@ const BusinessRegistrationPage = () => {
     };
 
     fetchCategories();
-  }, []);
+
+    const payment = searchParams.get('payment');
+    if (payment === 'success') {
+      setPaymentStatus('completed');
+      searchParams.delete('payment');
+      setSearchParams(searchParams);
+    } else if (payment === 'failed') {
+      setPaymentStatus('failed');
+      searchParams.delete('payment');
+      setSearchParams(searchParams);
+    }
+
+    const checkPaymentStatus = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BE_URL}/api/payment/status?user_id=${userId}`
+        );
+        if (response.data.status === 'completed') {
+          setPaymentStatus('completed');
+        } else if (response.data.status === 'failed') {
+          setPaymentStatus('failed');
+        }
+      } catch (err) {
+        console.error('Error checking payment status:', err);
+      }
+    };
+    const interval = setInterval(checkPaymentStatus, 5000);
+    return () => clearInterval(interval);
+  }, [userId, searchParams, setSearchParams]);
 
   const handleAddImage = (event) => {
     const files = Array.from(event.target.files);
@@ -91,21 +128,45 @@ const BusinessRegistrationPage = () => {
 
       console.log(paymentResponse.data);
 
-      if (paymentResponse.data) {
-        // Sử dụng url trả về từ backend
-        window.open(paymentResponse.data.url, '_blank');
+      if (paymentResponse.data && paymentResponse.data.url) {
+        window.location.href = paymentResponse.data.url;
       } else {
         throw new Error('Thanh toán thất bại.');
       }
     } catch (err) {
-      console.error('Error during payment:', err);
-      alert('Thanh toán thất bại. Vui lòng thử lại.');
+      console.error(
+        'Error during payment:',
+        err.response ? err.response.data : err.message
+      );
+      alert(`Thanh toán thất bại. Vui lòng thử lại. Chi tiết: ${err.message}`);
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (paymentStatus !== 'completed') {
+      alert('Vui lòng hoàn tất thanh toán trước khi đăng ký.');
+      return;
+    }
+    if (!formData.businessAddress || !formData.businessAddress.trim()) {
+      alert('Địa chỉ doanh nghiệp là bắt buộc và phải có nội dung.');
+      return;
+    }
     try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BE_URL}/api/payment/status?user_id=${userId}`
+      );
+      const { payment_id, status } = response.data;
+      if (status !== 'completed') {
+        alert('Thanh toán chưa hoàn tất. Vui lòng kiểm tra lại.');
+        return;
+      }
+
+      const paymentDetails = await axios.get(
+        `${import.meta.env.VITE_BE_URL}/api/payment/${payment_id}`
+      );
+      const business_stack_id = paymentDetails.data.payment_stack;
+
       const businessData = {
         owner_id: userId,
         business_name: formData.businessName,
@@ -118,7 +179,7 @@ const BusinessRegistrationPage = () => {
           close: formData.operatingHoursTo,
         },
         business_image: images,
-        business_status: false, // Pending status
+        business_stack_id, // Lấy từ payment
       };
 
       await axios.post(
@@ -128,9 +189,16 @@ const BusinessRegistrationPage = () => {
 
       alert('Doanh nghiệp đã được tạo thành công và đang chờ phê duyệt.');
       navigate('/');
+      localStorage.removeItem('businessFormData');
+      localStorage.removeItem('businessImages');
     } catch (err) {
-      console.error('Error creating business:', err);
-      alert('Không thể tạo doanh nghiệp. Vui lòng thử lại.');
+      console.error(
+        'Error creating business:',
+        err.response ? err.response.data : err.message
+      );
+      alert(
+        `Không thể tạo doanh nghiệp. Vui lòng thử lại. Chi tiết: ${err.message}`
+      );
     }
   };
 
@@ -192,10 +260,15 @@ const BusinessRegistrationPage = () => {
         </div>
 
         <h1 className="page-title">Đăng ký doanh nghiệp</h1>
-        {paymentSuccess && (
+        {paymentStatus === 'completed' && (
           <p className="payment-success-message">Thanh toán thành công!</p>
         )}
-        <form className="registration-form">
+        {paymentStatus === 'failed' && (
+          <p className="payment-failed-message">
+            Thanh toán thất bại. Vui lòng thử lại.
+          </p>
+        )}
+        <form className="registration-form" onSubmit={handleSubmit}>
           <div className="form-columns">
             <div className="form-column left">
               <div className="form-group">
@@ -338,6 +411,7 @@ const BusinessRegistrationPage = () => {
                     </p>
                     <p>{stack.stack_detail}</p>
                     <button
+                      type="button"
                       className="plan-btn"
                       onClick={() => handlePlanClick(stack._id)}
                     >
@@ -348,7 +422,11 @@ const BusinessRegistrationPage = () => {
               </div>
             )}
           </div>
-          <button type="submit" className="submit-btn" onClick={handleSubmit}>
+          <button
+            type="submit"
+            className="submit-btn"
+            disabled={paymentStatus !== 'completed'}
+          >
             Đăng ký
           </button>
         </form>

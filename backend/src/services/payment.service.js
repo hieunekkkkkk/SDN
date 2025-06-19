@@ -167,6 +167,42 @@ class PaymentService {
             throw new Error(`Error updating transaction ID: ${error.message}`);
         }
     }
+
+    async getPaymentStatus(user_id) {
+        try {
+            if (!user_id) throw new Error('User ID is required');
+            const latestPayment = await Payment.findOne({ user_id })
+                .sort({ payment_date: -1 }) // Lấy payment gần nhất
+                .populate('payment_stack', 'stack_name stack_price');
+            if (!latestPayment) {
+                return {
+                    error: 1,
+                    message: 'No payment found for this user',
+                    status: 'pending',
+                    payment_id: null,
+                };
+            }
+            return {
+                error: 0,
+                message: 'Payment status retrieved',
+                status: latestPayment.payment_status,
+                payment_id: latestPayment._id,
+                transaction_id: latestPayment.transaction_id,
+            };
+        } catch (error) {
+            throw new Error(`Error fetching payment status: ${error.message}`);
+        }
+    }
+
+    async getPaymentByTransactionId(transactionId) {
+        try {
+            const payment = await Payment.findOne({ transaction_id: transactionId }).populate('payment_stack', 'stack_name stack_price');
+            if (!payment) throw new Error('Payment not found');
+            return payment;
+        } catch (error) {
+            throw new Error(`Error fetching payment: ${error.message}`);
+        }
+    }
 }
 
 // Export a single instance of the service

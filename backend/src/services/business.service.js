@@ -6,14 +6,27 @@ class BusinessService {
     // Create a new business
     async createBusiness(businessData) {
         try {
-            const { business_category_id, business_stack_id } = businessData;
+            const { business_category_id, business_stack_id, business_address } = businessData;
+            const [longitude, latitude] = [106.6297, 10.8231]; // Giá trị mặc định (TP.HCM)
+            const business_location = {
+                type: 'Point',
+                coordinates: [longitude, latitude]
+            };
             const categoryId = business_category_id ? new mongoose.Types.ObjectId(business_category_id) : null;
             const stackId = business_stack_id ? new mongoose.Types.ObjectId(business_stack_id) : null;
+
+            if (!categoryId) throw new Error('business_category_id is required');
 
             const business = new Business({
                 ...businessData,
                 business_category_id: categoryId,
-                business_stack_id: stackId
+                business_stack_id: stackId,
+                business_location,
+                business_total_vote: 0,
+                business_rating: 0,
+                business_view: 0,
+                business_status: false,
+                business_active: 'pending'
             });
 
             return await business.save();
