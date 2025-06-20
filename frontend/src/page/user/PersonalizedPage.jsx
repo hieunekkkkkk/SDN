@@ -252,7 +252,6 @@ function PersonalizedPage() {
                                                 <span className={`discover-status ${place.business_status ? 'open' : 'closed'}`}>
                                                     {place.business_status ? 'Đang mở cửa' : 'Đã đóng cửa'}
                                                 </span>
-                                                <span className="discover-rating">⭐ {place.business_rating || 0}</span>
                                             </div>
                                         </div>
                                     </div>

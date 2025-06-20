@@ -39,6 +39,7 @@ const BusinessRegistrationPage = () => {
   const [loadingPayment, setLoadingPayment] = useState(false);
   const [havePaid, setHavePaid] = useState(false);
   const [tooManyPaymentsToday, setTooManyPaymentsToday] = useState(false);
+  const [paymentsTodayCount, setPaymentsTodayCount] = useState(0);
   const { location, fetchLocation } = useGeolocation();
 
   const userId = getCurrentUserId();
@@ -65,6 +66,7 @@ const BusinessRegistrationPage = () => {
       if (paymentsToday.length >= 5) {
         setTooManyPaymentsToday(true);
       }
+      setPaymentsTodayCount(paymentsToday.length);
 
     } catch (err) {
       console.error('Error checking payment status:', err);
@@ -332,6 +334,12 @@ const BusinessRegistrationPage = () => {
               ))}
             </div>
           )}
+        </div>
+        <div className='business-register-tries-left'>{paymentsTodayCount >= 1 && (
+          <p style={{ marginTop: '12px', textAlign: 'center', color: '#d9534f', fontWeight: 'bold' }}>
+            Bạn đã đạt giới hạn thanh toán trong ngày. Số lượt còn lại: {Math.max(0, 5 - paymentsTodayCount)}
+          </p>
+        )}
         </div>
 
         <h3 className="business-register-plan-title-step">Bước 2</h3>
