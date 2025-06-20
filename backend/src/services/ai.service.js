@@ -170,9 +170,9 @@ class AiService {
                     product_price: product.product_price
                 }))
             );
-            
+
             const model = new Ollama.ChatOllama({
-                baseUrl: "http://localhost:11434",
+                baseUrl: "https://ollama.lab105.io.vn",
                 model: "qwen3:1.7b",
                 temperature: 0.1,
                 maxTokens: 1000,
