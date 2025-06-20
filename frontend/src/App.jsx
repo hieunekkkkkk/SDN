@@ -26,6 +26,7 @@ import ManageBusinessPage from './page/admin/ManageBusinessPage';
 import ManageTransactionPage from './page/admin/ManageTransactionPage';
 import AdminRoute from './components/AdminRoute';
 import OwnerRoute from './components/OwnerRoute';
+import ClientRoute from './components/ClientRoute';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -71,14 +72,14 @@ const AppRoutes = () => {
           <Route
             path="/business-registration"
             element={
-              <>
+              <ClientRoute>
                 <SignedIn>
                   <BusinessRegistrationPage />
                 </SignedIn>
                 <SignedOut>
                   <LoginPage />
                 </SignedOut>
-              </>
+              </ClientRoute>
             }
           />
 

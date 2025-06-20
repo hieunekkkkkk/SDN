@@ -3,6 +3,8 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { useNavigate } from 'react-router-dom';
 import '../../css/PersonalizedPage.css';
+import { PuffLoader } from 'react-spinners';
+
 
 
 function PersonalizedPage() {
@@ -17,24 +19,6 @@ function PersonalizedPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchBusinesses = async () => {
-            try {
-                const res = await fetch(`${import.meta.env.VITE_BE_URL}/api/business`);
-                const data = await res.json();
-                const sorted = data.businesses
-                    .filter(b => b.business_rating && b.business_active === 'active')
-                    .sort((a, b) => b.business_rating - a.business_rating)
-                    .slice(0, 6);
-
-                setBestPlaces(sorted);
-                console.log(sorted);
-
-            } catch (error) {
-                console.error('Failed to load businesses:', error);
-            }
-        };
-        fetchBusinesses();
-
         const fetchCategories = async () => {
             try {
                 const res = await fetch(`${import.meta.env.VITE_BE_URL}/api/category`);
@@ -47,17 +31,34 @@ function PersonalizedPage() {
         fetchCategories();
     }, []);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (!userMessage.trim()) return;
 
-        const messagePayload = [
-            { prompt: userMessage },
-            { type: type },
-            { budget: budget.replace(/,/g, '') },
-            { rating: rating }
-        ];
+        const formattedText = `Yêu cầu: ${userMessage}, loại doanh nghiệp: ${type}, giá tối đa: ${budget === 'Tự chọn...' ? customBudget : budget.replace(/,/g, '')}, đánh giá: ${rating} sao`;
 
-        console.log('Sending message payload:', messagePayload);
+        try {
+            setIsLoadingPlaces(true); // Start loading
+            const res = await fetch(`${import.meta.env.VITE_BE_URL}/api/ai/recommend`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: formattedText }),
+            });
+
+            const data = await res.json();
+
+            if (Array.isArray(data) && data.length > 0) {
+                setBestPlaces(data.slice(0, 6));
+            } else {
+                setBestPlaces([]);
+            }
+        } catch (error) {
+            console.error('Failed to get AI recommendations:', error);
+            setBestPlaces([]);
+        } finally {
+            setIsLoadingPlaces(false); // End loading
+        }
 
         setUserMessage('');
     };
@@ -66,9 +67,7 @@ function PersonalizedPage() {
         <>
             <Header />
             <div className="personalized-page">
-                {/* Welcome Section */}
                 <div className="personalized-welcome-section">
-                    {/* Left Text Section */}
                     <div className="personalized-welcome-text">
                         <h1 className="personalized-welcome-title">
                             Chào mừng đến với trợ lý tìm kiếm hoàn hảo!
@@ -218,42 +217,51 @@ function PersonalizedPage() {
                 </div>
 
                 {/* Best Places Section */}
-                <section className="personalized-best-places-section">
-                    <div className="container">
-                        <h2>Địa điểm gợi ý</h2>
-                        <div className="discover-places-grid">
-                            {bestPlaces.map((place) => (
-                                <div
-                                    key={place._id}
-                                    className="discover-place-card"
-                                    onClick={() => navigate(`/business/${place._id}`)}
-                                    style={{ cursor: 'pointer' }}
-                                >
-                                    <div className="discover-place-image">
-                                        <img
-                                            src={place.business_image?.[0] || '/placeholder.jpg'}
-                                            alt={place.business_name}
-                                            loading="lazy"
-                                            onError={(e) => {
-                                                e.target.src = '/1.png';
-                                            }}
-                                        />
-                                    </div>
-                                    <div className="discover-place-info">
-                                        <h3>{place.business_name}</h3>
-                                        <p className="discover-place-location">{place.business_address}</p>
-                                        <div className="discover-place-meta">
-                                            <span className={`discover-status ${place.business_status ? 'open' : 'closed'}`}>
-                                                {place.business_status ? 'Đang mở cửa' : 'Đã đóng cửa'}
-                                            </span>
-                                            <span className="discover-rating">⭐ {place.business_rating || 0}</span>
-                                        </div>
-                                    </div>
+                {!isLoadingPlaces && bestPlaces.length === 0 ? null : (
+                    <section className="personalized-best-places-section">
+                        <div className="container">
+                            <h2>Địa điểm gợi ý</h2>
+
+                            {isLoadingPlaces ? (
+                                <div className="loader-container" style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+                                    <PuffLoader size={60} color="#36d7b7" />
                                 </div>
-                            ))}
+                            ) : (
+                                <div className="discover-places-grid">
+                                    {bestPlaces.map((place) => (
+                                        <div
+                                            key={place._id}
+                                            className="discover-place-card"
+                                            onClick={() => navigate(`/business/${place._id}`)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            <div className="discover-place-image">
+                                                <img
+                                                    src={place.business_image?.[0] || '/placeholder.jpg'}
+                                                    alt={place.business_name}
+                                                    loading="lazy"
+                                                    onError={(e) => {
+                                                        e.target.src = '/1.png';
+                                                    }}
+                                                />
+                                            </div>
+                                            <div className="discover-place-info">
+                                                <h3>{place.business_name}</h3>
+                                                <p className="discover-place-location">{place.business_address}</p>
+                                                <div className="discover-place-meta">
+                                                    <span className={`discover-status ${place.business_status ? 'open' : 'closed'}`}>
+                                                        {place.business_status ? 'Đang mở cửa' : 'Đã đóng cửa'}
+                                                    </span>
+                                                    <span className="discover-rating">⭐ {place.business_rating || 0}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
             </div>
             <Footer />
         </>

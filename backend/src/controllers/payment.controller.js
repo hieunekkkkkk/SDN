@@ -19,7 +19,7 @@ class PaymentController {
             const { orderCode, status } = req.query;
             const result = await paymentService.handlePaymentCallback(orderCode, status);
             if (result) {
-                res.redirect(`${process.env.FRONTEND_URL}/`);
+                res.redirect(`${process.env.FRONTEND_URL}/business-registration`);
             }
         } catch (err) {
             res.status(500).json({ error: 1, message: err.message });

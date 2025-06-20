@@ -8,6 +8,7 @@ import { getCurrentUserId } from '../../utils/useCurrentUserId';
 import { PuffLoader } from 'react-spinners';
 import { toast } from 'react-toastify';
 import useGeolocation from '../../utils/useGeolocation';
+import { convertFilesToBase64 } from '../../utils/imageToBase64';
 
 const BusinessRegistrationPage = () => {
   const navigate = useNavigate();
@@ -36,10 +37,39 @@ const BusinessRegistrationPage = () => {
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [paymentStack, setPaymentStack] = useState(null);
   const [loadingPayment, setLoadingPayment] = useState(false);
+  const [havePaid, setHavePaid] = useState(false);
+  const [tooManyPaymentsToday, setTooManyPaymentsToday] = useState(false);
   const { location, fetchLocation } = useGeolocation();
-  const [paymentError, setPaymentError] = useState(false);
 
   const userId = getCurrentUserId();
+
+  const checkPaymentStatus = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/payment/userid/${userId}`);
+      const payments = response.data.data || [];
+
+      const completedPayment = payments.find(payment => payment.payment_status === 'completed');
+      if (completedPayment) {
+        setPaymentStatus(completedPayment.payment_status);
+        setPaymentStack(completedPayment.payment_stack._id);
+        setHavePaid(true);
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+
+      const paymentsToday = payments.filter(payment => {
+        const paymentDate = payment.payment_date?.slice(0, 10);
+        return paymentDate === today;
+      });
+
+      if (paymentsToday.length >= 5) {
+        setTooManyPaymentsToday(true);
+      }
+
+    } catch (err) {
+      console.error('Error checking payment status:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchStacks = async () => {
@@ -68,30 +98,24 @@ const BusinessRegistrationPage = () => {
       }
     };
 
-    const checkPaymentStatus = async () => {
-      try {
-        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/payment/userid/${userId}`);
-        const completedPayment = response.data.data.find(payment => payment.payment_status === 'completed');
-        setPaymentStatus(completedPayment.payment_status);
-        setPaymentStack(completedPayment.payment_stack._id);
-      } catch (err) {
-        console.error('Error checking payment status:', err);
-        setPaymentError(true); // trigger blur
-      }
-    };
-
-
     fetchStacks();
     fetchCategories();
     checkPaymentStatus();
 
   }, [userId]);
 
+  const handleAddImage = async (event) => {
+    const input = event.target;
+    const files = Array.from(input.files);
 
-  const handleAddImage = (event) => {
-    const files = Array.from(event.target.files);
-    const newImages = files.map((file) => URL.createObjectURL(file));
-    setImages((prevImages) => [...prevImages, ...newImages]);
+    try {
+      const base64Images = await convertFilesToBase64(files);
+      setImages((prevImages) => [...prevImages, ...base64Images]);
+    } catch (error) {
+      console.error('Error converting images to base64:', error);
+    }
+
+    input.value = '';
   };
 
   const handleInputChange = (e) => {
@@ -116,13 +140,15 @@ const BusinessRegistrationPage = () => {
 
       if (paymentResponse.data && paymentResponse.data.url) {
         window.open(paymentResponse.data.url, '_blank');
-        setLoadingPayment(false);
       } else {
         throw new Error('Thanh toán thất bại.');
       }
     } catch (err) {
       console.error('Error during payment:', err.response ? err.response.data : err.message);
       alert(`Thanh toán thất bại. Vui lòng thử lại. Chi tiết: ${err.message}`);
+    } finally {
+      setLoadingPayment(false);
+      checkPaymentStatus();
     }
   };
 
@@ -130,17 +156,47 @@ const BusinessRegistrationPage = () => {
     e.preventDefault();
 
     if (paymentStatus !== 'completed') {
-      toast.error('Vui lòng hoàn tất thanh toán trước khi đăng ký.');
+      toast.error(<div>Vui lòng <b>hoàn tất thanh toán</b> trước khi đăng ký.</div>);
       return;
     }
 
     if (!formData.businessAddress || !formData.businessAddress.trim()) {
-      toast.error('Địa chỉ doanh nghiệp là bắt buộc và phải có nội dung.');
+      toast.error(<div><b>Địa chỉ doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
+      return;
+    }
+
+    if (!formData.businessName || !formData.businessName.trim()) {
+      toast.error(<div><b>Tên doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
+      return;
+    }
+
+    if (!formData.businessType || !formData.businessType.trim()) {
+      toast.error(<div><b>Loại hình doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
 
     if (!location) {
-      toast.error('Vui lòng lấy vị trí địa lý (kinh độ/vĩ độ) trước khi đăng ký.');
+      toast.error(<div><b>Vị trí địa lý</b> (kinh độ/vĩ độ) là bắt buộc. Vui lòng nhấn nút lấy Kinh đọ/Vĩ độ trước khi đăng ký.</div>);
+      return;
+    }
+
+    if (!formData.businessPhone || !formData.businessPhone.trim()) {
+      toast.error(<div><b>Số điện thoại doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
+      return;
+    }
+
+    if (!formData.operatingHoursFrom || !formData.operatingHoursFrom.trim()) {
+      toast.error(<div><b>Giờ mở cửa doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
+      return;
+    }
+
+    if (!formData.operatingHoursTo || !formData.operatingHoursTo.trim()) {
+      toast.error(<div><b>Giờ đóng cửa doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
+      return;
+    }
+
+    if (!images || images.length === 0) {
+      toast.error(<div><b>Hình ảnh doanh nghiệp</b> là bắt buộc. Vui lòng thêm ít nhất một hình ảnh.</div>);
       return;
     }
 
@@ -178,7 +234,7 @@ const BusinessRegistrationPage = () => {
       });
 
       toast.success('Doanh nghiệp đã được tạo thành công và đang chờ phê duyệt.');
-      // navigate('/');
+      navigate('/auth-callback');
       localStorage.removeItem('businessFormData');
       localStorage.removeItem('businessImages');
     } catch (err) {
@@ -256,16 +312,18 @@ const BusinessRegistrationPage = () => {
                   {paymentStack !== stack._id ? (
                     <button
                       type="button"
-                      className="business-register-plan-btn"
+                      className={`business-register-plan-btn ${tooManyPaymentsToday ? 'inactive' : ''}`}
                       onClick={() => handlePlanClick(stack._id)}
+                      disabled={tooManyPaymentsToday}
                     >
-                      Chọn gói
+                      {tooManyPaymentsToday ? 'Đã đạt giới hạn hôm nay' : 'Chọn gói'}
                     </button>
                   ) : (
                     <button
                       type="button"
                       className="business-register-plan-btn inactive"
                       onClick={() => handlePlanClick(stack._id)}
+                      disabled={tooManyPaymentsToday}
                     >
                       Đang dùng
                     </button>
@@ -279,7 +337,7 @@ const BusinessRegistrationPage = () => {
         <h3 className="business-register-plan-title-step">Bước 2</h3>
         <h2 className="business-register-page-title">Điền thông tin doanh nghiệp</h2>
         <form className="business-register-form" onSubmit={handleSubmit}>
-          <div className={`business-register-form-wrapper ${paymentError ? 'blurred' : ''}`}>
+          <div className={`business-register-form-wrapper ${!havePaid ? 'blurred' : ''}`}>
             <div className="business-register-form-columns">
               <div className="business-register-form-column left">
                 <div className="business-register-form-group">
@@ -291,8 +349,7 @@ const BusinessRegistrationPage = () => {
                     placeholder="Nhập tên doanh nghiệp..."
                     value={formData.businessName}
                     onChange={handleInputChange}
-                    disabled={paymentError}
-                    required
+                    disabled={!havePaid}
                   />
                 </div>
                 <div className="business-register-form-group">
@@ -304,8 +361,7 @@ const BusinessRegistrationPage = () => {
                     placeholder="Nhập địa chỉ..."
                     value={formData.businessAddress}
                     onChange={handleInputChange}
-                    disabled={paymentError}
-                    required
+                    disabled={!havePaid}
                   />
                 </div>
                 <div className="business-register-form-group">
@@ -317,7 +373,7 @@ const BusinessRegistrationPage = () => {
                     value={formData.businessDescription}
                     onChange={handleInputChange}
                     rows="6"
-                    disabled={paymentError}
+                    disabled={!havePaid}
                   />
                 </div>
                 <div className="business-register-form-group">
@@ -333,7 +389,7 @@ const BusinessRegistrationPage = () => {
                             newImages.splice(index, 1);
                             setImages(newImages);
                           }}
-                          disabled={paymentError}
+                          disabled={!havePaid}
                         >
                           ×
                         </button>
@@ -347,13 +403,13 @@ const BusinessRegistrationPage = () => {
                       accept="image/*"
                       multiple
                       onChange={handleAddImage}
-                      disabled={paymentError}
+                      disabled={!havePaid}
                     />
                     <button
                       type="button"
                       className="business-register-add-image-btn"
                       onClick={() => document.getElementById('add-image-input').click()}
-                      disabled={paymentError}
+                      disabled={!havePaid}
                     >
                       +
                     </button>
@@ -374,8 +430,7 @@ const BusinessRegistrationPage = () => {
                       name="businessType"
                       value={formData.businessType}
                       onChange={handleInputChange}
-                      disabled={paymentError}
-                      required
+                      disabled={!havePaid}
                     >
                       <option value="">Lựa chọn...</option>
                       {categories.map((category) => (
@@ -397,13 +452,13 @@ const BusinessRegistrationPage = () => {
                           : ''
                       }
                       readOnly
-                      disabled={paymentError}
+                      disabled
                     />
                     <button
                       type="button"
                       className="business-register-geolocate-btn"
                       onClick={fetchLocation}
-                      disabled={paymentError}
+                      disabled={!havePaid}
                     >
                       Lấy Kinh độ/Vĩ độ
                     </button>
@@ -418,8 +473,7 @@ const BusinessRegistrationPage = () => {
                     placeholder="Nhập số điện thoại..."
                     value={formData.businessPhone}
                     onChange={handleInputChange}
-                    disabled={paymentError}
-                    required
+                    disabled={!havePaid}
                   />
                 </div>
                 <div className="business-register-form-group">
@@ -432,7 +486,7 @@ const BusinessRegistrationPage = () => {
                       placeholder="Từ ..."
                       value={formData.operatingHoursFrom}
                       onChange={handleInputChange}
-                      disabled={paymentError}
+                      disabled={!havePaid}
                     />
                     <input
                       type="time"
@@ -441,7 +495,7 @@ const BusinessRegistrationPage = () => {
                       placeholder="Đến ..."
                       value={formData.operatingHoursTo}
                       onChange={handleInputChange}
-                      disabled={paymentError}
+                      disabled={!havePaid}
                     />
                   </div>
                 </div>
@@ -451,7 +505,7 @@ const BusinessRegistrationPage = () => {
               <button
                 type="submit"
                 className="business-register-submit-btn"
-                disabled={paymentStatus !== 'completed' || paymentError}
+                disabled={paymentStatus !== 'completed' || !havePaid}
               >
                 Đăng ký
               </button>
