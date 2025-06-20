@@ -15,6 +15,8 @@
     "@clerk/backend": "^2.0.0",
     "@clerk/clerk-sdk-node": "^4.13.23",
     "@elastic/elasticsearch": "^9.0.2",
+    "@langchain/core": "^0.3.59",
+    "@langchain/ollama": "^0.2.2",
     "@payos/node": "^1.0.10",
     "bcryptjs": "^3.0.2",
     "body-parser": "^1.20.3",

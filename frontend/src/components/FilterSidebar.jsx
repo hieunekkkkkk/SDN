@@ -84,6 +84,14 @@ function FilterSidebar({ filters, handleFilterChange }) {
             />
             Opening
           </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={filters.price.closed}
+              onChange={() => handlePriceChange('closed')}
+            />
+            Closed
+          </label>
         </div>
       </div>
 

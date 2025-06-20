@@ -59,7 +59,7 @@ function LandingPage() {
       // Chỉ sử dụng 4 API có sẵn
       const results = await Promise.allSettled([
         axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=50`),
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating`),
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating?limit=50`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`)
       ]);
@@ -69,10 +69,12 @@ function LandingPage() {
       // Xử lý kết quả businesses
       if (businessesResult.status === 'fulfilled') {
         const data = businessesResult.value.data;
-        const businessData = data?.businesses || data || [];
+        const businessData = (data?.businesses || data || []).filter(
+          (b) => b.business_active === 'active'
+        );
+
         setBusinesses(businessData);
 
-        // Cập nhật stats từ businesses
         setStats(prev => ({
           ...prev,
           totalBusinesses: businessData.length
@@ -84,7 +86,10 @@ function LandingPage() {
       // Xử lý kết quả best businesses
       if (bestBusinessesResult.status === 'fulfilled') {
         const data = bestBusinessesResult.value.data;
-        setBestBusinesses(data?.businesses || data || []);
+        const bestBusinessesData = (data?.businesses || data || []).filter(
+          (b) => b.business_active === 'active'
+        );
+        setBestBusinesses(bestBusinessesData);
       } else {
         console.warn('Failed to load best businesses:', bestBusinessesResult.reason);
       }

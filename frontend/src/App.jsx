@@ -26,6 +26,7 @@ import ManageBusinessPage from './page/admin/ManageBusinessPage';
 import ManageTransactionPage from './page/admin/ManageTransactionPage';
 import AdminRoute from './components/AdminRoute';
 import OwnerRoute from './components/OwnerRoute';
+import ClientRoute from './components/ClientRoute';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -36,40 +37,95 @@ const AppRoutes = () => {
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/auth-callback" element={
-          <>
-            <SignedIn><AuthCallback /></SignedIn>
-            <SignedOut><LoginPage /></SignedOut>
-          </>
-        } />
+        <Route
+          path="/auth-callback"
+          element={
+            <>
+              <SignedIn>
+                <AuthCallback />
+              </SignedIn>
+              <SignedOut>
+                <LoginPage />
+              </SignedOut>
+            </>
+          }
+        />
 
         {/* Protected Layout with animation and accessToken check */}
-        <Route element={
-          <ProtectedRoute>
-            <AnimatedLayout />
-          </ProtectedRoute>
-        }>
+        <Route
+          element={
+            <ProtectedRoute>
+              <AnimatedLayout />
+            </ProtectedRoute>
+          }
+        >
           <Route path="/" element={<LandingPage />} />
           <Route path="/landingPage" element={<LandingPage />} />
           <Route path="/business/:id" element={<BusinessPage />} />
           <Route path="/user-profile/*" element={<UserProfilePage />} />
           <Route path="/personalized" element={<PersonalizedPage />} />
           <Route path="/discover/" element={<DiscoverPage />} />
-          <Route path="/discover/:category" element={<DiscoverByCategoryPage />} />
-          <Route path="/business-registration" element={
-            <OwnerRoute>
-              <SignedIn><BusinessRegistrationPage /></SignedIn>
-              <SignedOut><LoginPage /></SignedOut>
-            </OwnerRoute>} />
+          <Route
+            path="/discover/:category"
+            element={<DiscoverByCategoryPage />}
+          />
+          <Route
+            path="/business-registration"
+            element={
+              <ClientRoute>
+                <SignedIn>
+                  <BusinessRegistrationPage />
+                </SignedIn>
+                <SignedOut>
+                  <LoginPage />
+                </SignedOut>
+              </ClientRoute>
+            }
+          />
 
           {/* Owner routes */}
-          <Route path="/my-business" element={<OwnerRoute><MyBusinessPage /></OwnerRoute>} />
-          <Route path="/product-registration" element={<OwnerRoute><ProductRegistrationPage /></OwnerRoute>} />
+          <Route
+            path="/my-business"
+            element={
+              <OwnerRoute>
+                <MyBusinessPage />
+              </OwnerRoute>
+            }
+          />
+          <Route
+            path="/product-registration"
+            element={
+              <OwnerRoute>
+                <ProductRegistrationPage />
+              </OwnerRoute>
+            }
+          />
 
           {/* Admin routes */}
-          <Route path="/admin/users" element={<AdminRoute><ManageUserPage /></AdminRoute>} />
-          <Route path="/admin/businesses" element={<AdminRoute><ManageBusinessPage /></AdminRoute>} />
-          <Route path="/admin/transactions" element={<AdminRoute><ManageTransactionPage /></AdminRoute>} />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <ManageUserPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/businesses"
+            element={
+              <AdminRoute>
+                <ManageBusinessPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/transactions"
+            element={
+              <AdminRoute>
+                <ManageTransactionPage />
+              </AdminRoute>
+            }
+          />
         </Route>
       </Routes>
     </AnimatePresence>

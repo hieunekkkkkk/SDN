@@ -181,7 +181,7 @@ class BusinessService {
                         $maxDistance: maxDistance // Sử dụng maxDistance từ tham số
                     }
                 },
-                business_status: true, // Chỉ lấy business đang hoạt động
+                // business_status: true, // Chỉ lấy business đang hoạt động
                 business_active: 'active' // Chỉ lấy business active
             })
                 .limit(3)

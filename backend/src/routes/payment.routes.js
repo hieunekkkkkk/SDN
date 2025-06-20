@@ -22,6 +22,7 @@ router.delete('/:id', PaymentController.deletePayment);
 // Update transaction ID
 router.patch('/:id/transaction', PaymentController.updateTransactionId);
 
-
+// Search by user_id
+router.get('/userid/:user_id', PaymentController.getPaymentsByUserId);
 
 module.exports = router;
