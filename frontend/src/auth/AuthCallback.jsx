@@ -36,9 +36,9 @@ const AuthCallback = () => {
           setRole(role);
 
           switch (role) {
-            case 'admin': navigate('/'); break;
-            case 'business': navigate('/business'); break;
-            case 'user': navigate('/'); break;
+            case 'admin': navigate('/admin/users'); break;
+            case 'owner': navigate('/my-business'); break;
+            case 'client': navigate('/'); break;
             default: navigate('/');
           }
 
