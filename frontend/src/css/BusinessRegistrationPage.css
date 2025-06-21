@@ -123,13 +123,14 @@
 }
 
 .business-register-form-group :is(input, textarea) {
-  padding: 0.5rem;
+  padding: 1rem 0.5rem;
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
   -moz-appearance: textfield;
   cursor: text;
   font-size: 16px;
   flex: 1;
+  margin: 0;
 }
 
 .business-register-form-group input[type="number"] {
@@ -144,7 +145,7 @@
 }
 
 .business-register-form-group select {
-  padding: 0.5rem;
+  padding: 1rem 0.5rem;
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
   font-size: 16px;
@@ -158,7 +159,7 @@
 
 .business-register-operating-hours-inputs input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 1rem 0.5rem;
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
   font-size: 16px;

@@ -194,3 +194,34 @@
   --primary-color: #6a1b9a;
   --white: #fff;
 }
+
+.image-upload {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.image-preview {
+  position: relative;
+}
+.remove-image-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+.add-image-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  height: 100px;
+  background: #f0f0f0;
+  border: 2px dashed #ccc;
+  cursor: pointer;
+}
