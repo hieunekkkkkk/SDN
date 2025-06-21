@@ -166,8 +166,6 @@ function LandingPage() {
   }, []);
 
   const handleSeeMore = useCallback((categoryName, categoryId) => {
-    console.log('handleSeeMore called with:', { categoryName, categoryId });
-
     if (!categoryName || !categoryId) {
       console.error('Missing category data:', { categoryName, categoryId });
       return;

@@ -289,10 +289,6 @@ const MyBusinessPage = () => {
 
   const displayedProducts = isExpanded ? products : products.slice(0, 6);
 
-  const handleWriteReview = () => console.log('Gửi nhận xét');
-  const handleCancelReview = () => console.log('Hủy nhận xét');
-  const handleShareReview = (id) => console.log('Chia sẻ review:', id);
-  const handleHelpful = (id, isHelpful) => console.log(`Review ${id} is ${isHelpful ? 'helpful' : 'not helpful'}`);
   const handlePageChange = (page) => setCurrentPage(page);
 
   const handleKeyDown = (e, field) => {
@@ -718,7 +714,7 @@ const MyBusinessPage = () => {
                       <p className="review-text">{feedback.feedback_comment}</p>
                     </div>
                     <div className="review-footer">
-                      <button className="share-btn" onClick={() => handleShareReview(feedback._id)}>
+                      <button className="share-btn">
                         <span className="share-icon">↗</span> Chia sẻ
                       </button>
                     </div>

@@ -147,11 +147,6 @@ const BusinessPage = () => {
     setZoomedImageUrl('');
   };
 
-  // Dummy handlers for product modal (these can be implemented later)
-  const handleWriteReview = () => console.log('Gửi nhận xét');
-  const handleCancelReview = () => console.log('Hủy nhận xét');
-  const handleShareReview = (id) => console.log('Chia sẻ review:', id);
-  const handleHelpful = (id, isHelpful) => console.log(`Review ${id} is ${isHelpful ? 'helpful' : 'not helpful'}`);
 
   if (loading) {
     return <LoadingScreen />;
@@ -221,7 +216,6 @@ const BusinessPage = () => {
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        console.log('Thumbnail clicked:', idx);
                         setSelectedImage(idx);
                       }}
                       style={{ cursor: 'pointer' }}
