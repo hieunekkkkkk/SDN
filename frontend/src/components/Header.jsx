@@ -155,7 +155,7 @@ const Header = () => {
                   <UserButton.Action
                     label="Trở thành chủ doanh nghiệp"
                     labelIcon={<FaBuilding />}
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate('/business-registration')}
                   />
                 </UserButton.MenuItems>
               )}

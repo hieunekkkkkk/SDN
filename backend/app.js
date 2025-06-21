@@ -17,7 +17,7 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '1gb' }));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Metrics middleware
@@ -32,7 +32,7 @@ connectDB();
 app.use('/api', router);
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
-app.use('/api/payments', paymentRoutes);
+// app.use('/api/payment', paymentRoutes);
 // Cấu hình CORS
 app.use(cors({
     origin: 'http://localhost:3000', // URL của frontend

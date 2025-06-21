@@ -184,6 +184,19 @@ class PaymentService {
             throw new Error(`Error updating transaction ID: ${error.message}`);
         }
     }
+
+    async searchPaymentsByUserId(user_id) {
+        try {
+            const payments = await Payment.find({ user_id })
+                .populate('payment_stack', 'stack_name')
+                .sort({ payment_date: -1 });
+
+            return payments;
+        } catch (error) {
+            throw new Error(`Error searching payments: ${error.message}`);
+        }
+    }
+
 }
 
 // Export a single instance of the service

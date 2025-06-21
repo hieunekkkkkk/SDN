@@ -6,7 +6,6 @@ class PaymentController {
         try {
             const { stack_id, user_id } = req.body;
 
-
             const result = await paymentService.createPayment(stack_id, user_id);
             res.status(200).json(result);
         } catch (error) {
@@ -20,7 +19,7 @@ class PaymentController {
             const { orderCode, status } = req.query;
             const result = await paymentService.handlePaymentCallback(orderCode, status);
             if (result) {
-                res.redirect(`${process.env.FRONTEND_URL}/`);
+                res.redirect(`${process.env.FRONTEND_URL}/business-registration`);
             }
         } catch (err) {
             res.status(500).json({ error: 1, message: err.message });
@@ -90,6 +89,21 @@ class PaymentController {
             res.status(200).json({ message: 'Transaction ID updated successfully', data: payment });
         } catch (error) {
             res.status(400).json({ message: error.message });
+        }
+    }
+
+    async getPaymentsByUserId(req, res) {
+        try {
+            const { user_id } = req.params;
+
+            if (!user_id) {
+                return res.status(400).json({ message: 'user_id is required' });
+            }
+
+            const results = await paymentService.searchPaymentsByUserId(user_id);
+            res.status(200).json({ message: 'Payments retrieved successfully', data: results });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
         }
     }
 }

@@ -25,7 +25,9 @@ function ManageBusinessPage() {
   const [banReason, setBanReason] = useState('');
   const [selectedBusiness, setSelectedBusiness] = useState(null);
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
+  const [ownerNames, setOwnerNames] = useState({});
 
+  Modal.setAppElement('#root');
   const limit = 5;
 
   useEffect(() => {
@@ -37,11 +39,34 @@ function ManageBusinessPage() {
       const res = await axios.get(`${import.meta.env.VITE_BE_URL}/api/business/`, {
         params: { page, limit }
       });
-      setBusinesses(res.data.businesses);
+
+      const businessesData = res.data.businesses;
+      setBusinesses(businessesData);
       setTotalPages(res.data.totalPages);
+
+      // Fetch owner names in parallel
+      const ownerIds = businessesData.map((b) => b.owner_id);
+      const uniqueOwnerIds = [...new Set(ownerIds)];
+
+      const ownerPromises = uniqueOwnerIds.map((id) =>
+        axios.get(`${import.meta.env.VITE_BE_URL}/api/user/${id}`)
+      );
+
+      const ownerResponses = await Promise.all(ownerPromises);
+
+      const nameMap = {};
+      ownerResponses.forEach((res) => {
+        const user = res.data.users;
+        if (user && user.id) {
+          nameMap[user.id] = user.fullName;
+        }
+      });
+
+      setOwnerNames(nameMap);
+
     } catch (err) {
       console.error(err);
-      toast.error('Failed to fetch businesses');
+      toast.error('Failed to fetch businesses or owner info');
     }
   };
 
@@ -231,7 +256,7 @@ function ManageBusinessPage() {
                     transition={{ duration: 0.25 }}
                   >
                     <td>{b.business_name}</td>
-                    <td>{b.owner_id}</td>
+                    <td>{ownerNames[b.owner_id] || b.owner_id}</td>
                     <td>{b.business_category_id?.category_name}</td>
                     <td>
                       <span className={`manage-business-status ${b.business_active.toLowerCase()}`}>

@@ -8,6 +8,7 @@ const stackRoutes = require('./stack.routes');
 const categoryRoutes = require('./category.routes');
 const feedbackRoutes = require('./feedback.routes');
 const userRoutes = require('./user.routes');
+const aiRoutes = require('./ai.routes');
 
 // const redisRoutes = require('./redisRouter');
 
@@ -20,6 +21,7 @@ router.use('/stack', stackRoutes);
 router.use('/category', categoryRoutes);
 router.use('/feedback', feedbackRoutes);
 router.use('/user', userRoutes);
+router.use('/ai', aiRoutes);
 
 // router.use('/redis', redisRoutes);
 
