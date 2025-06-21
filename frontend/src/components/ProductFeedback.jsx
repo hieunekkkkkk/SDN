@@ -19,20 +19,16 @@ const ProductFeedback = ({ productId, isModal = false }) => {
   
   const itemsPerPage = isModal ? 3 : 5;
 
-  // Fetch feedbacks when component mounts or productId changes
   useEffect(() => {
     if (productId) {
       fetchFeedbacks();
     }
   }, [productId]);
 
-  // Hàm lấy thông tin user từ userId
   const fetchUserInfo = async (userId) => {
     if (!userId || userInfoMap[userId]) return;
     
-    // Kiểm tra nếu userId có vẻ là test data (ngắn, bắt đầu bằng "user")
     if (userId.length < 10 || userId.startsWith('user')) {
-      // Đối với test data, tạo tên thân thiện
       const displayName = userId.length > 5 ? 
         `Người dùng ${userId.slice(-4).toUpperCase()}` : 
         `Người dùng ${userId}`;
@@ -48,7 +44,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       setUserInfoMap(prev => ({ ...prev, [userId]: username }));
     } catch (error) {
       console.error('Error fetching user info for userId:', userId, error);
-      // Fallback cho trường hợp không tìm thấy user
+
       const displayName = userId.length > 10 ? 
         `Người dùng ${userId.slice(-4).toUpperCase()}` : 
         `Người dùng ${userId}`;
@@ -65,7 +61,6 @@ const ProductFeedback = ({ productId, isModal = false }) => {
         `${import.meta.env.VITE_BE_URL}/api/feedback/product/${productId}`
       );
       
-      // Check if response has success property or data directly
       let feedbackData = [];
       if (response.data.success) {
         feedbackData = response.data.data || [];
@@ -77,7 +72,6 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       
       setFeedbacks(feedbackData);
       
-      // Fetch user info for each feedback
       feedbackData.forEach(feedback => {
         if (feedback.user_id) {
           fetchUserInfo(feedback.user_id);
@@ -87,7 +81,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
     } catch (err) {
       console.error('Error fetching feedbacks:', err);
       if (err.response?.status === 404) {
-        setFeedbacks([]); // No feedbacks found is not an error
+        setFeedbacks([]); 
       } else {
         setError('Không thể tải đánh giá');
         toast.error('Không thể tải đánh giá');
@@ -97,18 +91,16 @@ const ProductFeedback = ({ productId, isModal = false }) => {
     }
   };
 
-  // Calculate overall rating from feedbacks
   const calculateOverallRating = () => {
     if (feedbacks.length === 0) return 0;
     
     const totalRating = feedbacks.reduce((sum, feedback) => {
-      return sum + (feedback.feedback_rating || 5); // Use actual rating or default to 5
+      return sum + (feedback.feedback_rating || 5); 
     }, 0);
     
     return totalRating / feedbacks.length;
   };
 
-  // Sort feedbacks based on selected option
   const getSortedFeedbacks = () => {
     const sorted = [...feedbacks];
     
@@ -160,7 +152,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
           product_id: productId,
           feedback_type: 'product',
           feedback_comment: newFeedback.trim(),
-          feedback_rating: selectedRating, // Include rating
+          feedback_rating: selectedRating,
           feedback_like: 0,
           feedback_dislike: 0
         }
@@ -169,7 +161,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       if (response.data.message === 'Feedback created successfully') {
         setNewFeedback('');
         setSelectedRating(5);
-        fetchFeedbacks(); // Refresh feedbacks
+        fetchFeedbacks(); 
         alert('Đánh giá sản phẩm đã được gửi thành công!');
       }
     } catch (err) {
@@ -186,7 +178,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       await axios.patch(
         `${import.meta.env.VITE_BE_URL}/api/feedback/${feedbackId}/like`
       );
-      fetchFeedbacks(); // Refresh to get updated counts
+      fetchFeedbacks();
     } catch (err) {
       console.error('Error liking feedback:', err);
     }
@@ -197,13 +189,12 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       await axios.patch(
         `${import.meta.env.VITE_BE_URL}/api/feedback/${feedbackId}/dislike`
       );
-      fetchFeedbacks(); // Refresh to get updated counts
+      fetchFeedbacks();
     } catch (err) {
       console.error('Error disliking feedback:', err);
     }
   };
 
-  // Render star rating
   const renderStars = (rating, interactive = false, onStarClick = null, onStarHover = null) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -229,7 +220,6 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       return userInfoMap[feedback.user_id];
     }
     
-    // Fallback nếu chưa có thông tin user
     if (feedback.user_id && typeof feedback.user_id === 'string') {
       const userId = feedback.user_id;
       if (userId.length > 10) {
