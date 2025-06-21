@@ -55,8 +55,6 @@ function DiscoverPage() {
         axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
         axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=20`)
       ]);
-
-      console.log(busRes.data.businesses);
       
       const activeBusinesses = busRes.data.businesses.filter(
         (b) => b.business_active === 'active'

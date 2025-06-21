@@ -207,25 +207,15 @@
 }
 
 .edit-btn {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 0.25rem 0.75rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  background: #4CAF50;
-  color: white;
+  margin-left: 20px;
   opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.3s ease;
-  z-index: 1;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
 }
 
 .edit-btn:hover {
-  background: #45a049;
+  color: #45a049;
 }
 
 input {

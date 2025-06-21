@@ -77,7 +77,6 @@ function DiscoverByCategoryPage() {
               b.business_category_id?._id === categoryId &&
               b.business_active == "active"
           );
-          console.log(response.data);
           
           const enriched = filtered.map((b) => ({
             ...b,

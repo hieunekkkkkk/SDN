@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaTrash } from 'react-icons/fa';
 import { convertFilesToBase64 } from '../utils/imageToBase64';
 import '../css/ProductDetailModal.css';
 import MyBusinessProductFeedback from './MyBusinessProductFeedback';
+import { LuTextCursorInput } from "react-icons/lu";
 
 
 const BusinessProductModal = ({
@@ -13,13 +14,7 @@ const BusinessProductModal = ({
   selectedProduct,
   setSelectedProduct,
   products,
-  reviews,
-  overallRating,
-  totalReviews,
-  handleWriteReview,
-  handleCancelReview,
-  handleShareReview,
-  handleHelpful,
+  setProducts,
   renderStars,
   enableEdit = true,
   businessId,
@@ -30,6 +25,15 @@ const BusinessProductModal = ({
   const [newImages, setNewImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Field mapping to align frontend and backend field names
+  const fieldMapping = {
+    name: 'product_name',
+    price: 'product_price',
+    description: 'product_description',
+    thumbnails: 'product_image',
+  };
 
   const closeModal = () => {
     setShowModal(false);
@@ -50,42 +54,61 @@ const BusinessProductModal = ({
     setEditFields((prev) => ({ ...prev, [field]: true }));
     setEditedValues((prev) => ({
       ...prev,
-      [field]: selectedProduct[field] || '',
+      [field]: field === 'price' ? parseFloat(selectedProduct[field]).toString() : selectedProduct[field] || '',
     }));
   };
 
   const handleChange = (e, field) => {
-    setEditedValues((prev) => ({ ...prev, [field]: e.target.value }));
-    console.log(editFields);
-    console.log(editedValues);
+    let value = e.target.value;
+    if (field === 'price') {
+      value = value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+    }
+    setEditedValues((prev) => ({ ...prev, [field]: value }));
+  };
 
+  const handleKeyDown = (e, field) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent default Enter behavior
+      handleBlur(field); // Trigger blur to save the field
+    }
   };
 
   const handleBlur = async (field) => {
-    console.log(JSON.stringify({ [field]: editedValues[field] }));
     if (editedValues[field] !== selectedProduct[field]) {
       setLoading(true);
       try {
+        const apiField = fieldMapping[field] || field;
+        let value = editedValues[field];
+        if (field === 'price') {
+          value = parseFloat(value) || 0; // Convert to number, default to 0 if invalid
+        }
         const response = await fetch(
           `${import.meta.env.VITE_BE_URL}/api/product/${selectedProduct.id}`,
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ [field]: editedValues[field] }),
+            body: JSON.stringify({ [apiField]: value }),
           }
         );
         if (!response.ok) throw new Error('Cập nhật thất bại');
         const updatedProduct = await response.json();
+
+        // Update selectedProduct in modal
         setSelectedProduct((prev) => ({
           ...prev,
-          [field]: updatedProduct[field],
+          [field]: field === 'price' ? value.toString() : value,
         }));
-        setSelectedProduct((prev) => {
-          const updatedProducts = products.map((p) =>
-            p._id === prev.id ? { ...p, [field]: updatedProduct[field] } : p
+
+        // Update parent products state if setProducts is provided
+        if (products && setProducts) {
+          setProducts(
+            products.map((p) =>
+              p._id === selectedProduct.id
+                ? { ...p, [apiField]: value }
+                : p
+            )
           );
-          return { ...prev, [field]: updatedProduct[field] };
-        });
+        }
       } catch (err) {
         console.error(`Error updating ${field}:`, err);
         setError(`Không thể cập nhật ${field}. Chi tiết: ${err.message}`);
@@ -100,6 +123,9 @@ const BusinessProductModal = ({
 
   const handleAddImage = async (event) => {
     const files = Array.from(event.target.files);
+
+    if (files.length === 0) return;
+
     try {
       const base64Images = await convertFilesToBase64(files);
       setNewImages((prevImages) => [...prevImages, ...base64Images]);
@@ -107,6 +133,11 @@ const BusinessProductModal = ({
     } catch (error) {
       console.error('Error converting images to base64:', error);
       setError('Không thể chuyển đổi ảnh. Vui lòng thử lại.');
+    } finally {
+      // Reset file input so the same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -123,29 +154,28 @@ const BusinessProductModal = ({
           {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ thumbnails: updatedThumbnails }),
+            body: JSON.stringify({ product_image: updatedThumbnails }),
           }
         );
         if (!response.ok) throw new Error('Cập nhật ảnh thất bại');
         const updatedProduct = await response.json();
+
+        // Update selectedProduct in modal
         setSelectedProduct((prev) => ({
           ...prev,
-          thumbnails: updatedProduct.thumbnails || updatedThumbnails,
+          thumbnails: updatedThumbnails,
         }));
-        setSelectedProduct((prev) => {
-          const updatedProducts = products.map((p) =>
-            p._id === prev.id
-              ? {
-                ...p,
-                product_image: updatedProduct.thumbnails || updatedThumbnails,
-              }
-              : p
+
+        // Update parent products state if setProducts is provided
+        if (products && setProducts) {
+          setProducts(
+            products.map((p) =>
+              p._id === selectedProduct.id
+                ? { ...p, product_image: updatedThumbnails }
+                : p
+            )
           );
-          return {
-            ...prev,
-            thumbnails: updatedProduct.thumbnails || updatedThumbnails,
-          };
-        });
+        }
         setNewImages([]);
         setError(null);
       } catch (err) {
@@ -159,8 +189,56 @@ const BusinessProductModal = ({
     }
   };
 
-  const allThumbnails = [...(selectedProduct?.thumbnails || []), ...newImages];
+  const handleDeleteImage = async (index) => {
+    setLoading(true);
+    try {
+      const updatedThumbnails = allThumbnails.filter((_, i) => i !== index);
+      const response = await fetch(
+        `${import.meta.env.VITE_BE_URL}/api/product/${selectedProduct.id}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ product_image: updatedThumbnails }),
+        }
+      );
+      if (!response.ok) throw new Error('Failed to delete image');
+      const updatedNewImages = newImages.filter(
+        (_, i) => !allThumbnails.includes(newImages[i]) || updatedThumbnails.includes(newImages[i])
+      );
+      const updatedProductThumbnails = updatedThumbnails.filter(
+        (img) => !newImages.includes(img) || updatedNewImages.includes(img)
+      );
+      let newSelectedImage = selectedImage;
+      if (index === selectedImage) {
+        newSelectedImage = 0;
+      } else if (index < selectedImage) {
+        newSelectedImage = Math.max(0, selectedImage - 1);
+      }
+      setSelectedProduct((prev) => ({
+        ...prev,
+        thumbnails: updatedProductThumbnails,
+      }));
+      setNewImages(updatedNewImages);
+      setSelectedImage(newSelectedImage);
+      if (products && setProducts) {
+        setProducts(
+          products.map((p) =>
+            p._id === selectedProduct.id
+              ? { ...p, product_image: updatedThumbnails }
+              : p
+          )
+        );
+      }
+      setError(null);
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      setError('Không thể xóa ảnh. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  const allThumbnails = [...(selectedProduct?.thumbnails || []), ...(newImages || [])];
   const modalRoot = document.getElementById('modal-root') || document.body;
 
   return ReactDOM.createPortal(
@@ -202,21 +280,37 @@ const BusinessProductModal = ({
                   />
                 </div>
                 <div className="thumbnail-images">
-                  {allThumbnails.map((thumb, idx) => (
-                    <div
-                      key={idx}
-                      className={`thumbnail ${selectedImage === idx ? 'active' : ''
-                        }`}
-                      onClick={() => setSelectedImage(idx)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <img
-                        src={thumb || '1.png'}
-                        alt={`${selectedProduct.name} thumbnail ${idx + 1}`}
-                        onError={(e) => (e.target.src = '1.png')}
-                      />
-                    </div>
-                  ))}
+                  {allThumbnails.length > 0 ? (
+                    allThumbnails.map((thumb, idx) => (
+                      <div
+                        key={idx}
+                        className={`thumbnail ${selectedImage === idx ? 'active' : ''}`}
+                        style={{ position: 'relative', cursor: 'pointer' }}
+                        onClick={() => setSelectedImage(idx)}
+                      >
+                        <img
+                          src={thumb || '1.png'}
+                          alt={`${selectedProduct.name} thumbnail ${idx + 1}`}
+                          onError={(e) => (e.target.src = '1.png')}
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        />
+                        {enableEdit && (
+                          <button
+                            className="remove-image-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteImage(idx);
+                            }}
+                            aria-label={`Delete image ${idx + 1}`}
+                          >
+                            x
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <p>Không có ảnh nào để hiển thị.</p>
+                  )}
                   {enableEdit && (
                     <>
                       <label className="thumbnail add-image">
@@ -224,13 +318,15 @@ const BusinessProductModal = ({
                         <input
                           type="file"
                           accept="image/*"
+                          multiple
+                          ref={fileInputRef}
                           onChange={handleAddImage}
                           style={{ display: 'none' }}
-                          multiple
                         />
                       </label>
                       {newImages.length > 0 && (
                         <button
+                          className="business-modal-save-image"
                           onClick={handleSaveImages}
                           style={{
                             padding: '0.5rem 1rem',
@@ -239,6 +335,7 @@ const BusinessProductModal = ({
                             border: 'none',
                             borderRadius: '4px',
                             marginTop: '0.5rem',
+                            cursor: loading ? 'not-allowed' : 'pointer',
                           }}
                           disabled={loading}
                         >
@@ -255,22 +352,23 @@ const BusinessProductModal = ({
                   className="editable-field"
                   onMouseEnter={() =>
                     enableEdit &&
-                    !editFields['product_name'] &&
+                    !editFields['name'] &&
                     setEditFields((prev) => ({ ...prev, hoverName: true }))
                   }
                   onMouseLeave={() =>
                     enableEdit &&
-                    !editFields['product_name'] &&
+                    !editFields['name'] &&
                     setEditFields((prev) => ({ ...prev, hoverName: false }))
                   }
                 >
                   <h1 className="modal-product-title">
-                    {editFields['product_name'] ? (
+                    {editFields['name'] ? (
                       <input
                         type="text"
-                        value={editedValues['product_name'] || ''}
-                        onChange={(e) => handleChange(e, 'product_name')}
-                        onBlur={() => handleBlur('product_name')}
+                        value={editedValues['name'] || ''}
+                        onChange={(e) => handleChange(e, 'name')}
+                        onBlur={() => handleBlur('name')}
+                        onKeyDown={(e) => handleKeyDown(e, 'name')}
                         autoFocus
                         disabled={loading}
                       />
@@ -278,73 +376,67 @@ const BusinessProductModal = ({
                       selectedProduct.name
                     )}
                   </h1>
-                  {enableEdit &&
-                    !editFields['product_name'] &&
-                    editFields.hoverName && (
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit('product_name')}
-                      >
-                        Chỉnh sửa
-                      </button>
-                    )}
+                  {enableEdit && !editFields['name'] && editFields.hoverName && (
+                    <p
+                      className="edit-btn"
+                      onClick={() => handleEdit('name')}
+                    >
+                      <LuTextCursorInput />
+                    </p>
+                  )}
                 </div>
                 <div
                   className="editable-field"
                   onMouseEnter={() =>
                     enableEdit &&
-                    !editFields['product_price'] &&
+                    !editFields['price'] &&
                     setEditFields((prev) => ({ ...prev, hoverPrice: true }))
                   }
                   onMouseLeave={() =>
                     enableEdit &&
-                    !editFields['product_price'] &&
+                    !editFields['price'] &&
                     setEditFields((prev) => ({ ...prev, hoverPrice: false }))
                   }
                 >
                   <div className="business-status">
                     <span className="modal-product-price">
-                      {editFields['product_price'] ? (
+                      {editFields['price'] ? (
                         <input
                           type="text"
-                          value={
-                            editedValues['product_price'].replace(' VND', '') || ''
-                          }
-                          onChange={(e) => handleChange(e, 'product_price')}
-                          onBlur={() => handleBlur('product_price')}
+                          value={editedValues['price'] || ''}
+                          onChange={(e) => handleChange(e, 'price')}
+                          onBlur={() => handleBlur('price')}
+                          onKeyDown={(e) => handleKeyDown(e, 'price')}
                           autoFocus
                           disabled={loading}
+                          placeholder="Enter price (e.g., 1500000)"
                         />
                       ) : (
-                        `${selectedProduct.price} VND`
+                        selectedProduct.price
                       )}
                     </span>
                   </div>
                   {enableEdit &&
-                    !editFields['product_price'] &&
+                    !editFields['price'] &&
                     editFields.hoverPrice && (
-                      <button
+                      <p
                         className="edit-btn"
-                        onClick={() => handleEdit('product_price')}
+                        onClick={() => handleEdit('price')}
                       >
-                        Chỉnh sửa
-                      </button>
+                        <LuTextCursorInput />
+                      </p>
                     )}
                 </div>
                 <p className="business-category">Đánh giá bởi người dùng</p>
                 <div className="rating-section">
-                  <div className="stars">
-                    {renderStars(selectedProduct.rating)}
-                  </div>
-                  <span className="rating-count">
-                    {selectedProduct.reviews}
-                  </span>
+                  <div className="stars">{renderStars(selectedProduct.rating)}</div>
+                  <span className="rating-count">{selectedProduct.reviews}</span>
                 </div>
                 <div
                   className="editable-field"
                   onMouseEnter={() =>
                     enableEdit &&
-                    !editFields['product_description'] &&
+                    !editFields['description'] &&
                     setEditFields((prev) => ({
                       ...prev,
                       hoverDescription: true,
@@ -352,7 +444,7 @@ const BusinessProductModal = ({
                   }
                   onMouseLeave={() =>
                     enableEdit &&
-                    !editFields['product_description'] &&
+                    !editFields['description'] &&
                     setEditFields((prev) => ({
                       ...prev,
                       hoverDescription: false,
@@ -360,11 +452,12 @@ const BusinessProductModal = ({
                   }
                 >
                   <p className="business-description">
-                    {editFields['product_description'] ? (
+                    {editFields['description'] ? (
                       <textarea
-                        value={editedValues['product_description'] || ''}
-                        onChange={(e) => handleChange(e, 'product_description')}
-                        onBlur={() => handleBlur('product_description')}
+                        value={editedValues['description'] || ''}
+                        onChange={(e) => handleChange(e, 'description')}
+                        onBlur={() => handleBlur('description')}
+                        onKeyDown={(e) => handleKeyDown(e, 'description')}
                         autoFocus
                         disabled={loading}
                       />
@@ -373,23 +466,20 @@ const BusinessProductModal = ({
                     )}
                   </p>
                   {enableEdit &&
-                    !editFields['product_description'] &&
+                    !editFields['description'] &&
                     editFields.hoverDescription && (
-                      <button
+                      <p
                         className="edit-btn"
-                        onClick={() => handleEdit('product_description')}
+                        onClick={() => handleEdit('description')}
                       >
-                        Chỉnh sửa
-                      </button>
+                        <LuTextCursorInput />
+                      </p>
                     )}
                 </div>
               </div>
             </div>
 
-            <MyBusinessProductFeedback
-              productId={selectedProduct.id}
-              businessId={businessId}
-            />
+            <MyBusinessProductFeedback productId={selectedProduct.id} businessId={businessId} />
             {error && <p style={{ color: 'red' }}>{error}</p>}
           </motion.div>
         </motion.div>
