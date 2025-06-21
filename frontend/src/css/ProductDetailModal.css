@@ -1,5 +1,3 @@
-/* ProductDetailModal.css */
-
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -11,92 +9,31 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(4px);
 }
-
 .modal-content {
   background-color: white;
-  border-radius: 12px;
-  padding: 24px 30px;
-  width: 95%;
+  border-radius: 8px;
+  padding: 24px 40px;
+  width: 90%;
   max-width: 1200px;
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
-
 .modal-content::-webkit-scrollbar {
-  width: 6px;
+  display: none;
 }
-
-.modal-content::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-.modal-content::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
-}
-
-.modal-content::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
-}
-
-.modal-product-exit {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  background: rgba(0, 0, 0, 0.1);
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  color: #666;
-  transition: all 0.2s ease;
-  z-index: 10;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-product-exit:hover {
-  background: rgba(0, 0, 0, 0.2);
-  color: #000;
-  transform: scale(1.1);
-}
-
-.modal-product-exit:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
-}
-
 .modal-product-header {
   text-align: center;
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #333;
-  margin: 0 0 2rem 0;
-  padding-top: 1rem;
 }
-
 .modal-product-title {
   text-align: left;
-  margin-bottom: 1rem;
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #333;
-  line-height: 1.3;
+  margin-bottom: 0;
 }
-
 .modal-product-price {
   color: #6c5ce7;
-  font-size: 1.8rem;
+  font-size: 30px;
   font-weight: 700;
-  display: inline-block;
 }
 
 /* Business content section from BusinessPage.css */
@@ -182,7 +119,7 @@
 .business-description {
   color: #666;
   line-height: 1.5;
-  margin: 1rem 0;
+  /* margin: 1rem 0; */
   font-size: 15px;
 }
 
@@ -223,17 +160,13 @@
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
-  margin-top: 1rem;
 }
-
 .modal-save-product-btn:hover {
   background-color: #b85a6a;
 }
-
 .modal-product-saved {
   background-color: #ce2743;
 }
-
 .modal-product-rating-score {
   display: flex;
   flex-direction: row;
@@ -241,121 +174,32 @@
   gap: 0.5rem;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .modal-content {
-    width: 98%;
-    padding: 20px 24px;
-    max-height: 95vh;
-  }
-
-  .business-content {
-    gap: 2rem;
-  }
-
-  .modal-product-header {
-    font-size: 1.6rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .modal-product-title {
-    font-size: 1.4rem;
-  }
-
-  .modal-product-price {
-    font-size: 1.6rem;
-  }
+.modal-product-exit {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s ease, transform 0.2s ease;
+  z-index: 10;
 }
 
-@media (max-width: 768px) {
-  .modal-content {
-    width: 98%;
-    padding: 16px 20px;
-    max-height: 95vh;
-  }
-
-  .business-content {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  .modal-product-header {
-    font-size: 1.4rem;
-    margin-bottom: 1rem;
-  }
-
-  .modal-product-title {
-    font-size: 1.2rem;
-  }
-
-  .modal-product-price {
-    font-size: 1.4rem;
-  }
-
-  .thumbnail-images {
-    gap: 0.5rem;
-  }
-
-  .thumbnail {
-    width: 60px;
-    height: 45px;
-  }
+.modal-product-exit:hover {
+  color: #000;
+  transform: scale(1.1);
 }
 
-@media (max-width: 480px) {
-  .modal-content {
-    width: 96%;
-    padding: 12px 16px;
-    border-radius: 8px;
-  }
-
-  .modal-product-exit {
-    top: 12px;
-    right: 12px;
-    width: 35px;
-    height: 35px;
-    font-size: 20px;
-  }
-
-  .modal-product-header {
-    font-size: 1.2rem;
-    margin-bottom: 0.8rem;
-    padding-top: 0.5rem;
-  }
-
-  .modal-product-title {
-    font-size: 1.1rem;
-  }
-
-  .modal-product-price {
-    font-size: 1.2rem;
-  }
-
-  .business-images {
-    gap: 0.8rem;
-  }
-
-  .thumbnail {
-    width: 50px;
-    height: 38px;
-  }
-
-  .rating-section {
-    gap: 0.3rem;
-  }
-
-  .stars {
-    font-size: 1rem;
-  }
-
-  .business-description {
-    font-size: 14px;
-  }
+.modal-product-exit:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);
 }
 
 .editable-field {
   position: relative;
-  margin-bottom: 10px;
+  /* margin-bottom: 10px; */
 }
 
 .edit-btn {

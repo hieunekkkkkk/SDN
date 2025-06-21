@@ -132,7 +132,7 @@ function ManageBusinessPage() {
         rejection_reason: banReason,
       };
 
-      console.log(emailParams);
+      // console.log(emailParams);
 
 
       await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REJECT_ID, emailParams);

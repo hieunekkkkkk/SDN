@@ -51,11 +51,6 @@ const ProductRegistrationPage = () => {
       setLoading(false);
       return;
     }
-    if (!formData.productDescription.trim()) {
-      toast.error('Mô tả sản phẩm là bắt buộc.');
-      setLoading(false);
-      return;
-    }
     if (!formData.productPrice || formData.productPrice <= 0) {
       toast.error('Giá thành phải là số dương.');
       setLoading(false);
@@ -94,7 +89,7 @@ const ProductRegistrationPage = () => {
       }
 
       const userBusiness = businesses.find(
-        (b) => b.owner_id === userId && b.business_active === 'active'
+        (b) => b.owner_id === userId
       );
       if (!userBusiness) {
         throw new Error('Không tìm thấy doanh nghiệp của bạn.');
@@ -205,7 +200,6 @@ const ProductRegistrationPage = () => {
                   value={formData.productDescription}
                   onChange={handleInputChange}
                   placeholder="Nhập ..."
-                  required
                 ></textarea>
               </div>
               <div className="form-group">
@@ -267,20 +261,20 @@ const ProductRegistrationPage = () => {
                   required
                 />
               </div>
-              <div className="form-group checkbox-group">
-                <input
-                  type="checkbox"
-                  id="policy-confirmation"
-                  name="policyConfirmation"
-                  checked={formData.policyConfirmation}
-                  onChange={handleInputChange}
-                  required
-                />
-                <label htmlFor="policy-confirmation" className="checkbox-label">
-                  Xác nhận tuân thủ chính sách nền tảng
-                </label>
-              </div>
             </div>
+          </div>
+          <div className="form-group checkbox-group">
+            <input
+              type="checkbox"
+              id="policy-confirmation"
+              name="policyConfirmation"
+              checked={formData.policyConfirmation}
+              onChange={handleInputChange}
+              required
+            />
+            <label htmlFor="policy-confirmation" className="checkbox-label">
+              Xác nhận tuân thủ chính sách nền tảng
+            </label>
           </div>
           <button type="submit" className="submit-btn" disabled={loading}>
             {loading ? 'Đang xử lý...' : 'Đăng ký'}

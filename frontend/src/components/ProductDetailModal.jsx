@@ -71,7 +71,7 @@ const ProductDetailModal = ({
             </button>
 
             <h1 className="modal-product-header">Chi tiết sản phẩm</h1>
-            
+
             <div className="business-content">
               <div className="business-images">
                 <div className="main-image">
@@ -96,8 +96,8 @@ const ProductDetailModal = ({
                       }}
                       style={{ cursor: 'pointer' }}
                     >
-                      <img 
-                        src={thumb} 
+                      <img
+                        src={thumb}
                         alt={`${selectedProduct.name} thumbnail ${idx + 1}`}
                         onError={(e) => { e.target.src = '/1.png'; }}
                       />
@@ -121,14 +121,14 @@ const ProductDetailModal = ({
             </div>
 
             {/* Product Feedback Section */}
-            <ProductFeedback 
-              productId={selectedProduct.id} 
+            <ProductFeedback
+              productId={selectedProduct.id}
               businessId={businessId}
             />
           </motion.div>
         </motion.div>
       )}
-      
+
       {/* Image Zoom Modal */}
       <ImageZoomModal
         isOpen={isImageZoomOpen}
