@@ -4,13 +4,15 @@ import { useUser } from '@clerk/clerk-react';
 import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { FaFacebookF, FaInstagram, FaGoogle, FaPlus } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram, FaGoogle, FaPlus, FaTrash } from 'react-icons/fa';
 import BusinessProductModal from '../../components/BusinessProductModal';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
 import { convertFilesToBase64 } from '../../utils/imageToBase64';
 import '../../css/MyBusinessPage.css';
 import { sendEmail } from '../../utils/sendEmail';
 import { toast } from 'react-toastify';
+import { LuTextCursorInput } from "react-icons/lu";
+import LoadingScreen from '../../components/LoadingScreen';
 
 const MyBusinessPage = () => {
   const navigate = useNavigate();
@@ -23,7 +25,6 @@ const MyBusinessPage = () => {
   const [editFields, setEditFields] = useState({});
   const [editedValues, setEditedValues] = useState({});
   const [newImages, setNewImages] = useState([]);
-
   const [selectedImage, setSelectedImage] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -31,18 +32,31 @@ const MyBusinessPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState('Sort: Select');
+  const fileInputRef = useRef(null);
+  const [categories, setCategories] = useState([]);
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/category`);
+        setCategories(response.data.categories || []);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+
+    fetchCategories();
+
     const fetchBusinessData = async () => {
       if (!user) {
-        setError('Người dùng chưa đăng nhập.');
-        setLoading(false);
+        <>
+        <Header/>
+        <LoadingScreen/>
+        </>
         return;
       }
 
       const ownerId = getCurrentUserId();
-      // console.log('Owner ID:', ownerId);
-
       try {
         setLoading(true);
         setError(null);
@@ -64,9 +78,6 @@ const MyBusinessPage = () => {
           }
         }
 
-        // console.log('API Response:', businessesResponse);
-        // console.log('Businesses data:', businesses);
-
         if (!businesses || businesses.length === 0) {
           setError(
             'Không tìm thấy doanh nghiệp nào từ API. Vui lòng kiểm tra kết nối hoặc dữ liệu.'
@@ -75,17 +86,9 @@ const MyBusinessPage = () => {
           return;
         }
 
-        const userBusiness = businesses.find(
-          (b) => b.owner_id === ownerId
-        );
-        // console.log('User Business found:', userBusiness);
+        const userBusiness = businesses.find((b) => b.owner_id === ownerId);
         if (!userBusiness) {
-          const availableOwnerIds = businesses
-            .map((b) => b.owner_id)
-            .join(', ');
-          setError(
-            `Không tìm thấy doanh nghiệp nào cho owner với ID: ${ownerId}.`
-          );
+          setError(`Không tìm thấy doanh nghiệp nào cho owner với ID: ${ownerId}.`);
           setLoading(false);
           return;
         }
@@ -93,15 +96,9 @@ const MyBusinessPage = () => {
         const businessId = userBusiness._id;
 
         const results = await Promise.allSettled([
-          axios.get(
-            `${import.meta.env.VITE_BE_URL}/api/business/${businessId}`
-          ),
-          axios.get(
-            `${import.meta.env.VITE_BE_URL}/api/product/business/${businessId}`
-          ),
-          axios.get(
-            `${import.meta.env.VITE_BE_URL}/api/feedback/business/${businessId}`
-          ),
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/business/${businessId}`),
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/product/business/${businessId}`),
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback/business/${businessId}`),
         ]);
 
         const [businessResult, productsResult, feedbacksResult] = results;
@@ -127,13 +124,8 @@ const MyBusinessPage = () => {
           setFeedbacks([]);
         }
       } catch (err) {
-        console.error(
-          'Error fetching business data:',
-          err.response ? err.response.data : err.message
-        );
-        setError(
-          `Không thể tải dữ liệu doanh nghiệp. Chi tiết: ${err.message}`
-        );
+        console.error('Error fetching business data:', err.response ? err.response.data : err.message);
+        setError(`Không thể tải dữ liệu doanh nghiệp. Chi tiết: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -148,12 +140,8 @@ const MyBusinessPage = () => {
     try {
       await axios.put(
         `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
-        {
-          business_status: newStatus,
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-        }
+        { business_status: newStatus },
+        { headers: { 'Content-Type': 'application/json' } }
       );
       setBusiness((prev) => ({ ...prev, business_status: newStatus }));
     } catch (err) {
@@ -173,62 +161,108 @@ const MyBusinessPage = () => {
   };
 
   const handleBlur = async (field, businessId) => {
-    if (editedValues[field] !== business[field]) {
-      try {
-        await axios.put(
-          `${import.meta.env.VITE_BE_URL}/api/business/${businessId}`,
-          {
-            [field]: editedValues[field],
-          },
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-        setBusiness((prev) => ({ ...prev, [field]: editedValues[field] }));
-      } catch (err) {
-        console.error(`Error updating ${field}:`, err);
-        setError(`Không thể cập nhật ${field}. Chi tiết: ${err.message}`);
-      }
+    const newValue = editedValues[field];
+
+    const isSame =
+      field === 'business_category_id'
+        ? newValue === business.business_category_id?._id
+        : newValue === business[field];
+
+    if (isSame) {
+      setEditFields((prev) => ({ ...prev, [field]: false }));
+      return;
     }
-    setEditFields({ ...editFields, [field]: false });
+
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_BE_URL}/api/business/${businessId}`,
+        { [field]: newValue },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      if (field === 'business_category_id') {
+        const updatedCategory = categories.find((c) => c._id === newValue);
+        setBusiness((prev) => ({
+          ...prev,
+          business_category_id: updatedCategory || { _id: newValue },
+        }));
+      } else {
+        setBusiness((prev) => ({ ...prev, [field]: newValue }));
+      }
+    } catch (err) {
+      console.error(`Error updating ${field}:`, err);
+      setError(`Không thể cập nhật ${field}. Chi tiết: ${err.message}`);
+    } finally {
+      setEditFields((prev) => ({ ...prev, [field]: false }));
+    }
   };
 
   const handleAddImage = async (event) => {
     const files = Array.from(event.target.files);
+
+    if (files.length === 0) return;
+
     try {
       const base64Images = await convertFilesToBase64(files);
       setNewImages((prevImages) => [...prevImages, ...base64Images]);
+      setError(null);
     } catch (error) {
       console.error('Error converting images to base64:', error);
       setError('Không thể chuyển đổi ảnh. Vui lòng thử lại.');
+    } finally {
+      // Reset file input so the same file can be selected again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
   const handleSaveImages = async () => {
     if (newImages.length > 0 && business) {
       try {
-        const updatedImages = [
-          ...(business.business_image || []),
-          ...newImages,
-        ];
+        const updatedImages = [...(business.business_image || []), ...newImages];
         await axios.put(
           `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
-          {
-            business_image: updatedImages,
-          },
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
+          { business_image: updatedImages },
+          { headers: { 'Content-Type': 'application/json' } }
         );
-        setBusiness((prev) => ({
-          ...prev,
-          business_image: updatedImages,
-        }));
+        setBusiness((prev) => ({ ...prev, business_image: updatedImages }));
         setNewImages([]);
       } catch (err) {
         console.error('Error saving images:', err);
         setError('Không thể lưu ảnh. Vui lòng kiểm tra kết nối.');
       }
+    }
+  };
+
+  const handleDeleteImage = async (index) => {
+    try {
+      const allImages = [...(business.business_image || []), ...newImages];
+      const updatedImages = allImages.filter((_, i) => i !== index);
+      await axios.put(
+        `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
+        { business_image: updatedImages },
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+
+      // Update business state
+      setBusiness((prev) => ({
+        ...prev,
+        business_image: updatedImages.filter((_, i) => !newImages.includes(allImages[i])),
+      }));
+
+      // Update newImages if the deleted image was a new one
+      setNewImages((prev) => prev.filter((_, i) => allImages[index] !== prev[i]));
+
+      // Adjust selectedImage if the deleted image was selected
+      if (index === selectedImage) {
+        setSelectedImage(0);
+      } else if (index < selectedImage) {
+        setSelectedImage((prev) => prev - 1);
+      }
+    } catch (err) {
+      console.error('Error deleting image:', err);
+      setError('Không thể xóa ảnh. Vui lòng thử lại.');
     }
   };
 
@@ -238,7 +272,7 @@ const MyBusinessPage = () => {
       const transformedProduct = {
         id: product._id,
         name: product.product_name,
-        price: product.product_price || '$0.00',
+        price: product.product_price || '0',
         rating: product.product_rating || 0,
         reviews: `${product.product_total_vote || 0} Đánh giá`,
         mainImage: product.product_image?.[0] || '1.png',
@@ -251,38 +285,35 @@ const MyBusinessPage = () => {
     }
   };
 
-  const renderStars = (rating) =>
-    '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
+  const renderStars = (rating) => '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
 
   const displayedProducts = isExpanded ? products : products.slice(0, 6);
 
   const handleWriteReview = () => console.log('Gửi nhận xét');
   const handleCancelReview = () => console.log('Hủy nhận xét');
   const handleShareReview = (id) => console.log('Chia sẻ review:', id);
-  const handleHelpful = (id, isHelpful) =>
-    console.log(`Review ${id} is ${isHelpful ? 'helpful' : 'not helpful'}`);
+  const handleHelpful = (id, isHelpful) => console.log(`Review ${id} is ${isHelpful ? 'helpful' : 'not helpful'}`);
   const handlePageChange = (page) => setCurrentPage(page);
+
+  const handleKeyDown = (e, field) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Prevent default Enter behavior
+      handleBlur(field); // Trigger blur to save the field
+    }
+  };
 
   const renderPagination = () => {
     const totalPages = Math.ceil(feedbacks.length / 2);
     const pages = [];
     if (currentPage > 1) {
       pages.push(
-        <button
-          key="prev"
-          className="page-btn"
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
+        <button key="prev" className="page-btn" onClick={() => handlePageChange(currentPage - 1)}>
           ‹
         </button>
       );
     }
     for (let i = 1; i <= totalPages; i++) {
-      if (
-        i === 1 ||
-        i === totalPages ||
-        (i >= currentPage - 1 && i <= currentPage + 1)
-      ) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
         pages.push(
           <button
             key={i}
@@ -293,20 +324,12 @@ const MyBusinessPage = () => {
           </button>
         );
       } else if (i === currentPage - 2 || i === currentPage + 2) {
-        pages.push(
-          <span key={`dots-${i}`} className="page-dots">
-            ...
-          </span>
-        );
+        pages.push(<span key={`dots-${i}`} className="page-dots">...</span>);
       }
     }
     if (currentPage < totalPages) {
       pages.push(
-        <button
-          key="next"
-          className="page-btn"
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
+        <button key="next" className="page-btn" onClick={() => handlePageChange(currentPage + 1)}>
           ›
         </button>
       );
@@ -315,30 +338,17 @@ const MyBusinessPage = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <>
+      <Header/>
+      <LoadingScreen/>
+    </>;
   }
 
   if (error || !business) {
     return (
       <>
         <Header />
-        <div style={{ textAlign: 'center', padding: '100px 20px' }}>
-          <h2>Lỗi: {error}</h2>
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              marginTop: '20px',
-              padding: '10px 20px',
-              backgroundColor: '#ff6b35',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-            }}
-          >
-            Quay lại
-          </button>
-        </div>
-        <Footer />
+        <LoadingScreen />
       </>
     );
   }
@@ -360,13 +370,18 @@ const MyBusinessPage = () => {
               <div className="business-warning">
                 <button
                   onClick={async () => {
-                    const storageKey = `reapprove-email-sent-${business._id}`; // unique per business
+                    const storageKey = `reapprove-email-sent-${business._id}`;
                     const lastSent = localStorage.getItem(storageKey);
                     const now = Date.now();
+                    const ONE_DAY = 24 * 60 * 60 * 1000;
 
-                    if (lastSent && now - parseInt(lastSent, 10) < 24 * 60 * 60 * 1000) {
-                      toast.info('Bạn đã gửi yêu cầu hôm nay. Vui lòng thử lại sau 24 giờ.');
-                      return;
+                    if (lastSent) {
+                      const timePassed = now - parseInt(lastSent, 10);
+                      if (timePassed < ONE_DAY) {
+                        const hoursLeft = Math.ceil((ONE_DAY - timePassed) / (60 * 60 * 1000));
+                        toast.info(`Bạn đã gửi yêu cầu hôm nay. Vui lòng thử lại sau ${hoursLeft} giờ.`);
+                        return;
+                      }
                     }
 
                     const emailParams = {
@@ -375,10 +390,7 @@ const MyBusinessPage = () => {
                     };
 
                     try {
-                      await sendEmail(
-                        import.meta.env.VITE_EMAILJS_TEMPLATE_REAPPROVE_ID,
-                        emailParams
-                      );
+                      await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REAPPROVE_ID, emailParams);
                       localStorage.setItem(storageKey, now.toString());
                       toast.success('Yêu cầu đã được gửi đến quản trị viên.');
                     } catch (error) {
@@ -400,27 +412,41 @@ const MyBusinessPage = () => {
                 </button>
               </div>
             )}
+
             <div className="business-content">
               <div className="business-images">
                 <div className="main-image">
                   <img
-                    src={allImages[selectedImage]}
+                    src={allImages[selectedImage] || '1.png'}
                     alt={`${business.business_name} main ${selectedImage + 1}`}
                     className="main-img"
+                    onError={(e) => (e.target.src = '1.png')}
                   />
                 </div>
                 <div className="thumbnail-images">
                   {allImages.map((img, idx) => (
                     <div
                       key={idx}
-                      className={`thumbnail ${selectedImage === idx ? 'active' : ''
-                        }`}
-                      onClick={() => setSelectedImage(idx)}
+                      className={`thumbnail ${selectedImage === idx ? 'active' : ''}`}
+                      style={{ position: 'relative', cursor: 'pointer' }}
+                      onClick={() => setSelectedImage(idx)} // Ensure this handler is working
                     >
                       <img
-                        src={img}
+                        src={img || '1.png'}
                         alt={`${business.business_name} thumbnail ${idx + 1}`}
+                        onError={(e) => (e.target.src = '1.png')}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />
+                      <button
+                        className="remove-image-btn"
+                        onClick={(e) => {
+                          e.stopPropagation(); // Prevent thumbnail click from triggering
+                          handleDeleteImage(idx);
+                        }}
+                        aria-label={`Delete image ${idx + 1}`}
+                      >
+                        x
+                      </button>
                     </div>
                   ))}
                   <label className="thumbnail add-image">
@@ -428,6 +454,8 @@ const MyBusinessPage = () => {
                     <input
                       type="file"
                       accept="image/*"
+                      multiple
+                      ref={fileInputRef}
                       onChange={handleAddImage}
                       style={{ display: 'none' }}
                     />
@@ -442,6 +470,7 @@ const MyBusinessPage = () => {
                         border: 'none',
                         borderRadius: '4px',
                         marginTop: '0.5rem',
+                        cursor: 'pointer',
                       }}
                     >
                       Lưu ảnh
@@ -458,6 +487,7 @@ const MyBusinessPage = () => {
                         value={editedValues['business_name'] || ''}
                         onChange={(e) => handleChange(e, 'business_name')}
                         onBlur={() => handleBlur('business_name', business._id)}
+                        onKeyDown={(e) => handleKeyDown(e, 'business_name')}
                         autoFocus
                       />
                     ) : (
@@ -465,12 +495,9 @@ const MyBusinessPage = () => {
                     )}
                   </h1>
                   {!editFields['business_name'] && (
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit('business_name')}
-                    >
-                      Chỉnh sửa
-                    </button>
+                    <p className="edit-btn" onClick={() => handleEdit('business_name')}>
+                      <LuTextCursorInput />
+                    </p>
                   )}
                 </div>
                 <div className="editable-field">
@@ -484,9 +511,7 @@ const MyBusinessPage = () => {
                       />
                       <span className="toggle-slider"></span>
                     </label>
-                    <span
-                      className={`status-text ${isOpen ? 'open' : 'closed'}`}
-                    >
+                    <span className={`status-text ${isOpen ? 'open' : 'closed'}`}>
                       {isOpen ? 'Đang mở cửa' : 'Đang đóng cửa'}
                     </span>
                   </div>
@@ -498,9 +523,8 @@ const MyBusinessPage = () => {
                         type="text"
                         value={editedValues['business_detail'] || ''}
                         onChange={(e) => handleChange(e, 'business_detail')}
-                        onBlur={() =>
-                          handleBlur('business_detail', business._id)
-                        }
+                        onBlur={() => handleBlur('business_detail', business._id)}
+                        onKeyDown={(e) => handleKeyDown(e, 'business_detail')}
                         autoFocus
                       />
                     ) : (
@@ -508,12 +532,9 @@ const MyBusinessPage = () => {
                     )}
                   </p>
                   {!editFields['business_detail'] && (
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit('business_detail')}
-                    >
-                      Chỉnh sửa
-                    </button>
+                    <p className="edit-btn" onClick={() => handleEdit('business_detail')}>
+                      <LuTextCursorInput />
+                    </p>
                   )}
                 </div>
                 <p className="business-category">Đánh giá của người dùng</p>
@@ -531,9 +552,8 @@ const MyBusinessPage = () => {
                           type="text"
                           value={editedValues['business_phone'] || ''}
                           onChange={(e) => handleChange(e, 'business_phone')}
-                          onBlur={() =>
-                            handleBlur('business_phone', business._id)
-                          }
+                          onBlur={() => handleBlur('business_phone', business._id)}
+                          onKeyDown={(e) => handleKeyDown(e, 'business_phone')}
                           autoFocus
                         />
                       ) : (
@@ -541,25 +561,21 @@ const MyBusinessPage = () => {
                       )}
                     </p>
                     {!editFields['business_phone'] && (
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit('business_phone')}
-                      >
-                        Chỉnh sửa
-                      </button>
+                      <p className="edit-btn" onClick={() => handleEdit('business_phone')}>
+                        <LuTextCursorInput />
+                      </p>
                     )}
                   </div>
                   <div className="editable-field">
                     <p className="contact-detail">
-                      <strong>Dịa chỉ:</strong>{' '}
+                      <strong>Địa chỉ:</strong>{' '}
                       {editFields['business_address'] ? (
                         <input
                           type="text"
                           value={editedValues['business_address'] || ''}
                           onChange={(e) => handleChange(e, 'business_address')}
-                          onBlur={() =>
-                            handleBlur('business_address', business._id)
-                          }
+                          onBlur={() => handleBlur('business_address', business._id)}
+                          onKeyDown={(e) => handleKeyDown(e, 'business_address')}
                           autoFocus
                         />
                       ) : (
@@ -567,45 +583,48 @@ const MyBusinessPage = () => {
                       )}
                     </p>
                     {!editFields['business_address'] && (
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit('business_address')}
-                      >
-                        Chỉnh sửa
-                      </button>
+                      <p className="edit-btn" onClick={() => handleEdit('business_address')}>
+                        <LuTextCursorInput />
+                      </p>
                     )}
                   </div>
-                  <p className="contact-detail">
-                    <strong>Mô hình kinh doanh:</strong>{' '}
-                    {business.business_category_id?.category_name || '...'}
-                  </p>
+                  <div className="editable-field">
+                    <p className="contact-detail">
+                      <strong>Mô hình kinh doanh:</strong>{' '}
+                      {editFields['business_category_id'] ? (
+                        <select
+                          value={editedValues['business_category_id'] || business.business_category_id?._id}
+                          onChange={(e) =>
+                            setEditedValues({ ...editedValues, business_category_id: e.target.value })
+                          }
+                          onBlur={() => handleBlur('business_category_id', business._id)}
+                        >
+                          {categories.map((cat) => (
+                            <option key={cat._id} value={cat._id}>
+                              {cat.category_name}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        business.business_category_id?.category_name || '...'
+                      )}
+                    </p>
+                    {!editFields['business_category_id'] && (
+                      <p className="edit-btn" onClick={() => handleEdit('business_category_id')}>
+                        <LuTextCursorInput />
+                      </p>
+                    )}
+                  </div>
+
                 </div>
                 <div className="social-icons">
-                  <a
-                    href="https://facebook.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="social-link"
-                    aria-label="Facebook"
-                  >
+                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Facebook">
                     <FaFacebookF />
                   </a>
-                  <a
-                    href="https://instagram.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="social-link"
-                    aria-label="Instagram"
-                  >
+                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
                     <FaInstagram />
                   </a>
-                  <a
-                    href="https://google.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="social-link"
-                    aria-label="Google"
-                  >
+                  <a href="https://google.com" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Google">
                     <FaGoogle />
                   </a>
                 </div>
@@ -624,40 +643,25 @@ const MyBusinessPage = () => {
                 <div key={product._id} className="product-card">
                   <div className="product-images">
                     <div className="product-main-image">
-                      <img
-                        src={product.product_image?.[0] || '1.png'}
-                        alt={product.product_name}
-                      />
+                      <img src={product.product_image?.[0] || '1.png'} alt={product.product_name} />
                     </div>
                   </div>
                   <div className="product-info">
                     <h3 className="product-name">{product.product_name}</h3>
-                    <div className="product-price">
-                      {product.product_price || '$0.00'}
-                    </div>
+                    <div className="product-price">{product.product_price || '0'}</div>
                     <div className="product-rating">
-                      <div className="stars">
-                        {renderStars(product.product_rating || 0)}
-                      </div>
-                      <span className="reviews-count">
-                        {product.product_total_vote || '000'} Đánh giá
-                      </span>
+                      <div className="stars">{renderStars(product.product_rating || 0)}</div>
+                      <span className="reviews-count">{product.product_total_vote || '000'} Đánh giá</span>
                     </div>
-                    <button
-                      className="view-details-btn"
-                      onClick={() => handleViewDetails(product._id)}
-                    >
-                      Chỉnh sửa
-                    </button>
+                    <p className="view-details-btn" onClick={() => handleViewDetails(product._id)}>
+                      Xem sản phẩm
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
             <div className="product-actions">
-              <button
-                className="expand-btn"
-                onClick={() => setIsExpanded(!isExpanded)}
-              >
+              <button className="expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
                 {isExpanded ? 'Thu gọn' : 'Mở rộng'}
               </button>
               <a href="/product-registration" className="add-product-btn">
@@ -692,55 +696,37 @@ const MyBusinessPage = () => {
                 </div>
               </div>
               <div className="reviews-list">
-                {feedbacks
-                  .slice((currentPage - 1) * 2, currentPage * 2)
-                  .map((feedback) => (
-                    <div key={feedback._id} className="review-item">
-                      <div className="review-header">
-                        <div className="reviewer-info">
-                          <div
-                            className="reviewer-avatar"
-                            aria-label={`Avatar of ${feedback.user_id}`}
-                          >
-                            {feedback.user_id.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="reviewer-details">
-                            <span className="reviewer-name">
-                              {feedback.user_id || 'Người dùng ẩn danh'}
-                            </span>
-                            <div className="review-rating">
-                              <span className="stars">{renderStars(5)}</span>
-                            </div>
+                {feedbacks.slice((currentPage - 1) * 2, currentPage * 2).map((feedback) => (
+                  <div key={feedback._id} className="review-item">
+                    <div className="review-header">
+                      <div className="reviewer-info">
+                        <div className="reviewer-avatar" aria-label={`Avatar of ${feedback.user_id}`}>
+                          {feedback.user_id.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="reviewer-details">
+                          <span className="reviewer-name">{feedback.user_id || 'Người dùng ẩn danh'}</span>
+                          <div className="review-rating">
+                            <span className="stars">{renderStars(5)}</span>
                           </div>
                         </div>
-                        <span className="review-date">
-                          {new Date(feedback.feedback_date).toLocaleDateString(
-                            'vi-VN'
-                          )}
-                        </span>
                       </div>
-                      <div className="review-content">
-                        <p className="review-text">
-                          {feedback.feedback_comment}
-                        </p>
-                      </div>
-                      <div className="review-footer">
-                        <button
-                          className="share-btn"
-                          onClick={() => handleShareReview(feedback._id)}
-                        >
-                          <span className="share-icon">↗</span> Chia sẻ
-                        </button>
-                      </div>
+                      <span className="review-date">
+                        {new Date(feedback.feedback_date).toLocaleDateString('vi-VN')}
+                      </span>
                     </div>
-                  ))}
+                    <div className="review-content">
+                      <p className="review-text">{feedback.feedback_comment}</p>
+                    </div>
+                    <div className="review-footer">
+                      <button className="share-btn" onClick={() => handleShareReview(feedback._id)}>
+                        <span className="share-icon">↗</span> Chia sẻ
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
               {Math.ceil(feedbacks.length / 2) > 1 && (
-                <div
-                  className="pagination"
-                  role="navigation"
-                  aria-label="Review Pagination"
-                >
+                <div className="pagination" role="navigation" aria-label="Review Pagination">
                   {renderPagination()}
                 </div>
               )}
@@ -755,6 +741,9 @@ const MyBusinessPage = () => {
         selectedProduct={selectedProduct}
         setSelectedProduct={setSelectedProduct}
         renderStars={renderStars}
+        products={products}
+        setProducts={setProducts}
+        businessId={business?._id}
       />
 
       <Footer />
