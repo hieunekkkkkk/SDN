@@ -4,8 +4,10 @@ import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import LoadingScreen from '../../components/LoadingScreen';
+import BusinessFeedback from '../../components/BusinessFeedback'; // Import BusinessFeedback component
 import { FaFacebookF, FaInstagram, FaGoogle, FaArrowLeft } from 'react-icons/fa';
 import ProductDetailModal from '../../components/ProductDetailModal';
+import ImageZoomModal from '../../components/ImageZoomModal';
 import '../../css/BusinessPage.css';
 
 const BusinessPage = () => {
@@ -15,7 +17,6 @@ const BusinessPage = () => {
   // State for business data
   const [business, setBusiness] = useState(null);
   const [products, setProducts] = useState([]);
-  const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -24,8 +25,10 @@ const BusinessPage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState('Sort: Select');
+  
+  // Image zoom state
+  const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
+  const [zoomedImageUrl, setZoomedImageUrl] = useState('');
 
   const itemsPerSlide = 3;
 
@@ -41,14 +44,13 @@ const BusinessPage = () => {
         setLoading(true);
         setError(null);
 
-        // Fetch business details, products, and feedbacks in parallel
+        // Fetch business details and products in parallel
         const results = await Promise.allSettled([
           axios.get(`${import.meta.env.VITE_BE_URL}/api/business/${id}`),
-          axios.get(`${import.meta.env.VITE_BE_URL}/api/product/business/${id}`),
-          axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback/business/${id}`)
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/product/business/${id}`)
         ]);
 
-        const [businessResult, productsResult, feedbacksResult] = results;
+        const [businessResult, productsResult] = results;
 
         // Handle business data
         if (businessResult.status === 'fulfilled') {
@@ -63,14 +65,6 @@ const BusinessPage = () => {
         } else {
           console.warn('Could not load products:', productsResult.reason);
           setProducts([]);
-        }
-
-        // Handle feedbacks data
-        if (feedbacksResult.status === 'fulfilled') {
-          setFeedbacks(feedbacksResult.value.data?.data || []);
-        } else {
-          console.warn('Could not load feedbacks:', feedbacksResult.reason);
-          setFeedbacks([]);
         }
 
       } catch (err) {
@@ -142,48 +136,22 @@ const BusinessPage = () => {
 
   const renderStars = (rating) => '★'.repeat(Math.floor(rating)) + '☆'.repeat(5 - Math.floor(rating));
 
-  // Feedback handlers
+  // Handle image zoom
+  const handleImageZoom = (imageUrl) => {
+    setZoomedImageUrl(imageUrl);
+    setIsImageZoomOpen(true);
+  };
+
+  const closeImageZoom = () => {
+    setIsImageZoomOpen(false);
+    setZoomedImageUrl('');
+  };
+
+  // Dummy handlers for product modal (these can be implemented later)
   const handleWriteReview = () => console.log('Gửi nhận xét');
   const handleCancelReview = () => console.log('Hủy nhận xét');
   const handleShareReview = (id) => console.log('Chia sẻ review:', id);
   const handleHelpful = (id, isHelpful) => console.log(`Review ${id} is ${isHelpful ? 'helpful' : 'not helpful'}`);
-  
-  const totalPages = Math.ceil(feedbacks.length / 5);
-  const handlePageChange = (page) => setCurrentPage(page);
-
-  const renderPagination = () => {
-    const pages = [];
-    if (currentPage > 1) {
-      pages.push(
-        <button key="prev" className="page-btn" onClick={() => handlePageChange(currentPage - 1)}>
-          ‹
-        </button>
-      );
-    }
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-        pages.push(
-          <button
-            key={i}
-            className={`page-btn ${currentPage === i ? 'active' : ''}`}
-            onClick={() => handlePageChange(i)}
-          >
-            {i}
-          </button>
-        );
-      } else if (i === currentPage - 2 || i === currentPage + 2) {
-        pages.push(<span key={`dots-${i}`} className="page-dots">...</span>);
-      }
-    }
-    if (currentPage < totalPages) {
-      pages.push(
-        <button key="next" className="page-btn" onClick={() => handlePageChange(currentPage + 1)}>
-          ›
-        </button>
-      );
-    }
-    return pages;
-  };
 
   if (loading) {
     return <LoadingScreen />;
@@ -240,6 +208,8 @@ const BusinessPage = () => {
                     src={images[selectedImage]}
                     alt={`${business.business_name} main ${selectedImage + 1}`}
                     className="main-img"
+                    style={{ cursor: 'zoom-in' }}
+                    onClick={() => handleImageZoom(images[selectedImage])}
                     onError={(e) => { e.target.src = '/1.png'; }}
                   />
                 </div>
@@ -248,7 +218,12 @@ const BusinessPage = () => {
                     <div
                       key={idx}
                       className={`thumbnail ${selectedImage === idx ? 'active' : ''}`}
-                      onClick={() => setSelectedImage(idx)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Thumbnail clicked:', idx);
+                        setSelectedImage(idx);
+                      }}
                       style={{ cursor: 'pointer' }}
                     >
                       <img 
@@ -399,131 +374,23 @@ const BusinessPage = () => {
         </section>
       )}
 
-      {/* Feedback Section */}
-      <section className="business-feedback-section">
-        <div className="business-feedback">
-          <div className="feedback-container">
-            <h2 className="feedback-title">Feedback</h2>
-
-            <div className="overall-rating">
-              <div className="rating-score">
-                <span className="score">{overallRating.toFixed(1)}</span>
-                <div className="stars">{renderStars(overallRating)}</div>
-              </div>
-              <span className="time-period">từ khách hàng</span>
-
-              <div className="review-actions">
-                <button className="write-review-btn" onClick={handleWriteReview}>
-                  Gửi nhận xét
-                </button>
-                <button className="cancel-review-btn" onClick={handleCancelReview}>
-                  Hủy nhận xét
-                </button>
-              </div>
-            </div>
-
-            <div className="customer-reviews-section">
-              <div className="reviews-header">
-                <h3 className="reviews-title">Đánh giá của khách hàng</h3>
-                <div className="reviews-summary">
-                  <span className="total-reviews">{totalReviews}</span>
-                  <select 
-                    className="sort-dropdown" 
-                    value={sortBy} 
-                    onChange={(e) => setSortBy(e.target.value)}
-                  >
-                    <option value="Sort: Select">Sort: Select</option>
-                    <option value="newest">Mới nhất</option>
-                    <option value="oldest">Cũ nhất</option>
-                    <option value="highest">Đánh giá cao nhất</option>
-                    <option value="lowest">Đánh giá thấp nhất</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="reviews-list">
-                {feedbacks.slice((currentPage - 1) * 5, currentPage * 5).map((feedback) => (
-                  <div key={feedback._id} className="review-item">
-                    <div className="review-header">
-                      <div className="reviewer-info">
-                        <div className="reviewer-avatar">
-                          {feedback.user_id ? feedback.user_id.charAt(0).toUpperCase() : 'U'}
-                        </div>
-                        <div className="reviewer-details">
-                          <span className="reviewer-name">{feedback.user_id || 'Người dùng ẩn danh'}</span>
-                          <div className="review-rating">
-                            <span className="stars">{renderStars(5)}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className="review-date">
-                        {new Date(feedback.feedback_date).toLocaleDateString('vi-VN')}
-                      </span>
-                    </div>
-
-                    <div className="review-content">
-                      <p className="review-text">{feedback.feedback_comment}</p>
-                      {feedback.feedback_response && (
-                        <div className="business-response">
-                          <strong>Phản hồi từ doanh nghiệp:</strong>
-                          <p>{feedback.feedback_response}</p>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="review-footer">
-                      <button className="share-btn" onClick={() => handleShareReview(feedback._id)}>
-                        <span className="share-icon">↗</span> Chia sẻ
-                      </button>
-
-                      <div className="helpful-section">
-                        <span className="helpful-text">
-                          Bình luận này có hữu ích với bạn không?
-                        </span>
-                        <div className="helpful-buttons">
-                          <button 
-                            className="helpful-btn" 
-                            onClick={() => handleHelpful(feedback._id, true)}
-                          >
-                            👍 {feedback.feedback_like || 0}
-                          </button>
-                          <button 
-                            className="helpful-btn" 
-                            onClick={() => handleHelpful(feedback._id, false)}
-                          >
-                            👎 {feedback.feedback_dislike || 0}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="pagination">
-                  {renderPagination()}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Feedback Section - Use BusinessFeedback component */}
+      <BusinessFeedback businessId={id} />
 
       <ProductDetailModal
         showModal={showModal}
         setShowModal={setShowModal}
         selectedProduct={selectedProduct}
         setSelectedProduct={setSelectedProduct}
-        reviews={feedbacks}
-        overallRating={overallRating}
-        totalReviews={totalReviews}
-        handleWriteReview={handleWriteReview}
-        handleCancelReview={handleCancelReview}
-        handleShareReview={handleShareReview}
-        handleHelpful={handleHelpful}
+        businessId={id}
         renderStars={renderStars}
+      />
+
+      <ImageZoomModal
+        isOpen={isImageZoomOpen}
+        imageUrl={zoomedImageUrl}
+        onClose={closeImageZoom}
+        imageAlt="Phóng to ảnh doanh nghiệp"
       />
 
       <Footer />

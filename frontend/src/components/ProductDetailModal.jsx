@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import ProductFeedback from './ProductFeedback';
+import ImageZoomModal from './ImageZoomModal';
 import '../css/ProductDetailModal.css';
 
 const ProductDetailModal = ({
@@ -8,20 +10,29 @@ const ProductDetailModal = ({
   setShowModal,
   selectedProduct,
   setSelectedProduct,
-  reviews,
-  overallRating,
-  totalReviews,
-  handleWriteReview,
-  handleCancelReview,
-  handleShareReview,
-  handleHelpful,
+  businessId, // Add businessId prop
   renderStars,
 }) => {
   const [selectedImage, setSelectedImage] = useState(0);
+  
+  // Image zoom state
+  const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
+  const [zoomedImageUrl, setZoomedImageUrl] = useState('');
 
   const closeModal = () => {
     setShowModal(false);
     setSelectedProduct(null);
+  };
+
+  // Handle image zoom
+  const handleImageZoom = (imageUrl) => {
+    setZoomedImageUrl(imageUrl);
+    setIsImageZoomOpen(true);
+  };
+
+  const closeImageZoom = () => {
+    setIsImageZoomOpen(false);
+    setZoomedImageUrl('');
   };
 
   useEffect(() => {
@@ -59,7 +70,8 @@ const ProductDetailModal = ({
               ✕
             </button>
 
-            <h1 className="modal-product-header">Chi tiết</h1>
+            <h1 className="modal-product-header">Chi tiết sản phẩm</h1>
+            
             <div className="business-content">
               <div className="business-images">
                 <div className="main-image">
@@ -67,6 +79,9 @@ const ProductDetailModal = ({
                     src={selectedProduct.thumbnails[selectedImage]}
                     alt={`${selectedProduct.name} main ${selectedImage + 1}`}
                     className="main-img"
+                    style={{ cursor: 'zoom-in' }}
+                    onClick={() => handleImageZoom(selectedProduct.thumbnails[selectedImage])}
+                    onError={(e) => { e.target.src = '/1.png'; }}
                   />
                 </div>
                 <div className="thumbnail-images">
@@ -74,10 +89,18 @@ const ProductDetailModal = ({
                     <div
                       key={idx}
                       className={`thumbnail ${selectedImage === idx ? 'active' : ''}`}
-                      onClick={() => setSelectedImage(idx)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setSelectedImage(idx);
+                      }}
                       style={{ cursor: 'pointer' }}
                     >
-                      <img src={thumb} alt={`${selectedProduct.name} thumbnail ${idx + 1}`} />
+                      <img 
+                        src={thumb} 
+                        alt={`${selectedProduct.name} thumbnail ${idx + 1}`}
+                        onError={(e) => { e.target.src = '/1.png'; }}
+                      />
                     </div>
                   ))}
                 </div>
@@ -97,91 +120,22 @@ const ProductDetailModal = ({
               </div>
             </div>
 
-            {/* Feedback Section */}
-            <section className="business-feedback-section">
-              <div className="business-feedback">
-                <div className="feedback-container">
-                  <h2 className="feedback-title">Feedback</h2>
-
-                  <div className="overall-rating">
-                    <div className="modal-product-rating">
-                      <div className="modal-product-rating-score">
-                        <span className="score">{overallRating}</span>
-                        <div className="stars">{renderStars(Math.floor(overallRating))}</div>
-                      </div>
-                      <span className="time-period">vài tháng gần đây</span>
-                    </div>
-                    <div className="review-actions">
-                      <button className="write-review-btn" onClick={handleWriteReview}>
-                        Gửi nhận xét
-                      </button>
-                      <button className="cancel-review-btn" onClick={handleCancelReview}>
-                        Hủy nhận xét
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="customer-reviews-section">
-                    <div className="reviews-header">
-                      <h3 className="reviews-title">Đánh giá của khách hàng</h3>
-                      <div className="reviews-summary">
-                        <span className="total-reviews">{totalReviews}</span>
-                      </div>
-                    </div>
-
-                    <div className="reviews-list">
-                      {reviews.map((review) => (
-                        <div key={review.id} className="review-item">
-                          <div className="review-header">
-                            <div className="reviewer-info">
-                              <div className="reviewer-avatar">{review.avatar}</div>
-                              <div className="reviewer-details">
-                                <span className="reviewer-name">{review.userName}</span>
-                                <div className="review-rating">
-                                  <span className="stars">{renderStars(review.rating)}</span>
-                                </div>
-                              </div>
-                            </div>
-                            <span className="review-date">{review.date}</span>
-                          </div>
-
-                          <div className="review-content">
-                            <h4 className="review-title">{review.title}</h4>
-                            <p className="review-text">{review.content}</p>
-                          </div>
-
-                          <div className="review-footer">
-                            <button className="share-btn" onClick={() => handleShareReview(review.id)}>
-                              <span className="share-icon">↗</span> Chia sẻ
-                            </button>
-                            <div className="helpful-section">
-                              <span className="helpful-text">Bình luận này có hữu ích với bạn không?</span>
-                              <div className="helpful-buttons">
-                                <button
-                                  className="helpful-btn"
-                                  onClick={() => handleHelpful(review.id, true)}
-                                >
-                                  👍 {review.helpfulCount}
-                                </button>
-                                <button
-                                  className="helpful-btn"
-                                  onClick={() => handleHelpful(review.id, false)}
-                                >
-                                  👎 {review.notHelpfulCount}
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
+            {/* Product Feedback Section */}
+            <ProductFeedback 
+              productId={selectedProduct.id} 
+              businessId={businessId}
+            />
           </motion.div>
         </motion.div>
       )}
+      
+      {/* Image Zoom Modal */}
+      <ImageZoomModal
+        isOpen={isImageZoomOpen}
+        imageUrl={zoomedImageUrl}
+        onClose={closeImageZoom}
+        imageAlt="Phóng to ảnh sản phẩm"
+      />
     </AnimatePresence>,
     modalRoot
   );
