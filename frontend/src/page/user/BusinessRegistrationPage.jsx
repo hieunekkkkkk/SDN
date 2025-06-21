@@ -380,7 +380,7 @@ const BusinessRegistrationPage = () => {
                     placeholder="Nhập mô tả..."
                     value={formData.businessDescription}
                     onChange={handleInputChange}
-                    rows="6"
+                    rows="7"
                     disabled={!havePaid}
                   />
                 </div>
