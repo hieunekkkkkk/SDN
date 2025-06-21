@@ -5,10 +5,12 @@ import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaFacebookF, FaInstagram, FaGoogle, FaPlus } from 'react-icons/fa';
-import ProductDetailModal from '../../components/ProductDetailModal';
+import BusinessProductModal from '../../components/BusinessProductModal';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
 import { convertFilesToBase64 } from '../../utils/imageToBase64';
 import '../../css/MyBusinessPage.css';
+import { sendEmail } from '../../utils/sendEmail';
+import { toast } from 'react-toastify';
 
 const MyBusinessPage = () => {
   const navigate = useNavigate();
@@ -39,7 +41,7 @@ const MyBusinessPage = () => {
       }
 
       const ownerId = getCurrentUserId();
-      console.log('Owner ID:', ownerId);
+      // console.log('Owner ID:', ownerId);
 
       try {
         setLoading(true);
@@ -49,7 +51,7 @@ const MyBusinessPage = () => {
           `${import.meta.env.VITE_BE_URL}/api/business`,
           {
             headers: { 'Content-Type': 'application/json' },
-            params: { page: 1, limit: 100 },
+            params: { page: 1, limit: 10000 },
           }
         );
         let businesses = businessesResponse.data;
@@ -62,8 +64,8 @@ const MyBusinessPage = () => {
           }
         }
 
-        console.log('API Response:', businessesResponse);
-        console.log('Businesses data:', businesses);
+        // console.log('API Response:', businessesResponse);
+        // console.log('Businesses data:', businesses);
 
         if (!businesses || businesses.length === 0) {
           setError(
@@ -74,17 +76,15 @@ const MyBusinessPage = () => {
         }
 
         const userBusiness = businesses.find(
-          (b) => b.owner_id === ownerId && b.business_active === 'active'
+          (b) => b.owner_id === ownerId
         );
-        console.log('User Business found:', userBusiness);
+        // console.log('User Business found:', userBusiness);
         if (!userBusiness) {
           const availableOwnerIds = businesses
             .map((b) => b.owner_id)
             .join(', ');
           setError(
-            `Không tìm thấy doanh nghiệp nào cho owner với ID: ${ownerId}. Các owner_id trong database: ${
-              availableOwnerIds || 'Không có'
-            }. Vui lòng kiểm tra hoặc liên hệ admin để gán doanh nghiệp.`
+            `Không tìm thấy doanh nghiệp nào cho owner với ID: ${ownerId}.`
           );
           setLoading(false);
           return;
@@ -356,6 +356,50 @@ const MyBusinessPage = () => {
             <button className="back-button" onClick={() => navigate(-1)}>
               <span className="back-icon">←</span> Quay Lại
             </button>
+            {business?.active !== 'active' && (
+              <div className="business-warning">
+                <button
+                  onClick={async () => {
+                    const storageKey = `reapprove-email-sent-${business._id}`; // unique per business
+                    const lastSent = localStorage.getItem(storageKey);
+                    const now = Date.now();
+
+                    if (lastSent && now - parseInt(lastSent, 10) < 24 * 60 * 60 * 1000) {
+                      toast.info('Bạn đã gửi yêu cầu hôm nay. Vui lòng thử lại sau 24 giờ.');
+                      return;
+                    }
+
+                    const emailParams = {
+                      email: import.meta.env.VITE_EMAILJS_ADMIN_EMAIL,
+                      business_name: business.business_name,
+                    };
+
+                    try {
+                      await sendEmail(
+                        import.meta.env.VITE_EMAILJS_TEMPLATE_REAPPROVE_ID,
+                        emailParams
+                      );
+                      localStorage.setItem(storageKey, now.toString());
+                      toast.success('Yêu cầu đã được gửi đến quản trị viên.');
+                    } catch (error) {
+                      toast.error('Không thể gửi email. Vui lòng thử lại sau.');
+                    }
+                  }}
+                  style={{
+                    color: 'red',
+                    background: 'none',
+                    border: 'none',
+                    textDecoration: 'underline',
+                    cursor: 'pointer',
+                    padding: 0,
+                    fontWeight: 'bold',
+                    fontSize: '16px',
+                  }}
+                >
+                  Doanh nghiệp này chưa được phê duyệt. Bấm vào đây để gửi email đến quản trị viên.
+                </button>
+              </div>
+            )}
             <div className="business-content">
               <div className="business-images">
                 <div className="main-image">
@@ -369,9 +413,8 @@ const MyBusinessPage = () => {
                   {allImages.map((img, idx) => (
                     <div
                       key={idx}
-                      className={`thumbnail ${
-                        selectedImage === idx ? 'active' : ''
-                      }`}
+                      className={`thumbnail ${selectedImage === idx ? 'active' : ''
+                        }`}
                       onClick={() => setSelectedImage(idx)}
                     >
                       <img
@@ -482,7 +525,7 @@ const MyBusinessPage = () => {
                   <h3 className="contact-title">Thông tin liên hệ</h3>
                   <div className="editable-field">
                     <p className="contact-detail">
-                      <strong>Phone:</strong>{' '}
+                      <strong>Số điện thoại:</strong>{' '}
                       {editFields['business_phone'] ? (
                         <input
                           type="text"
@@ -508,7 +551,7 @@ const MyBusinessPage = () => {
                   </div>
                   <div className="editable-field">
                     <p className="contact-detail">
-                      <strong>Address:</strong>{' '}
+                      <strong>Dịa chỉ:</strong>{' '}
                       {editFields['business_address'] ? (
                         <input
                           type="text"
@@ -706,21 +749,12 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
-      <ProductDetailModal
+      <BusinessProductModal
         showModal={showModal}
         setShowModal={setShowModal}
         selectedProduct={selectedProduct}
         setSelectedProduct={setSelectedProduct}
-        products={products}
-        reviews={feedbacks}
-        overallRating={overallRating}
-        totalReviews={totalReviews}
-        handleWriteReview={handleWriteReview}
-        handleCancelReview={handleCancelReview}
-        handleShareReview={handleShareReview}
-        handleHelpful={handleHelpful}
         renderStars={renderStars}
-        enableEdit={true}
       />
 
       <Footer />

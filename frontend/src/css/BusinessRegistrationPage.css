@@ -109,13 +109,13 @@
   margin-left: 10px;
   font-size: 15px;
 }
-
+/* 
 .checkbox-group {
   display: flex;
   align-items: flex-start;
   max-width: 300px;
   flex-direction: column;
-}
+} */
 
 .business-register-form-group label {
   font-weight: bold;
