@@ -137,7 +137,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       // Get current user ID from token
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        alert('Vui lòng đăng nhập để gửi đánh giá');
+        toast.error('Vui lòng đăng nhập để gửi đánh giá');
         return;
       }
 
@@ -162,11 +162,11 @@ const ProductFeedback = ({ productId, isModal = false }) => {
         setNewFeedback('');
         setSelectedRating(5);
         fetchFeedbacks(); 
-        alert('Đánh giá sản phẩm đã được gửi thành công!');
+        toast.success('Đánh giá sản phẩm đã được gửi thành công!');
       }
     } catch (err) {
       console.error('Error submitting product feedback:', err);
-      alert('Không thể gửi đánh giá. Vui lòng thử lại.');
+      toast.error('Không thể gửi đánh giá. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -340,7 +340,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
             <span className="time-period">từ {feedbacks.length} đánh giá</span>
 
             {!isModal && (
-              <div className="review-actions">
+              <div className="review-actions-modal">
                 <div className="write-review-section">
                   {/* Rating Selection */}
                   <div className="rating-input-section">
