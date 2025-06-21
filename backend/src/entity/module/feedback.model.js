@@ -9,6 +9,12 @@ const feedbackschema = new mongoose.Schema({
         enum: ['product', 'business']
     },
     feedback_comment: String,
+    feedback_rating: {
+        type: Number,
+        min: 1,
+        max: 5,
+        default: 5
+    },
     feedback_response: String,
     feedback_like: Number,
     feedback_dislike: Number,

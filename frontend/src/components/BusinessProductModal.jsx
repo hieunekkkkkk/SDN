@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FaPlus } from 'react-icons/fa';
 import { convertFilesToBase64 } from '../utils/imageToBase64';
-import '../css/ProductDetailModal.css'; // Using provided CSS for identical styling
+import '../css/ProductDetailModal.css';
 
 const BusinessProductModal = ({
   showModal,
@@ -33,7 +33,7 @@ const BusinessProductModal = ({
     setSelectedProduct(null);
     setEditFields({});
     setEditedValues({});
-    setNewCars([]);
+    setNewImages([]);
     setError(null);
   };
 
@@ -73,7 +73,6 @@ const BusinessProductModal = ({
           ...prev,
           [field]: updatedProduct[field],
         }));
-        // Update products list to sync changes
         setSelectedProduct((prev) => {
           const updatedProducts = products.map((p) =>
             p._id === prev.id ? { ...p, [field]: updatedProduct[field] } : p
@@ -246,20 +245,20 @@ const BusinessProductModal = ({
               </div>
 
               <div className="business-info">
-                <div className="editable-field">
-                  <h1
-                    className="modal-product-title"
-                    onMouseEnter={() =>
-                      enableEdit &&
-                      !editFields['name'] &&
-                      setEditFields((prev) => ({ ...prev, hoverName: true }))
-                    }
-                    onMouseLeave={() =>
-                      enableEdit &&
-                      !editFields['name'] &&
-                      setEditFields((prev) => ({ ...prev, hoverName: false }))
-                    }
-                  >
+                <div
+                  className="editable-field"
+                  onMouseEnter={() =>
+                    enableEdit &&
+                    !editFields['name'] &&
+                    setEditFields((prev) => ({ ...prev, hoverName: true }))
+                  }
+                  onMouseLeave={() =>
+                    enableEdit &&
+                    !editFields['name'] &&
+                    setEditFields((prev) => ({ ...prev, hoverName: false }))
+                  }
+                >
+                  <h1 className="modal-product-title">
                     {editFields['name'] ? (
                       <input
                         type="text"
@@ -284,20 +283,20 @@ const BusinessProductModal = ({
                       </button>
                     )}
                 </div>
-                <div className="editable-field">
-                  <div
-                    className="business-status"
-                    onMouseEnter={() =>
-                      enableEdit &&
-                      !editFields['price'] &&
-                      setEditFields((prev) => ({ ...prev, hoverPrice: true }))
-                    }
-                    onMouseLeave={() =>
-                      enableEdit &&
-                      !editFields['price'] &&
-                      setEditFields((prev) => ({ ...prev, hoverPrice: false }))
-                    }
-                  >
+                <div
+                  className="editable-field"
+                  onMouseEnter={() =>
+                    enableEdit &&
+                    !editFields['price'] &&
+                    setEditFields((prev) => ({ ...prev, hoverPrice: true }))
+                  }
+                  onMouseLeave={() =>
+                    enableEdit &&
+                    !editFields['price'] &&
+                    setEditFields((prev) => ({ ...prev, hoverPrice: false }))
+                  }
+                >
+                  <div className="business-status">
                     <span className="modal-product-price">
                       {editFields['price'] ? (
                         <input
@@ -335,26 +334,26 @@ const BusinessProductModal = ({
                     {selectedProduct.reviews}
                   </span>
                 </div>
-                <div className="editable-field">
-                  <p
-                    className="business-description"
-                    onMouseEnter={() =>
-                      enableEdit &&
-                      !editFields['description'] &&
-                      setEditFields((prev) => ({
-                        ...prev,
-                        hoverDescription: true,
-                      }))
-                    }
-                    onMouseLeave={() =>
-                      enableEdit &&
-                      !editFields['description'] &&
-                      setEditFields((prev) => ({
-                        ...prev,
-                        hoverDescription: false,
-                      }))
-                    }
-                  >
+                <div
+                  className="editable-field"
+                  onMouseEnter={() =>
+                    enableEdit &&
+                    !editFields['description'] &&
+                    setEditFields((prev) => ({
+                      ...prev,
+                      hoverDescription: true,
+                    }))
+                  }
+                  onMouseLeave={() =>
+                    enableEdit &&
+                    !editFields['description'] &&
+                    setEditFields((prev) => ({
+                      ...prev,
+                      hoverDescription: false,
+                    }))
+                  }
+                >
+                  <p className="business-description">
                     {editFields['description'] ? (
                       <textarea
                         value={editedValues['description'] || ''}
@@ -385,7 +384,6 @@ const BusinessProductModal = ({
               <div className="business-feedback">
                 <div className="feedback-container">
                   <h2 className="feedback-title">Feedback</h2>
-
                   <div className="overall-rating">
                     <div className="modal-product-rating">
                       <div className="modal-product-rating-score">
@@ -411,7 +409,6 @@ const BusinessProductModal = ({
                       </button>
                     </div>
                   </div>
-
                   <div className="customer-reviews-section">
                     <div className="reviews-header">
                       <h3 className="reviews-title">Đánh giá của khách hàng</h3>
@@ -419,7 +416,6 @@ const BusinessProductModal = ({
                         <span className="total-reviews">{totalReviews}</span>
                       </div>
                     </div>
-
                     <div className="reviews-list">
                       {reviews.map((review) => (
                         <div key={review.id} className="review-item">
@@ -441,12 +437,10 @@ const BusinessProductModal = ({
                             </div>
                             <span className="review-date">{review.date}</span>
                           </div>
-
                           <div className="review-content">
                             <h4 className="review-title">{review.title}</h4>
                             <p className="review-text">{review.content}</p>
                           </div>
-
                           <div className="review-footer">
                             <button
                               className="share-btn"
