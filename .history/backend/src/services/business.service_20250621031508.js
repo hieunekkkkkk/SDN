@@ -5,9 +5,8 @@ import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaFacebookF, FaInstagram, FaGoogle, FaPlus } from 'react-icons/fa';
-import BusinessProductModal from '../../components/BusinessProductModal';
+import ProductDetailModal from '../../components/ProductDetailModal';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
-import { convertFilesToBase64 } from '../../utils/imageToBase64';
 import '../../css/MyBusinessPage.css';
 
 const MyBusinessPage = () => {
@@ -20,8 +19,8 @@ const MyBusinessPage = () => {
   const [error, setError] = useState(null);
   const [editFields, setEditFields] = useState({});
   const [editedValues, setEditedValues] = useState({});
-  const [newImages, setNewImages] = useState([]);
 
+  // UI State
   const [selectedImage, setSelectedImage] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -45,13 +44,10 @@ const MyBusinessPage = () => {
         setLoading(true);
         setError(null);
 
-        const businessesResponse = await axios.get(
-          `${import.meta.env.VITE_BE_URL}/api/business`,
-          {
-            headers: { 'Content-Type': 'application/json' },
-            params: { page: 1, limit: 100 },
-          }
-        );
+        const businessesResponse = await axios.get(`${import.meta.env.VITE_BE_URL}/api/business`, {
+          headers: { 'Content-Type': 'application/json' },
+          params: { page: 1, limit: 100 }
+        });
         let businesses = businessesResponse.data;
 
         if (!Array.isArray(businesses)) {
@@ -66,26 +62,16 @@ const MyBusinessPage = () => {
         console.log('Businesses data:', businesses);
 
         if (!businesses || businesses.length === 0) {
-          setError(
-            'Không tìm thấy doanh nghiệp nào từ API. Vui lòng kiểm tra kết nối hoặc dữ liệu.'
-          );
+          setError('Không tìm thấy doanh nghiệp nào từ API. Vui lòng kiểm tra kết nối hoặc dữ liệu.');
           setLoading(false);
           return;
         }
 
-        const userBusiness = businesses.find(
-          (b) => b.owner_id === ownerId && b.business_active === 'active'
-        );
+        const userBusiness = businesses.find(b => b.owner_id === ownerId && b.business_active === 'active');
         console.log('User Business found:', userBusiness);
         if (!userBusiness) {
-          const availableOwnerIds = businesses
-            .map((b) => b.owner_id)
-            .join(', ');
-          setError(
-            `Không tìm thấy doanh nghiệp nào cho owner với ID: ${ownerId}. Các owner_id trong database: ${
-              availableOwnerIds || 'Không có'
-            }. Vui lòng kiểm tra hoặc liên hệ admin để gán doanh nghiệp.`
-          );
+          const availableOwnerIds = businesses.map(b => b.owner_id).join(', ');
+          setError(`Không tìm thấy doanh nghiệp nào cho owner với ID: ${ownerId}. Các owner_id trong database: ${availableOwnerIds || 'Không có'}. Vui lòng kiểm tra hoặc liên hệ admin để gán doanh nghiệp.`);
           setLoading(false);
           return;
         }
@@ -93,15 +79,9 @@ const MyBusinessPage = () => {
         const businessId = userBusiness._id;
 
         const results = await Promise.allSettled([
-          axios.get(
-            `${import.meta.env.VITE_BE_URL}/api/business/${businessId}`
-          ),
-          axios.get(
-            `${import.meta.env.VITE_BE_URL}/api/product/business/${businessId}`
-          ),
-          axios.get(
-            `${import.meta.env.VITE_BE_URL}/api/feedback/business/${businessId}`
-          ),
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/business/${businessId}`),
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/product/business/${businessId}`),
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback/business/${businessId}`),
         ]);
 
         const [businessResult, productsResult, feedbacksResult] = results;
@@ -127,13 +107,8 @@ const MyBusinessPage = () => {
           setFeedbacks([]);
         }
       } catch (err) {
-        console.error(
-          'Error fetching business data:',
-          err.response ? err.response.data : err.message
-        );
-        setError(
-          `Không thể tải dữ liệu doanh nghiệp. Chi tiết: ${err.message}`
-        );
+        console.error('Error fetching business data:', err.response ? err.response.data : err.message);
+        setError(`Không thể tải dữ liệu doanh nghiệp. Chi tiết: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -142,26 +117,7 @@ const MyBusinessPage = () => {
     fetchBusinessData();
   }, [user]);
 
-  const toggleStatus = async () => {
-    const newStatus = !isOpen;
-    setIsOpen(newStatus);
-    try {
-      await axios.put(
-        `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
-        {
-          business_status: newStatus,
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-      setBusiness((prev) => ({ ...prev, business_status: newStatus }));
-    } catch (err) {
-      console.error('Error updating business_status:', err);
-      setError(`Không thể cập nhật trạng thái. Chi tiết: ${err.message}`);
-      setIsOpen(!newStatus);
-    }
-  };
+  const toggleStatus = () => setIsOpen((prev) => !prev);
 
   const handleEdit = (field) => {
     setEditFields({ ...editFields, [field]: true });
@@ -175,61 +131,18 @@ const MyBusinessPage = () => {
   const handleBlur = async (field, businessId) => {
     if (editedValues[field] !== business[field]) {
       try {
-        await axios.put(
-          `${import.meta.env.VITE_BE_URL}/api/business/${businessId}`,
-          {
-            [field]: editedValues[field],
-          },
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-        setBusiness((prev) => ({ ...prev, [field]: editedValues[field] }));
+        await axios.put(`${import.meta.env.VITE_BE_URL}/api/business/${businessId}`, {
+          [field]: editedValues[field]
+        }, {
+          headers: { 'Content-Type': 'application/json' }
+        });
+        setBusiness(prev => ({ ...prev, [field]: editedValues[field] }));
       } catch (err) {
         console.error(`Error updating ${field}:`, err);
         setError(`Không thể cập nhật ${field}. Chi tiết: ${err.message}`);
       }
     }
     setEditFields({ ...editFields, [field]: false });
-  };
-
-  const handleAddImage = async (event) => {
-    const files = Array.from(event.target.files);
-    try {
-      const base64Images = await convertFilesToBase64(files);
-      setNewImages((prevImages) => [...prevImages, ...base64Images]);
-    } catch (error) {
-      console.error('Error converting images to base64:', error);
-      setError('Không thể chuyển đổi ảnh. Vui lòng thử lại.');
-    }
-  };
-
-  const handleSaveImages = async () => {
-    if (newImages.length > 0 && business) {
-      try {
-        const updatedImages = [
-          ...(business.business_image || []),
-          ...newImages,
-        ];
-        await axios.put(
-          `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
-          {
-            business_image: updatedImages,
-          },
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-        setBusiness((prev) => ({
-          ...prev,
-          business_image: updatedImages,
-        }));
-        setNewImages([]);
-      } catch (err) {
-        console.error('Error saving images:', err);
-        setError('Không thể lưu ảnh. Vui lòng kiểm tra kết nối.');
-      }
-    }
   };
 
   const handleViewDetails = (id) => {
@@ -343,7 +256,9 @@ const MyBusinessPage = () => {
     );
   }
 
-  const allImages = [...(business.business_image || []), ...newImages];
+  const images = business.business_image && business.business_image.length > 0
+    ? business.business_image
+    : ['1.png'];
   const overallRating = business.business_rating || 0;
   const totalReviews = `${business.business_total_vote || 0} Đánh giá`;
 
@@ -360,18 +275,16 @@ const MyBusinessPage = () => {
               <div className="business-images">
                 <div className="main-image">
                   <img
-                    src={allImages[selectedImage]}
+                    src={images[selectedImage]}
                     alt={`${business.business_name} main ${selectedImage + 1}`}
                     className="main-img"
                   />
                 </div>
                 <div className="thumbnail-images">
-                  {allImages.map((img, idx) => (
+                  {images.map((img, idx) => (
                     <div
                       key={idx}
-                      className={`thumbnail ${
-                        selectedImage === idx ? 'active' : ''
-                      }`}
+                      className={`thumbnail ${selectedImage === idx ? 'active' : ''}`}
                       onClick={() => setSelectedImage(idx)}
                     >
                       <img
@@ -380,30 +293,16 @@ const MyBusinessPage = () => {
                       />
                     </div>
                   ))}
-                  <label className="thumbnail add-image">
+                  {/* Tạm thời ẩn nút thêm ảnh do chưa có endpoint */}
+                  {/* <label className="thumbnail add-image">
                     <FaPlus />
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleAddImage}
+                      onChange={handleImageUpload}
                       style={{ display: 'none' }}
                     />
-                  </label>
-                  {newImages.length > 0 && (
-                    <button
-                      onClick={handleSaveImages}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        background: '#4CAF50',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        marginTop: '0.5rem',
-                      }}
-                    >
-                      Lưu ảnh
-                    </button>
-                  )}
+                  </label> */}
                 </div>
               </div>
               <div className="business-info">
@@ -417,15 +316,10 @@ const MyBusinessPage = () => {
                         onBlur={() => handleBlur('business_name', business._id)}
                         autoFocus
                       />
-                    ) : (
-                      business.business_name
-                    )}
+                    ) : business.business_name}
                   </h1>
                   {!editFields['business_name'] && (
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit('business_name')}
-                    >
+                    <button className="edit-btn" onClick={() => handleEdit('business_name')}>
                       Chỉnh sửa
                     </button>
                   )}
@@ -441,12 +335,16 @@ const MyBusinessPage = () => {
                       />
                       <span className="toggle-slider"></span>
                     </label>
-                    <span
-                      className={`status-text ${isOpen ? 'open' : 'closed'}`}
-                    >
+                    <span className={`status-text ${isOpen ? 'open' : 'closed'}`}>
                       {isOpen ? 'Đang mở cửa' : 'Đang đóng cửa'}
                     </span>
                   </div>
+                  {/* Tạm thời không cho chỉnh sửa business_status trực tiếp qua input */}
+                  {/* {!editFields['business_status'] && (
+                    <button className="edit-btn" onClick={() => handleEdit('business_status')}>
+                      Chỉnh sửa
+                    </button>
+                  )} */}
                 </div>
                 <div className="editable-field">
                   <p className="business-description">
@@ -455,20 +353,13 @@ const MyBusinessPage = () => {
                         type="text"
                         value={editedValues['business_detail'] || ''}
                         onChange={(e) => handleChange(e, 'business_detail')}
-                        onBlur={() =>
-                          handleBlur('business_detail', business._id)
-                        }
+                        onBlur={() => handleBlur('business_detail', business._id)}
                         autoFocus
                       />
-                    ) : (
-                      business.business_detail || 'Không có mô tả'
-                    )}
+                    ) : business.business_detail || 'Không có mô tả'}
                   </p>
                   {!editFields['business_detail'] && (
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit('business_detail')}
-                    >
+                    <button className="edit-btn" onClick={() => handleEdit('business_detail')}>
                       Chỉnh sửa
                     </button>
                   )}
@@ -488,20 +379,13 @@ const MyBusinessPage = () => {
                           type="text"
                           value={editedValues['business_phone'] || ''}
                           onChange={(e) => handleChange(e, 'business_phone')}
-                          onBlur={() =>
-                            handleBlur('business_phone', business._id)
-                          }
+                          onBlur={() => handleBlur('business_phone', business._id)}
                           autoFocus
                         />
-                      ) : (
-                        business.business_phone || '...'
-                      )}
+                      ) : business.business_phone || '...'}
                     </p>
                     {!editFields['business_phone'] && (
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit('business_phone')}
-                      >
+                      <button className="edit-btn" onClick={() => handleEdit('business_phone')}>
                         Chỉnh sửa
                       </button>
                     )}
@@ -514,20 +398,13 @@ const MyBusinessPage = () => {
                           type="text"
                           value={editedValues['business_address'] || ''}
                           onChange={(e) => handleChange(e, 'business_address')}
-                          onBlur={() =>
-                            handleBlur('business_address', business._id)
-                          }
+                          onBlur={() => handleBlur('business_address', business._id)}
                           autoFocus
                         />
-                      ) : (
-                        business.business_address || '...'
-                      )}
+                      ) : business.business_address || '...'}
                     </p>
                     {!editFields['business_address'] && (
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit('business_address')}
-                      >
+                      <button className="edit-btn" onClick={() => handleEdit('business_address')}>
                         Chỉnh sửa
                       </button>
                     )}
@@ -706,7 +583,7 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
-      <BusinessProductModal
+      <ProductDetailModal
         showModal={showModal}
         setShowModal={setShowModal}
         selectedProduct={selectedProduct}
@@ -720,7 +597,6 @@ const MyBusinessPage = () => {
         handleShareReview={handleShareReview}
         handleHelpful={handleHelpful}
         renderStars={renderStars}
-        enableEdit={true}
       />
 
       <Footer />

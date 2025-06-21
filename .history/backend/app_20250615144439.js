@@ -1,0 +1,42 @@
+const express = require('express');
+const cors = require('cors');
+const connectDB = require('./src/config/database');
+const router = require('./src/routes/index');
+const adminRoutes = require('./src/routes/admin');
+const authRoutes = require('./src/routes/auth');
+const paymentRoutes = require('./src/routes/payment.routes');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./src/swagger/swaggerConfig');
+const { metricsMiddleware, metricsEndpoint } = require('./src/middleware/metrics');
+
+const app = express();
+
+// Middleware
+app.use(cors({
+    origin: 'http://localhost:5173', // Frontend Vite dev server
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json());
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+// Metrics middleware
+app.use(metricsMiddleware);
+app.get('/metrics', metricsEndpoint);
+
+// Connect to MongoDB
+connectDB();
+
+
+// Routes
+app.use('/api', router);
+app.use('/auth', authRoutes);
+app.use('/admin', adminRoutes);
+app.use('/api/payments', paymentRoutes);
+// Cấu hình CORS
+app.use(cors({
+    origin: 'http://localhost:3000', // URL của frontend
+    credentials: true
+}));
+
+module.exports = app;

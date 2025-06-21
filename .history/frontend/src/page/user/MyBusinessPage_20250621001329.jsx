@@ -1,27 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { FaFacebookF, FaInstagram, FaGoogle, FaPlus } from 'react-icons/fa';
-import BusinessProductModal from '../../components/BusinessProductModal';
-import { getCurrentUserId } from '../../utils/useCurrentUserId';
-import { convertFilesToBase64 } from '../../utils/imageToBase64';
+import { FaFacebookF, FaInstagram, FaGoogle } from 'react-icons/fa';
+import ProductDetailModal from '../../components/ProductDetailModal';
 import '../../css/MyBusinessPage.css';
 
 const MyBusinessPage = () => {
+  const { owner_id } = useParams();
   const navigate = useNavigate();
-  const { user } = useUser();
+
+  // State for business data
   const [business, setBusiness] = useState(null);
   const [products, setProducts] = useState([]);
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editFields, setEditFields] = useState({});
-  const [editedValues, setEditedValues] = useState({});
-  const [newImages, setNewImages] = useState([]);
 
+  // UI State
   const [selectedImage, setSelectedImage] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -32,75 +29,24 @@ const MyBusinessPage = () => {
 
   useEffect(() => {
     const fetchBusinessData = async () => {
-      if (!user) {
-        setError('Người dùng chưa đăng nhập.');
+      if (!owner_id) {
+        setError('owner_id không hợp lệ');
         setLoading(false);
         return;
       }
-
-      const ownerId = getCurrentUserId();
-      console.log('Owner ID:', ownerId);
 
       try {
         setLoading(true);
         setError(null);
 
-        const businessesResponse = await axios.get(
-          `${import.meta.env.VITE_BE_URL}/api/business`,
-          {
-            headers: { 'Content-Type': 'application/json' },
-            params: { page: 1, limit: 100 },
-          }
-        );
-        let businesses = businessesResponse.data;
-
-        if (!Array.isArray(businesses)) {
-          if (businesses.businesses && Array.isArray(businesses.businesses)) {
-            businesses = businesses.businesses;
-          } else {
-            throw new Error('Dữ liệu từ API không phải là mảng doanh nghiệp.');
-          }
-        }
-
-        console.log('API Response:', businessesResponse);
-        console.log('Businesses data:', businesses);
-
-        if (!businesses || businesses.length === 0) {
-          setError(
-            'Không tìm thấy doanh nghiệp nào từ API. Vui lòng kiểm tra kết nối hoặc dữ liệu.'
-          );
-          setLoading(false);
-          return;
-        }
-
-        const userBusiness = businesses.find(
-          (b) => b.owner_id === ownerId && b.business_active === 'active'
-        );
-        console.log('User Business found:', userBusiness);
-        if (!userBusiness) {
-          const availableOwnerIds = businesses
-            .map((b) => b.owner_id)
-            .join(', ');
-          setError(
-            `Không tìm thấy doanh nghiệp nào cho owner với ID: ${ownerId}. Các owner_id trong database: ${
-              availableOwnerIds || 'Không có'
-            }. Vui lòng kiểm tra hoặc liên hệ admin để gán doanh nghiệp.`
-          );
-          setLoading(false);
-          return;
-        }
-
-        const businessId = userBusiness._id;
-
+        // Fetch business details, products, and feedbacks in parallel
         const results = await Promise.allSettled([
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/business/${owner_id}`),
           axios.get(
-            `${import.meta.env.VITE_BE_URL}/api/business/${businessId}`
+            `${import.meta.env.VITE_BE_URL}/api/product/business/${owner_id}`
           ),
           axios.get(
-            `${import.meta.env.VITE_BE_URL}/api/product/business/${businessId}`
-          ),
-          axios.get(
-            `${import.meta.env.VITE_BE_URL}/api/feedback/business/${businessId}`
+            `${import.meta.env.VITE_BE_URL}/api/feedback/business/${owner_id}`
           ),
         ]);
 
@@ -127,111 +73,20 @@ const MyBusinessPage = () => {
           setFeedbacks([]);
         }
       } catch (err) {
-        console.error(
-          'Error fetching business data:',
-          err.response ? err.response.data : err.message
-        );
-        setError(
-          `Không thể tải dữ liệu doanh nghiệp. Chi tiết: ${err.message}`
-        );
+        console.error('Error fetching business data:', err);
+        setError(err.message || 'Không thể tải dữ liệu doanh nghiệp');
       } finally {
         setLoading(false);
       }
     };
 
     fetchBusinessData();
-  }, [user]);
+  }, [owner_id]);
 
-  const toggleStatus = async () => {
-    const newStatus = !isOpen;
-    setIsOpen(newStatus);
-    try {
-      await axios.put(
-        `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
-        {
-          business_status: newStatus,
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-      setBusiness((prev) => ({ ...prev, business_status: newStatus }));
-    } catch (err) {
-      console.error('Error updating business_status:', err);
-      setError(`Không thể cập nhật trạng thái. Chi tiết: ${err.message}`);
-      setIsOpen(!newStatus);
-    }
-  };
+  // Business detail handlers
+  const toggleStatus = () => setIsOpen((prev) => !prev);
 
-  const handleEdit = (field) => {
-    setEditFields({ ...editFields, [field]: true });
-    setEditedValues({ ...editedValues, [field]: business[field] || '' });
-  };
-
-  const handleChange = (e, field) => {
-    setEditedValues({ ...editedValues, [field]: e.target.value });
-  };
-
-  const handleBlur = async (field, businessId) => {
-    if (editedValues[field] !== business[field]) {
-      try {
-        await axios.put(
-          `${import.meta.env.VITE_BE_URL}/api/business/${businessId}`,
-          {
-            [field]: editedValues[field],
-          },
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-        setBusiness((prev) => ({ ...prev, [field]: editedValues[field] }));
-      } catch (err) {
-        console.error(`Error updating ${field}:`, err);
-        setError(`Không thể cập nhật ${field}. Chi tiết: ${err.message}`);
-      }
-    }
-    setEditFields({ ...editFields, [field]: false });
-  };
-
-  const handleAddImage = async (event) => {
-    const files = Array.from(event.target.files);
-    try {
-      const base64Images = await convertFilesToBase64(files);
-      setNewImages((prevImages) => [...prevImages, ...base64Images]);
-    } catch (error) {
-      console.error('Error converting images to base64:', error);
-      setError('Không thể chuyển đổi ảnh. Vui lòng thử lại.');
-    }
-  };
-
-  const handleSaveImages = async () => {
-    if (newImages.length > 0 && business) {
-      try {
-        const updatedImages = [
-          ...(business.business_image || []),
-          ...newImages,
-        ];
-        await axios.put(
-          `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
-          {
-            business_image: updatedImages,
-          },
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-        setBusiness((prev) => ({
-          ...prev,
-          business_image: updatedImages,
-        }));
-        setNewImages([]);
-      } catch (err) {
-        console.error('Error saving images:', err);
-        setError('Không thể lưu ảnh. Vui lòng kiểm tra kết nối.');
-      }
-    }
-  };
-
+  const handleEdit = () => console.log('Chỉnh sửa');
   const handleViewDetails = (id) => {
     const product = products.find((p) => p._id === id);
     if (product) {
@@ -256,6 +111,7 @@ const MyBusinessPage = () => {
 
   const displayedProducts = isExpanded ? products : products.slice(0, 6);
 
+  // Feedback handlers
   const handleWriteReview = () => console.log('Gửi nhận xét');
   const handleCancelReview = () => console.log('Hủy nhận xét');
   const handleShareReview = (id) => console.log('Chia sẻ review:', id);
@@ -315,7 +171,7 @@ const MyBusinessPage = () => {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>; // Replace with your LoadingScreen component if available
   }
 
   if (error || !business) {
@@ -343,13 +199,17 @@ const MyBusinessPage = () => {
     );
   }
 
-  const allImages = [...(business.business_image || []), ...newImages];
+  const images =
+    business.business_image && business.business_image.length > 0
+      ? business.business_image
+      : ['1.png'];
   const overallRating = business.business_rating || 0;
   const totalReviews = `${business.business_total_vote || 0} Đánh giá`;
 
   return (
     <>
       <Header />
+      {/* Business Detail Section */}
       <section className="business-detail-section">
         <div className="business-detail">
           <div className="business-detail-container">
@@ -360,19 +220,20 @@ const MyBusinessPage = () => {
               <div className="business-images">
                 <div className="main-image">
                   <img
-                    src={allImages[selectedImage]}
+                    src={images[selectedImage]}
                     alt={`${business.business_name} main ${selectedImage + 1}`}
                     className="main-img"
                   />
                 </div>
                 <div className="thumbnail-images">
-                  {allImages.map((img, idx) => (
+                  {images.map((img, idx) => (
                     <div
                       key={idx}
                       className={`thumbnail ${
                         selectedImage === idx ? 'active' : ''
                       }`}
                       onClick={() => setSelectedImage(idx)}
+                      style={{ cursor: 'pointer' }}
                     >
                       <img
                         src={img}
@@ -380,158 +241,45 @@ const MyBusinessPage = () => {
                       />
                     </div>
                   ))}
-                  <label className="thumbnail add-image">
-                    <FaPlus />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAddImage}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                  {newImages.length > 0 && (
-                    <button
-                      onClick={handleSaveImages}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        background: '#4CAF50',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        marginTop: '0.5rem',
-                      }}
-                    >
-                      Lưu ảnh
-                    </button>
-                  )}
                 </div>
               </div>
               <div className="business-info">
-                <div className="editable-field">
-                  <h1 className="business-title">
-                    {editFields['business_name'] ? (
-                      <input
-                        type="text"
-                        value={editedValues['business_name'] || ''}
-                        onChange={(e) => handleChange(e, 'business_name')}
-                        onBlur={() => handleBlur('business_name', business._id)}
-                        autoFocus
-                      />
-                    ) : (
-                      business.business_name
-                    )}
-                  </h1>
-                  {!editFields['business_name'] && (
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit('business_name')}
-                    >
-                      Chỉnh sửa
-                    </button>
-                  )}
+                <h1 className="business-title">{business.business_name}</h1>
+                <div className="business-status">
+                  <label className="toggle-container">
+                    <input
+                      type="checkbox"
+                      checked={isOpen}
+                      onChange={toggleStatus}
+                      className="toggle-input"
+                    />
+                    <span className="toggle-slider"></span>
+                  </label>
+                  <span className={`status-text ${isOpen ? 'open' : 'closed'}`}>
+                    {isOpen ? 'Đang mở cửa' : 'Đang đóng cửa'}
+                  </span>
                 </div>
-                <div className="editable-field">
-                  <div className="business-status">
-                    <label className="toggle-container">
-                      <input
-                        type="checkbox"
-                        checked={isOpen}
-                        onChange={toggleStatus}
-                        className="toggle-input"
-                      />
-                      <span className="toggle-slider"></span>
-                    </label>
-                    <span
-                      className={`status-text ${isOpen ? 'open' : 'closed'}`}
-                    >
-                      {isOpen ? 'Đang mở cửa' : 'Đang đóng cửa'}
-                    </span>
-                  </div>
-                </div>
-                <div className="editable-field">
-                  <p className="business-description">
-                    {editFields['business_detail'] ? (
-                      <input
-                        type="text"
-                        value={editedValues['business_detail'] || ''}
-                        onChange={(e) => handleChange(e, 'business_detail')}
-                        onBlur={() =>
-                          handleBlur('business_detail', business._id)
-                        }
-                        autoFocus
-                      />
-                    ) : (
-                      business.business_detail || 'Không có mô tả'
-                    )}
-                  </p>
-                  {!editFields['business_detail'] && (
-                    <button
-                      className="edit-btn"
-                      onClick={() => handleEdit('business_detail')}
-                    >
-                      Chỉnh sửa
-                    </button>
-                  )}
-                </div>
+                <p className="business-description">
+                  {business.business_detail || 'Không có mô tả'}
+                </p>
                 <p className="business-category">Đánh giá của người dùng</p>
                 <div className="rating-section">
                   <div className="stars">{renderStars(overallRating)}</div>
                   <span className="rating-count">{totalReviews}</span>
                 </div>
+                <div className="business-long-description">
+                  Lorem Ipsum is simply dummy text of the printing and
+                  typesetting industry.
+                </div>
                 <div className="contact-info">
                   <h3 className="contact-title">Thông tin liên hệ</h3>
-                  <div className="editable-field">
-                    <p className="contact-detail">
-                      <strong>Phone:</strong>{' '}
-                      {editFields['business_phone'] ? (
-                        <input
-                          type="text"
-                          value={editedValues['business_phone'] || ''}
-                          onChange={(e) => handleChange(e, 'business_phone')}
-                          onBlur={() =>
-                            handleBlur('business_phone', business._id)
-                          }
-                          autoFocus
-                        />
-                      ) : (
-                        business.business_phone || '...'
-                      )}
-                    </p>
-                    {!editFields['business_phone'] && (
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit('business_phone')}
-                      >
-                        Chỉnh sửa
-                      </button>
-                    )}
-                  </div>
-                  <div className="editable-field">
-                    <p className="contact-detail">
-                      <strong>Address:</strong>{' '}
-                      {editFields['business_address'] ? (
-                        <input
-                          type="text"
-                          value={editedValues['business_address'] || ''}
-                          onChange={(e) => handleChange(e, 'business_address')}
-                          onBlur={() =>
-                            handleBlur('business_address', business._id)
-                          }
-                          autoFocus
-                        />
-                      ) : (
-                        business.business_address || '...'
-                      )}
-                    </p>
-                    {!editFields['business_address'] && (
-                      <button
-                        className="edit-btn"
-                        onClick={() => handleEdit('business_address')}
-                      >
-                        Chỉnh sửa
-                      </button>
-                    )}
-                  </div>
+                  <p className="contact-detail">
+                    <strong>Phone:</strong> {business.business_phone || '...'}
+                  </p>
+                  <p className="contact-detail">
+                    <strong>Address:</strong>{' '}
+                    {business.business_address || '...'}
+                  </p>
                   <p className="contact-detail">
                     <strong>Mô hình kinh doanh:</strong>{' '}
                     {business.business_category_id?.category_name || '...'}
@@ -566,12 +314,18 @@ const MyBusinessPage = () => {
                     <FaGoogle />
                   </a>
                 </div>
+                <div className="action-buttons">
+                  <button className="edit-btn" onClick={handleEdit}>
+                    Chỉnh sửa
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* BusinessProducts Section */}
       <section className="business-products-section">
         <div className="business-products">
           <div className="products-container">
@@ -625,6 +379,7 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
+      {/* BusinessFeedback Section */}
       <section className="business-feedback-section">
         <div className="business-feedback">
           <div className="feedback-container">
@@ -706,7 +461,7 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
-      <BusinessProductModal
+      <ProductDetailModal
         showModal={showModal}
         setShowModal={setShowModal}
         selectedProduct={selectedProduct}
@@ -720,7 +475,6 @@ const MyBusinessPage = () => {
         handleShareReview={handleShareReview}
         handleHelpful={handleHelpful}
         renderStars={renderStars}
-        enableEdit={true}
       />
 
       <Footer />

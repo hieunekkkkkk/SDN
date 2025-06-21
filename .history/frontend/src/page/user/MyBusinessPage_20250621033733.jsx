@@ -5,9 +5,9 @@ import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaFacebookF, FaInstagram, FaGoogle, FaPlus } from 'react-icons/fa';
-import BusinessProductModal from '../../components/BusinessProductModal';
+import ProductDetailModal from '../../components/ProductDetailModal';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
-import { convertFilesToBase64 } from '../../utils/imageToBase64';
+import { convertFilesToBase64 } from '../../utils/imageToBase64'; // Giả định file util này tồn tại
 import '../../css/MyBusinessPage.css';
 
 const MyBusinessPage = () => {
@@ -20,8 +20,9 @@ const MyBusinessPage = () => {
   const [error, setError] = useState(null);
   const [editFields, setEditFields] = useState({});
   const [editedValues, setEditedValues] = useState({});
-  const [newImages, setNewImages] = useState([]);
+  const [newImages, setNewImages] = useState([]); // Lưu ảnh Base64 mới
 
+  // UI State
   const [selectedImage, setSelectedImage] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -159,7 +160,7 @@ const MyBusinessPage = () => {
     } catch (err) {
       console.error('Error updating business_status:', err);
       setError(`Không thể cập nhật trạng thái. Chi tiết: ${err.message}`);
-      setIsOpen(!newStatus);
+      setIsOpen(!newStatus); // Rollback nếu thất bại
     }
   };
 
@@ -224,7 +225,7 @@ const MyBusinessPage = () => {
           ...prev,
           business_image: updatedImages,
         }));
-        setNewImages([]);
+        setNewImages([]); // Reset sau khi lưu
       } catch (err) {
         console.error('Error saving images:', err);
         setError('Không thể lưu ảnh. Vui lòng kiểm tra kết nối.');
@@ -343,6 +344,7 @@ const MyBusinessPage = () => {
     );
   }
 
+  // Kết hợp ảnh hiện tại và ảnh mới để hiển thị preview
   const allImages = [...(business.business_image || []), ...newImages];
   const overallRating = business.business_rating || 0;
   const totalReviews = `${business.business_total_vote || 0} Đánh giá`;
@@ -706,7 +708,7 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
-      <BusinessProductModal
+      <ProductDetailModal
         showModal={showModal}
         setShowModal={setShowModal}
         selectedProduct={selectedProduct}
@@ -720,7 +722,6 @@ const MyBusinessPage = () => {
         handleShareReview={handleShareReview}
         handleHelpful={handleHelpful}
         renderStars={renderStars}
-        enableEdit={true}
       />
 
       <Footer />

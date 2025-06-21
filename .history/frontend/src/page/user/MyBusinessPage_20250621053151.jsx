@@ -5,9 +5,9 @@ import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaFacebookF, FaInstagram, FaGoogle, FaPlus } from 'react-icons/fa';
-import BusinessProductModal from '../../components/BusinessProductModal';
+import ProductDetailModal from '../../components/ProductDetailModal';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
-import { convertFilesToBase64 } from '../../utils/imageToBase64';
+import { convertFilesToBase64 } from '../../utils/imageToBase64'; // Giả định file util này tồn tại
 import '../../css/MyBusinessPage.css';
 
 const MyBusinessPage = () => {
@@ -20,8 +20,11 @@ const MyBusinessPage = () => {
   const [error, setError] = useState(null);
   const [editFields, setEditFields] = useState({});
   const [editedValues, setEditedValues] = useState({});
-  const [newImages, setNewImages] = useState([]);
+  const [newImages, setNewImages] = useState([]); // Lưu ảnh Base64 mới
+  const [editProductFields, setEditProductFields] = useState({}); // State cho sản phẩm
+  const [editedProductValues, setEditedProductValues] = useState({}); // Giá trị chỉnh sửa sản phẩm
 
+  // UI State
   const [selectedImage, setSelectedImage] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -159,7 +162,7 @@ const MyBusinessPage = () => {
     } catch (err) {
       console.error('Error updating business_status:', err);
       setError(`Không thể cập nhật trạng thái. Chi tiết: ${err.message}`);
-      setIsOpen(!newStatus);
+      setIsOpen(!newStatus); // Rollback nếu thất bại
     }
   };
 
@@ -193,6 +196,63 @@ const MyBusinessPage = () => {
     setEditFields({ ...editFields, [field]: false });
   };
 
+  const handleEditProduct = (productId, field) => {
+    setEditProductFields((prev) => ({
+      ...prev,
+      [productId]: { ...prev[productId], [field]: true },
+    }));
+    setEditedProductValues((prev) => ({
+      ...prev,
+      [productId]: {
+        ...prev[productId],
+        [field]: products.find((p) => p._id === productId)[field] || '',
+      },
+    }));
+  };
+
+  const handleProductChange = (e, productId, field) => {
+    setEditedProductValues((prev) => ({
+      ...prev,
+      [productId]: { ...prev[productId], [field]: e.target.value },
+    }));
+  };
+
+  const handleProductBlur = async (productId, field) => {
+    const product = products.find((p) => p._id === productId);
+    if (
+      editedProductValues[productId] &&
+      editedProductValues[productId][field] !== product[field]
+    ) {
+      try {
+        await axios.put(
+          `${import.meta.env.VITE_BE_URL}/api/product/${productId}`,
+          {
+            [field]: editedProductValues[productId][field],
+          },
+          {
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
+        setProducts((prev) =>
+          prev.map((p) =>
+            p._id === productId
+              ? { ...p, [field]: editedProductValues[productId][field] }
+              : p
+          )
+        );
+      } catch (err) {
+        console.error(`Error updating product ${field}:`, err);
+        setError(
+          `Không thể cập nhật ${field} của sản phẩm. Chi tiết: ${err.message}`
+        );
+      }
+    }
+    setEditProductFields((prev) => ({
+      ...prev,
+      [productId]: { ...prev[productId], [field]: false },
+    }));
+  };
+
   const handleAddImage = async (event) => {
     const files = Array.from(event.target.files);
     try {
@@ -224,7 +284,7 @@ const MyBusinessPage = () => {
           ...prev,
           business_image: updatedImages,
         }));
-        setNewImages([]);
+        setNewImages([]); // Reset sau khi lưu
       } catch (err) {
         console.error('Error saving images:', err);
         setError('Không thể lưu ảnh. Vui lòng kiểm tra kết nối.');
@@ -343,6 +403,7 @@ const MyBusinessPage = () => {
     );
   }
 
+  // Kết hợp ảnh hiện tại và ảnh mới để hiển thị preview
   const allImages = [...(business.business_image || []), ...newImages];
   const overallRating = business.business_rating || 0;
   const totalReviews = `${business.business_total_vote || 0} Đánh giá`;
@@ -588,17 +649,200 @@ const MyBusinessPage = () => {
                     </div>
                   </div>
                   <div className="product-info">
-                    <h3 className="product-name">{product.product_name}</h3>
-                    <div className="product-price">
-                      {product.product_price || '$0.00'}
+                    <div className="editable-field">
+                      <h3
+                        className="product-name"
+                        onMouseEnter={() =>
+                          !editProductFields[product._id]?.['product_name'] &&
+                          setEditProductFields((prev) => ({
+                            ...prev,
+                            [product._id]: {
+                              ...prev[product._id],
+                              hover: true,
+                            },
+                          }))
+                        }
+                        onMouseLeave={() =>
+                          !editProductFields[product._id]?.['product_name'] &&
+                          setEditProductFields((prev) => ({
+                            ...prev,
+                            [product._id]: {
+                              ...prev[product._id],
+                              hover: false,
+                            },
+                          }))
+                        }
+                      >
+                        {editProductFields[product._id]?.['product_name'] ? (
+                          <input
+                            type="text"
+                            value={
+                              editedProductValues[product._id]?.[
+                                'product_name'
+                              ] || ''
+                            }
+                            onChange={(e) =>
+                              handleProductChange(
+                                e,
+                                product._id,
+                                'product_name'
+                              )
+                            }
+                            onBlur={() =>
+                              handleProductBlur(product._id, 'product_name')
+                            }
+                            autoFocus
+                          />
+                        ) : (
+                          product.product_name
+                        )}
+                      </h3>
+                      {!editProductFields[product._id]?.['product_name'] &&
+                        editProductFields[product._id]?.hover && (
+                          <button
+                            className="edit-btn"
+                            onClick={() =>
+                              handleEditProduct(product._id, 'product_name')
+                            }
+                          >
+                            Chỉnh sửa
+                          </button>
+                        )}
                     </div>
-                    <div className="product-rating">
-                      <div className="stars">
-                        {renderStars(product.product_rating || 0)}
+                    <div className="editable-field">
+                      <div
+                        className="product-price"
+                        onMouseEnter={() =>
+                          !editProductFields[product._id]?.['product_price'] &&
+                          setEditProductFields((prev) => ({
+                            ...prev,
+                            [product._id]: {
+                              ...prev[product._id],
+                              hover: true,
+                            },
+                          }))
+                        }
+                        onMouseLeave={() =>
+                          !editProductFields[product._id]?.['product_price'] &&
+                          setEditProductFields((prev) => ({
+                            ...prev,
+                            [product._id]: {
+                              ...prev[product._id],
+                              hover: false,
+                            },
+                          }))
+                        }
+                      >
+                        {editProductFields[product._id]?.['product_price'] ? (
+                          <input
+                            type="text"
+                            value={
+                              editedProductValues[product._id]?.[
+                                'product_price'
+                              ] || ''
+                            }
+                            onChange={(e) =>
+                              handleProductChange(
+                                e,
+                                product._id,
+                                'product_price'
+                              )
+                            }
+                            onBlur={() =>
+                              handleProductBlur(product._id, 'product_price')
+                            }
+                            autoFocus
+                          />
+                        ) : (
+                          product.product_price || '$0.00'
+                        )}
                       </div>
-                      <span className="reviews-count">
-                        {product.product_total_vote || '000'} Đánh giá
-                      </span>
+                      {!editProductFields[product._id]?.['product_price'] &&
+                        editProductFields[product._id]?.hover && (
+                          <button
+                            className="edit-btn"
+                            onClick={() =>
+                              handleEditProduct(product._id, 'product_price')
+                            }
+                          >
+                            Chỉnh sửa
+                          </button>
+                        )}
+                    </div>
+                    <div className="editable-field">
+                      <div
+                        className="product-rating"
+                        onMouseEnter={() =>
+                          !editProductFields[product._id]?.['product_rating'] &&
+                          setEditProductFields((prev) => ({
+                            ...prev,
+                            [product._id]: {
+                              ...prev[product._id],
+                              hover: true,
+                            },
+                          }))
+                        }
+                        onMouseLeave={() =>
+                          !editProductFields[product._id]?.['product_rating'] &&
+                          setEditProductFields((prev) => ({
+                            ...prev,
+                            [product._id]: {
+                              ...prev[product._id],
+                              hover: false,
+                            },
+                          }))
+                        }
+                      >
+                        <div className="stars">
+                          {renderStars(
+                            editProductFields[product._id]?.['product_rating']
+                              ? parseFloat(
+                                  editedProductValues[product._id]?.[
+                                    'product_rating'
+                                  ] || 0
+                                )
+                              : product.product_rating || 0
+                          )}
+                        </div>
+                        <span className="reviews-count">
+                          {product.product_total_vote || '000'} Đánh giá
+                        </span>
+                        {editProductFields[product._id]?.['product_rating'] ? (
+                          <input
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            max="5"
+                            value={
+                              editedProductValues[product._id]?.[
+                                'product_rating'
+                              ] || ''
+                            }
+                            onChange={(e) =>
+                              handleProductChange(
+                                e,
+                                product._id,
+                                'product_rating'
+                              )
+                            }
+                            onBlur={() =>
+                              handleProductBlur(product._id, 'product_rating')
+                            }
+                            autoFocus
+                          />
+                        ) : null}
+                      </div>
+                      {!editProductFields[product._id]?.['product_rating'] &&
+                        editProductFields[product._id]?.hover && (
+                          <button
+                            className="edit-btn"
+                            onClick={() =>
+                              handleEditProduct(product._id, 'product_rating')
+                            }
+                          >
+                            Chỉnh sửa
+                          </button>
+                        )}
                     </div>
                     <button
                       className="view-details-btn"
@@ -706,7 +950,7 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
-      <BusinessProductModal
+      <ProductDetailModal
         showModal={showModal}
         setShowModal={setShowModal}
         selectedProduct={selectedProduct}
@@ -720,7 +964,6 @@ const MyBusinessPage = () => {
         handleShareReview={handleShareReview}
         handleHelpful={handleHelpful}
         renderStars={renderStars}
-        enableEdit={true}
       />
 
       <Footer />

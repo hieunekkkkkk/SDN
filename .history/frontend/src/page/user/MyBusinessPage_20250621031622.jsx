@@ -5,9 +5,8 @@ import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaFacebookF, FaInstagram, FaGoogle, FaPlus } from 'react-icons/fa';
-import BusinessProductModal from '../../components/BusinessProductModal';
+import ProductDetailModal from '../../components/ProductDetailModal';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
-import { convertFilesToBase64 } from '../../utils/imageToBase64';
 import '../../css/MyBusinessPage.css';
 
 const MyBusinessPage = () => {
@@ -20,8 +19,8 @@ const MyBusinessPage = () => {
   const [error, setError] = useState(null);
   const [editFields, setEditFields] = useState({});
   const [editedValues, setEditedValues] = useState({});
-  const [newImages, setNewImages] = useState([]);
 
+  // UI State
   const [selectedImage, setSelectedImage] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -142,26 +141,7 @@ const MyBusinessPage = () => {
     fetchBusinessData();
   }, [user]);
 
-  const toggleStatus = async () => {
-    const newStatus = !isOpen;
-    setIsOpen(newStatus);
-    try {
-      await axios.put(
-        `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
-        {
-          business_status: newStatus,
-        },
-        {
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-      setBusiness((prev) => ({ ...prev, business_status: newStatus }));
-    } catch (err) {
-      console.error('Error updating business_status:', err);
-      setError(`Không thể cập nhật trạng thái. Chi tiết: ${err.message}`);
-      setIsOpen(!newStatus);
-    }
-  };
+  const toggleStatus = () => setIsOpen((prev) => !prev);
 
   const handleEdit = (field) => {
     setEditFields({ ...editFields, [field]: true });
@@ -191,45 +171,6 @@ const MyBusinessPage = () => {
       }
     }
     setEditFields({ ...editFields, [field]: false });
-  };
-
-  const handleAddImage = async (event) => {
-    const files = Array.from(event.target.files);
-    try {
-      const base64Images = await convertFilesToBase64(files);
-      setNewImages((prevImages) => [...prevImages, ...base64Images]);
-    } catch (error) {
-      console.error('Error converting images to base64:', error);
-      setError('Không thể chuyển đổi ảnh. Vui lòng thử lại.');
-    }
-  };
-
-  const handleSaveImages = async () => {
-    if (newImages.length > 0 && business) {
-      try {
-        const updatedImages = [
-          ...(business.business_image || []),
-          ...newImages,
-        ];
-        await axios.put(
-          `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
-          {
-            business_image: updatedImages,
-          },
-          {
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-        setBusiness((prev) => ({
-          ...prev,
-          business_image: updatedImages,
-        }));
-        setNewImages([]);
-      } catch (err) {
-        console.error('Error saving images:', err);
-        setError('Không thể lưu ảnh. Vui lòng kiểm tra kết nối.');
-      }
-    }
   };
 
   const handleViewDetails = (id) => {
@@ -343,7 +284,10 @@ const MyBusinessPage = () => {
     );
   }
 
-  const allImages = [...(business.business_image || []), ...newImages];
+  const images =
+    business.business_image && business.business_image.length > 0
+      ? business.business_image
+      : ['1.png'];
   const overallRating = business.business_rating || 0;
   const totalReviews = `${business.business_total_vote || 0} Đánh giá`;
 
@@ -360,13 +304,13 @@ const MyBusinessPage = () => {
               <div className="business-images">
                 <div className="main-image">
                   <img
-                    src={allImages[selectedImage]}
+                    src={images[selectedImage]}
                     alt={`${business.business_name} main ${selectedImage + 1}`}
                     className="main-img"
                   />
                 </div>
                 <div className="thumbnail-images">
-                  {allImages.map((img, idx) => (
+                  {images.map((img, idx) => (
                     <div
                       key={idx}
                       className={`thumbnail ${
@@ -380,30 +324,16 @@ const MyBusinessPage = () => {
                       />
                     </div>
                   ))}
-                  <label className="thumbnail add-image">
+                  {/* Tạm thời ẩn nút thêm ảnh do chưa có endpoint */}
+                  {/* <label className="thumbnail add-image">
                     <FaPlus />
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleAddImage}
+                      onChange={handleImageUpload}
                       style={{ display: 'none' }}
                     />
-                  </label>
-                  {newImages.length > 0 && (
-                    <button
-                      onClick={handleSaveImages}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        background: '#4CAF50',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        marginTop: '0.5rem',
-                      }}
-                    >
-                      Lưu ảnh
-                    </button>
-                  )}
+                  </label> */}
                 </div>
               </div>
               <div className="business-info">
@@ -447,6 +377,12 @@ const MyBusinessPage = () => {
                       {isOpen ? 'Đang mở cửa' : 'Đang đóng cửa'}
                     </span>
                   </div>
+                  {/* Tạm thời không cho chỉnh sửa business_status trực tiếp qua input */}
+                  {/* {!editFields['business_status'] && (
+                    <button className="edit-btn" onClick={() => handleEdit('business_status')}>
+                      Chỉnh sửa
+                    </button>
+                  )} */}
                 </div>
                 <div className="editable-field">
                   <p className="business-description">
@@ -706,7 +642,7 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
-      <BusinessProductModal
+      <ProductDetailModal
         showModal={showModal}
         setShowModal={setShowModal}
         selectedProduct={selectedProduct}
@@ -720,7 +656,6 @@ const MyBusinessPage = () => {
         handleShareReview={handleShareReview}
         handleHelpful={handleHelpful}
         renderStars={renderStars}
-        enableEdit={true}
       />
 
       <Footer />

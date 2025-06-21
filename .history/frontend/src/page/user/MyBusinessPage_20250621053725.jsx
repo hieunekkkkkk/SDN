@@ -5,7 +5,7 @@ import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaFacebookF, FaInstagram, FaGoogle, FaPlus } from 'react-icons/fa';
-import BusinessProductModal from '../../components/BusinessProductModal';
+import ProductDetailModal from '../../components/ProductDetailModal';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
 import { convertFilesToBase64 } from '../../utils/imageToBase64';
 import '../../css/MyBusinessPage.css';
@@ -706,7 +706,7 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
-      <BusinessProductModal
+      <ProductDetailModal
         showModal={showModal}
         setShowModal={setShowModal}
         selectedProduct={selectedProduct}

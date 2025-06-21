@@ -5,9 +5,8 @@ import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { FaFacebookF, FaInstagram, FaGoogle, FaPlus } from 'react-icons/fa';
-import BusinessProductModal from '../../components/BusinessProductModal';
+import ProductDetailModal from '../../components/ProductDetailModal';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
-import { convertFilesToBase64 } from '../../utils/imageToBase64';
 import '../../css/MyBusinessPage.css';
 
 const MyBusinessPage = () => {
@@ -20,8 +19,9 @@ const MyBusinessPage = () => {
   const [error, setError] = useState(null);
   const [editFields, setEditFields] = useState({});
   const [editedValues, setEditedValues] = useState({});
-  const [newImages, setNewImages] = useState([]);
+  const [newImageUrl, setNewImageUrl] = useState(''); // State để nhập URL ảnh
 
+  // UI State
   const [selectedImage, setSelectedImage] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -159,7 +159,7 @@ const MyBusinessPage = () => {
     } catch (err) {
       console.error('Error updating business_status:', err);
       setError(`Không thể cập nhật trạng thái. Chi tiết: ${err.message}`);
-      setIsOpen(!newStatus);
+      setIsOpen(!newStatus); // Rollback nếu thất bại
     }
   };
 
@@ -193,28 +193,13 @@ const MyBusinessPage = () => {
     setEditFields({ ...editFields, [field]: false });
   };
 
-  const handleAddImage = async (event) => {
-    const files = Array.from(event.target.files);
-    try {
-      const base64Images = await convertFilesToBase64(files);
-      setNewImages((prevImages) => [...prevImages, ...base64Images]);
-    } catch (error) {
-      console.error('Error converting images to base64:', error);
-      setError('Không thể chuyển đổi ảnh. Vui lòng thử lại.');
-    }
-  };
-
-  const handleSaveImages = async () => {
-    if (newImages.length > 0 && business) {
+  const handleAddImage = async () => {
+    if (newImageUrl && business) {
       try {
-        const updatedImages = [
-          ...(business.business_image || []),
-          ...newImages,
-        ];
-        await axios.put(
+        const response = await axios.put(
           `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
           {
-            business_image: updatedImages,
+            business_image: [...(business.business_image || []), newImageUrl],
           },
           {
             headers: { 'Content-Type': 'application/json' },
@@ -222,12 +207,15 @@ const MyBusinessPage = () => {
         );
         setBusiness((prev) => ({
           ...prev,
-          business_image: updatedImages,
+          business_image: response.data.business_image || [
+            ...(prev.business_image || []),
+            newImageUrl,
+          ],
         }));
-        setNewImages([]);
+        setNewImageUrl(''); // Reset input
       } catch (err) {
-        console.error('Error saving images:', err);
-        setError('Không thể lưu ảnh. Vui lòng kiểm tra kết nối.');
+        console.error('Error adding image URL:', err);
+        setError('Không thể thêm ảnh. Vui lòng kiểm tra URL.');
       }
     }
   };
@@ -343,7 +331,10 @@ const MyBusinessPage = () => {
     );
   }
 
-  const allImages = [...(business.business_image || []), ...newImages];
+  const images =
+    business.business_image && business.business_image.length > 0
+      ? business.business_image
+      : ['1.png'];
   const overallRating = business.business_rating || 0;
   const totalReviews = `${business.business_total_vote || 0} Đánh giá`;
 
@@ -360,13 +351,13 @@ const MyBusinessPage = () => {
               <div className="business-images">
                 <div className="main-image">
                   <img
-                    src={allImages[selectedImage]}
+                    src={images[selectedImage]}
                     alt={`${business.business_name} main ${selectedImage + 1}`}
                     className="main-img"
                   />
                 </div>
                 <div className="thumbnail-images">
-                  {allImages.map((img, idx) => (
+                  {images.map((img, idx) => (
                     <div
                       key={idx}
                       className={`thumbnail ${
@@ -380,30 +371,34 @@ const MyBusinessPage = () => {
                       />
                     </div>
                   ))}
-                  <label className="thumbnail add-image">
+                  <div className="thumbnail add-image">
                     <FaPlus />
                     <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleAddImage}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
-                  {newImages.length > 0 && (
-                    <button
-                      onClick={handleSaveImages}
+                      type="text"
+                      value={newImageUrl}
+                      onChange={(e) => setNewImageUrl(e.target.value)}
+                      placeholder="Nhập URL ảnh"
                       style={{
-                        padding: '0.5rem 1rem',
+                        width: '80px',
+                        padding: '0.25rem',
+                        fontSize: '0.8rem',
+                      }}
+                    />
+                    <button
+                      onClick={handleAddImage}
+                      style={{
+                        padding: '0.25rem 0.5rem',
                         background: '#4CAF50',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
-                        marginTop: '0.5rem',
+                        marginLeft: '0.5rem',
+                        fontSize: '0.8rem',
                       }}
                     >
-                      Lưu ảnh
+                      Thêm
                     </button>
-                  )}
+                  </div>
                 </div>
               </div>
               <div className="business-info">
@@ -706,7 +701,7 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
-      <BusinessProductModal
+      <ProductDetailModal
         showModal={showModal}
         setShowModal={setShowModal}
         selectedProduct={selectedProduct}
@@ -720,7 +715,6 @@ const MyBusinessPage = () => {
         handleShareReview={handleShareReview}
         handleHelpful={handleHelpful}
         renderStars={renderStars}
-        enableEdit={true}
       />
 
       <Footer />
