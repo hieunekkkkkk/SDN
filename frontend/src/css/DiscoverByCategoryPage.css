@@ -161,3 +161,11 @@
   align-items: center;
   gap: 0.3rem;
 }
+
+.filter-section input{
+  padding: 0;
+}
+
+.filter-checkbox-group input {
+  width: auto;
+}

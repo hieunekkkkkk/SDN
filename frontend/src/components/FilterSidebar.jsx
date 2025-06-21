@@ -18,7 +18,7 @@ function FilterSidebar({ filters, handleFilterChange }) {
 
   const onDistanceChange = (e) => {
     const value = Number(e.target.value);
-    setLocalDistance(value); 
+    setLocalDistance(value);
     debouncedDistanceChange(value);
   };
 
@@ -56,17 +56,16 @@ function FilterSidebar({ filters, handleFilterChange }) {
           0 – {localDistance} km
         </div>
       </div>
-
       <div className="filter-section">
         <h4>Giá tiền</h4>
-        <div className="checkbox-group">
+        <div className="filter-checkbox-group">
           <label>
             <input
               type="checkbox"
               checked={filters.price.cheapest}
               onChange={() => handlePriceChange('cheapest')}
             />
-            Cheapest (≤ 50,000 VND)
+            Rẻ nhất (≤ 50.000 VND)
           </label>
           <label>
             <input
@@ -74,37 +73,20 @@ function FilterSidebar({ filters, handleFilterChange }) {
               checked={filters.price.mostExpensive}
               onChange={() => handlePriceChange('mostExpensive')}
             />
-            Most Expensive (≥ 50,000 VND)
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={filters.price.opening}
-              onChange={() => handlePriceChange('opening')}
-            />
-            Opening
-          </label>
-          <label>
-            <input
-              type="checkbox"
-              checked={filters.price.closed}
-              onChange={() => handlePriceChange('closed')}
-            />
-            Closed
+            Đắt nhất (≥ 50.000 VND)
           </label>
         </div>
       </div>
-
       <div className="filter-section">
         <h4>Đánh giá</h4>
-        <div className="checkbox-group">
+        <div className="filter-checkbox-group">
           <label>
             <input
               type="checkbox"
               checked={filters.rating.lowest}
               onChange={() => handleRatingChange('lowest')}
             />
-            Lowest (≤ 2 ★)
+            Thấp nhất (≤ 2 ★)
           </label>
           <label>
             <input
@@ -112,7 +94,7 @@ function FilterSidebar({ filters, handleFilterChange }) {
               checked={filters.rating.highest}
               onChange={() => handleRatingChange('highest')}
             />
-            Highest (≥ 4 ★)
+            Cao nhất (≥ 4 ★)
           </label>
           <label>
             <input
@@ -120,7 +102,7 @@ function FilterSidebar({ filters, handleFilterChange }) {
               checked={filters.rating.fourStars}
               onChange={() => handleRatingChange('fourStars')}
             />
-            4 Stars (≥ 4 ★)
+            4 sao (≥ 4 ★)
           </label>
           <label>
             <input
@@ -128,7 +110,28 @@ function FilterSidebar({ filters, handleFilterChange }) {
               checked={filters.rating.fiveStars}
               onChange={() => handleRatingChange('fiveStars')}
             />
-            5 Stars (≥ 5 ★)
+            5 sao (5 ★)
+          </label>
+        </div>
+      </div>
+      <div className="filter-section">
+        <h4>Trạng thái</h4>
+        <div className="filter-checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={filters.price.opening}
+              onChange={() => handlePriceChange('opening')}
+            />
+            Đang mở cửa
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={filters.price.closed}
+              onChange={() => handlePriceChange('closed')}
+            />
+            Đã đóng cửa
           </label>
         </div>
       </div>
