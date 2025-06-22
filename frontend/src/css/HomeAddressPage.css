@@ -31,13 +31,22 @@
   color: inherit;
 }
 
+div[data-clerk-component="UserProfile"] *{
+  font-size: 16px;
+}
+
+.address-form-group :is(#city, #district, #ward){
+  width: 100%;
+  margin-left: 2rem;
+}
+
 .address-form-group input {
   display: flex;
   flex-flow: column;
   align-items: stretch;
   justify-content: flex-start;
   gap: 0.5rem;
-  width: 500px;
+  /* width: 500px; */
   margin: 0;
   background-color: unset;
   color: var(--accent);
@@ -55,7 +64,7 @@
   --border: #2f3037;
   --accentContrast: white;
   --alpha: hsla(0, 0%, 0%, 0.03);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .address-form-group select {

@@ -142,6 +142,7 @@ function DiscoverByCategoryPage() {
             <h1>
               Danh sách <span className="place-header">{categoryName || '...'}</span>
             </h1>
+            <LoadingScreen/>
           </div>
         </div>
         <Footer />
