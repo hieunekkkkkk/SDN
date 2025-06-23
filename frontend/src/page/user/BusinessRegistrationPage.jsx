@@ -40,8 +40,7 @@ const BusinessRegistrationPage = () => {
   const [havePaid, setHavePaid] = useState(false);
   const [tooManyPaymentsToday, setTooManyPaymentsToday] = useState(false);
   const [paymentsTodayCount, setPaymentsTodayCount] = useState(0);
-  // const { location, fetchLocation } = useGeolocation();
-  const [location, setLocation] = useState(null);
+  const {location, fetchLocation} = useGeolocation();
 
   const userId = getCurrentUserId();
 
@@ -124,38 +123,6 @@ const BusinessRegistrationPage = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  const fetchCoordinatesFromAddress = async () => {
-    if (!formData.businessAddress.trim()) {
-      toast.error('Vui lòng nhập địa chỉ trước.');
-      return;
-    }
-
-    try {
-      const res = await axios.get('https://nominatim.openstreetmap.org/search', {
-        params: {
-          q: formData.businessAddress,
-          format: 'json',
-          addressdetails: 1,
-          limit: 1,
-        },
-        headers: {
-          'User-Agent': 'locallink'
-        }
-      });
-
-      if (res.data.length > 0) {
-        const { lat, lon } = res.data[0];
-        setLocation({ latitude: parseFloat(lat), longitude: parseFloat(lon) });
-        toast.success('Đã lấy tọa độ thành công từ địa chỉ.');
-      } else {
-        toast.error('Không tìm thấy vị trí cho địa chỉ đã nhập.');
-      }
-    } catch (err) {
-      console.error('Geocoding error:', err);
-      toast.error('Lỗi khi lấy tọa độ từ địa chỉ.');
-    }
   };
 
   const handlePlanClick = async (stackId) => {
@@ -498,10 +465,10 @@ const BusinessRegistrationPage = () => {
                     <button
                       type="button"
                       className="business-register-geolocate-btn"
-                      onClick={fetchCoordinatesFromAddress}
+                      onClick={fetchLocation}
                       disabled={!havePaid}
                     >
-                      Lấy Kinh độ/Vĩ độ từ địa chỉ
+                      Lấy Kinh độ/Vĩ độ
                     </button>
                   </div>
                 </div>
