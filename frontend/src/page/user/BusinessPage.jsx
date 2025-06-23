@@ -278,18 +278,6 @@ const BusinessPage = () => {
                     <span className="share-icon">↗</span> Chia sẻ
                   </button>
                 </div>
-
-                <div className="social-icons">
-                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-link">
-                    <FaFacebookF />
-                  </a>
-                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-link">
-                    <FaInstagram />
-                  </a>
-                  <a href="https://google.com" target="_blank" rel="noopener noreferrer" className="social-link">
-                    <FaGoogle />
-                  </a>
-                </div>
               </div>
             </div>
           </div>

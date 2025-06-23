@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import debounce from 'lodash.debounce';
 import '../css/DiscoverByCategoryPage.css';
 
-function FilterSidebar({ filters, handleFilterChange }) {
+function FilterSidebar({ filters, handleFilterChange, fetchLocation }) {
   const [localDistance, setLocalDistance] = useState(filters.distance);
 
   useEffect(() => {
@@ -12,6 +12,9 @@ function FilterSidebar({ filters, handleFilterChange }) {
   const debouncedDistanceChange = useCallback(
     debounce((val) => {
       handleFilterChange('distance', val);
+      if (typeof fetchLocation === 'function') {
+        fetchLocation();
+      }
     }, 500),
     [handleFilterChange]
   );
