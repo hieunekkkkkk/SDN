@@ -3,12 +3,13 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../css/BusinessRegistrationPage.css';
 import axios from 'axios';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
 import { PuffLoader } from 'react-spinners';
 import { toast } from 'react-toastify';
 import useGeolocation from '../../utils/useGeolocation';
 import { convertFilesToBase64 } from '../../utils/imageToBase64';
+import { sendEmail } from '../../utils/sendEmail';
 
 const BusinessRegistrationPage = () => {
   const navigate = useNavigate();
@@ -178,7 +179,7 @@ const BusinessRegistrationPage = () => {
     }
 
     if (!location) {
-      toast.error(<div><b>Vị trí địa lý</b> (kinh độ/vĩ độ) là bắt buộc. Vui lòng nhấn nút lấy Kinh đọ/Vĩ độ trước khi đăng ký.</div>);
+      toast.error(<div><b>Vị trí địa lý</b> (kinh độ/vĩ độ) là bắt buộc. Vui lòng nhấn nút lấy Kinh độ/Vĩ độ trước khi đăng ký.</div>);
       return;
     }
 
@@ -209,7 +210,7 @@ const BusinessRegistrationPage = () => {
         business_address: formData.businessAddress,
         business_location: {
           type: 'Point',
-          coordinates: [location.longitude, location.latitude], // [lng, lat]
+          coordinates: [location.longitude, location.latitude],
         },
         business_category_id: formData.businessType,
         business_detail: formData.businessDescription,
@@ -227,7 +228,21 @@ const BusinessRegistrationPage = () => {
         business_active: 'pending',
       };
 
-      await axios.post(`${import.meta.env.VITE_BE_URL}/api/business`, businessData);
+      const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/business`, businessData);
+      const createdBusiness = response.data.business;
+
+      const emailParams = {
+        email: import.meta.env.VITE_EMAILJS_ADMIN_EMAIL,
+        business_name: createdBusiness.business_name,
+      };
+
+      try {
+        await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REAPPROVE_ID, emailParams);
+        toast.success('Email đã được gửi đến quản trị viên để phê duyệt.');
+      } catch (error) {
+        console.error('Email error:', error);
+        toast.error('Không thể gửi email đến quản trị viên. Vui lòng thử lại sau.');
+      }
 
       await axios.put(`${import.meta.env.VITE_BE_URL}/api/user/${userId}`, {
         "publicMetadata": {
@@ -244,7 +259,6 @@ const BusinessRegistrationPage = () => {
       toast.error(`Không thể tạo doanh nghiệp. Chi tiết: ${err.message}`);
     }
   };
-
 
   const formatPrice = (price) => {
     if (price >= 1000000000) return `${(price / 1000000000).toFixed(1)}B / tháng`;
@@ -337,7 +351,7 @@ const BusinessRegistrationPage = () => {
         </div>
         <div className='business-register-tries-left'>{paymentsTodayCount >= 1 && (
           <p style={{ marginTop: '12px', textAlign: 'center', color: '#d9534f', fontWeight: 'bold' }}>
-            Bạn đã đạt giới hạn thanh toán trong ngày. Số lượt còn lại: {Math.max(0, 5 - paymentsTodayCount)}
+            Số lượng chọn gói đã bị giới hạn thanh toán trong ngày. Số lượt còn lại: {Math.max(0, 5 - paymentsTodayCount)}
           </p>
         )}
         </div>
@@ -471,6 +485,7 @@ const BusinessRegistrationPage = () => {
                       Lấy Kinh độ/Vĩ độ
                     </button>
                   </div>
+                  <span className='business-register-geolocate-note'>*Vui lòng ở tại doanh nghiệp để lấy được tọa độ chính xác nhất</span>
                 </div>
                 <div className="business-register-form-group">
                   <label htmlFor="business-phone">Số điện thoại</label>

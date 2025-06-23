@@ -8,10 +8,14 @@ import FilterSidebar from '../../components/FilterSidebar';
 import LoadingScreen from '../../components/LoadingScreen';
 import { AnimatePresence, motion } from 'framer-motion';
 import '../../css/DiscoverByCategoryPage.css';
+import useGeolocation from '../../utils/useGeolocation';
+import { PuffLoader } from 'react-spinners';
 
 function DiscoverByCategoryPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { fetchLocation } = useGeolocation();
+
 
   const [categoryId, setCategoryId] = useState(location.state?.category_id || null);
   const [categoryName, setCategoryName] = useState(location.state?.category_name || null);
@@ -65,7 +69,8 @@ function DiscoverByCategoryPage() {
             params: {
               latitude,
               longitude,
-              maxDistance: filters.distance * 1000, // convert km to meters
+              maxDistance: filters.distance * 1000,
+              categoryId: categoryId,
             },
             timeout: 10000,
           }
@@ -74,10 +79,9 @@ function DiscoverByCategoryPage() {
         if (Array.isArray(response.data)) {
           const filtered = response.data.filter(
             (b) =>
-              b.business_category_id?._id === categoryId &&
               b.business_active == "active"
           );
-          
+
           const enriched = filtered.map((b) => ({
             ...b,
             price: b.business_stack_id?.stack_price
@@ -137,12 +141,21 @@ function DiscoverByCategoryPage() {
         <Header />
         <HeroSection />
         <div className="discover-by-category-page">
-          <FilterSidebar filters={filters} handleFilterChange={handleFilterChange} />
+          <FilterSidebar filters={filters} handleFilterChange={handleFilterChange} fetchLocation={fetchLocation} />
           <div className="main-content">
             <h1>
               Danh sách <span className="place-header">{categoryName || '...'}</span>
             </h1>
-            <LoadingScreen/>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              height: '20vh',
+              flexDirection: 'column'
+            }}>
+              <PuffLoader size={90} />
+              <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
+            </div>
           </div>
         </div>
         <Footer />

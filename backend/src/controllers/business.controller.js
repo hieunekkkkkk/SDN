@@ -12,10 +12,11 @@ class BusinessController {
 
   async getAllBusinesses(req, res) {
     try {
-      const { page = 1, limit = 10 } = req.query;
+      const { page = 1, limit = 10, sort = 'Newest' } = req.query;
       const result = await BusinessService.getAllBusinesses(
         parseInt(page),
-        parseInt(limit)
+        parseInt(limit),
+        sort
       );
       res.status(200).json(result);
     } catch (error) {
@@ -94,14 +95,15 @@ class BusinessController {
 
   async findNearestBusinesses(req, res) {
     try {
-      const { latitude, longitude, maxDistance } = req.query;
+      const { latitude, longitude, maxDistance, categoryId } = req.query;
       if (!latitude || !longitude) {
         throw new Error('Latitude and longitude are required');
       }
       const businesses = await BusinessService.findNearestBusinesses(
         parseFloat(latitude),
         parseFloat(longitude),
-        parseFloat(maxDistance)
+        parseFloat(maxDistance),
+        categoryId
       );
       res.status(200).json(businesses);
     } catch (error) {
