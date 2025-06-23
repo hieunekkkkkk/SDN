@@ -3,7 +3,7 @@ import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../css/BusinessRegistrationPage.css';
 import axios from 'axios';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
 import { PuffLoader } from 'react-spinners';
 import { toast } from 'react-toastify';
@@ -471,6 +471,7 @@ const BusinessRegistrationPage = () => {
                       Lấy Kinh độ/Vĩ độ
                     </button>
                   </div>
+                  <span className='business-register-geolocate-note'>*Vui lòng ở tại doanh nghiệp để lấy được tọa độ chính xác nhất</span>
                 </div>
                 <div className="business-register-form-group">
                   <label htmlFor="business-phone">Số điện thoại</label>
