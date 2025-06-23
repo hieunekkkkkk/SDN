@@ -15,6 +15,11 @@
   text-align: center;
 }
 
+.business-warning-text{
+  color: red;
+  font-weight: bold;
+}
+
 .back-button {
   display: flex;
   align-items: center;
@@ -1042,4 +1047,19 @@
 .social-link:hover {
   transform: scale(1.1);
   opacity: 0.85;
+}
+
+.business-detail-reapprove-btn{
+  color: red;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.business-detail-reapprove-btn:hover{
+  color: rgb(141, 0, 0);
 }

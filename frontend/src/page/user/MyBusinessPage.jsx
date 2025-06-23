@@ -50,8 +50,8 @@ const MyBusinessPage = () => {
     const fetchBusinessData = async () => {
       if (!user) {
         <>
-        <Header/>
-        <LoadingScreen/>
+          <Header />
+          <LoadingScreen />
         </>
         return;
       }
@@ -335,8 +335,8 @@ const MyBusinessPage = () => {
 
   if (loading) {
     return <>
-      <Header/>
-      <LoadingScreen/>
+      <Header />
+      <LoadingScreen />
     </>;
   }
 
@@ -362,53 +362,47 @@ const MyBusinessPage = () => {
             <button className="back-button" onClick={() => navigate(-1)}>
               <span className="back-icon">←</span> Quay Lại
             </button>
-            {business?.active !== 'active' && (
+            {business?.business_active === 'inactive' && (
               <div className="business-warning">
                 <button
+                  className='business-detail-reapprove-btn'
                   onClick={async () => {
-                    const storageKey = `reapprove-email-sent-${business._id}`;
-                    const lastSent = localStorage.getItem(storageKey);
+                    const metadataKey = `reapproveEmailSent_${business._id}`;
                     const now = Date.now();
                     const ONE_DAY = 24 * 60 * 60 * 1000;
 
-                    if (lastSent) {
-                      const timePassed = now - parseInt(lastSent, 10);
-                      if (timePassed < ONE_DAY) {
-                        const hoursLeft = Math.ceil((ONE_DAY - timePassed) / (60 * 60 * 1000));
-                        toast.info(`Bạn đã gửi yêu cầu hôm nay. Vui lòng thử lại sau ${hoursLeft} giờ.`);
-                        return;
-                      }
-                    }
-
-                    const emailParams = {
-                      email: import.meta.env.VITE_EMAILJS_ADMIN_EMAIL,
-                      business_name: business.business_name,
-                    };
-
                     try {
+                      const lastSent = user?.unsafeMetadata?.[metadataKey];
+
+                      if (lastSent) {
+                        const timePassed = now - parseInt(lastSent, 10);
+                        if (timePassed < ONE_DAY) {
+                          const hoursLeft = Math.ceil((ONE_DAY - timePassed) / (60 * 60 * 1000));
+                          toast.info(`Bạn đã gửi yêu cầu hôm nay. Vui lòng thử lại sau ${hoursLeft} giờ.`);
+                          return;
+                        }
+                      }
+
+                      const emailParams = {
+                        email: import.meta.env.VITE_EMAILJS_ADMIN_EMAIL,
+                        business_name: business.business_name,
+                      };
+
                       await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REAPPROVE_ID, emailParams);
-                      localStorage.setItem(storageKey, now.toString());
+
+                      await user.update({ unsafeMetadata: { ...user.unsafeMetadata, [metadataKey]: now } });
+
                       toast.success('Yêu cầu đã được gửi đến quản trị viên.');
                     } catch (error) {
+                      console.error('Metadata or email error:', error);
                       toast.error('Không thể gửi email. Vui lòng thử lại sau.');
                     }
-                  }}
-                  style={{
-                    color: 'red',
-                    background: 'none',
-                    border: 'none',
-                    textDecoration: 'underline',
-                    cursor: 'pointer',
-                    padding: 0,
-                    fontWeight: 'bold',
-                    fontSize: '16px',
                   }}
                 >
                   Doanh nghiệp này chưa được phê duyệt. Bấm vào đây để gửi email đến quản trị viên.
                 </button>
               </div>
             )}
-
             <div className="business-content">
               <div className="business-images">
                 <div className="main-image">
@@ -611,18 +605,6 @@ const MyBusinessPage = () => {
                       </p>
                     )}
                   </div>
-
-                </div>
-                <div className="social-icons">
-                  <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Facebook">
-                    <FaFacebookF />
-                  </a>
-                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Instagram">
-                    <FaInstagram />
-                  </a>
-                  <a href="https://google.com" target="_blank" rel="noopener noreferrer" className="social-link" aria-label="Google">
-                    <FaGoogle />
-                  </a>
                 </div>
               </div>
             </div>
