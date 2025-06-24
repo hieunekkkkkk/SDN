@@ -13,6 +13,8 @@ import { sendEmail } from '../../utils/sendEmail';
 import { toast } from 'react-toastify';
 import { LuTextCursorInput } from "react-icons/lu";
 import LoadingScreen from '../../components/LoadingScreen';
+import MapModal from '../../components/MapModal';
+import MyBusinessFeedback from '../../components/MyBusinessFeedback';
 
 const MyBusinessPage = () => {
   const navigate = useNavigate();
@@ -34,6 +36,7 @@ const MyBusinessPage = () => {
   const [sortBy, setSortBy] = useState('Sort: Select');
   const fileInputRef = useRef(null);
   const [categories, setCategories] = useState([]);
+  const [isMapOpen, setIsMapOpen] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -94,6 +97,8 @@ const MyBusinessPage = () => {
         }
 
         const businessId = userBusiness._id;
+        console.log(businessId);
+
 
         const results = await Promise.allSettled([
           axios.get(`${import.meta.env.VITE_BE_URL}/api/business/${businessId}`),
@@ -221,48 +226,61 @@ const MyBusinessPage = () => {
     if (newImages.length > 0 && business) {
       try {
         const updatedImages = [...(business.business_image || []), ...newImages];
+
         await axios.put(
           `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
           { business_image: updatedImages },
           { headers: { 'Content-Type': 'application/json' } }
         );
+
         setBusiness((prev) => ({ ...prev, business_image: updatedImages }));
         setNewImages([]);
+        toast.success('Lưu ảnh thành công!');
       } catch (err) {
         console.error('Error saving images:', err);
         setError('Không thể lưu ảnh. Vui lòng kiểm tra kết nối.');
+        toast.error('Không thể lưu ảnh. Vui lòng thử lại.');
       }
     }
   };
 
   const handleDeleteImage = async (index) => {
+    const allImages = [...(business.business_image || []), ...newImages];
+
+    if (allImages.length === 1) {
+      toast.warning('Bạn phải giữ lại ít nhất một ảnh.');
+      return;
+    }
+
+    const confirmDelete = window.confirm('Bạn có chắc muốn xóa ảnh này không?');
+    if (!confirmDelete) return;
+
     try {
-      const allImages = [...(business.business_image || []), ...newImages];
       const updatedImages = allImages.filter((_, i) => i !== index);
+
       await axios.put(
         `${import.meta.env.VITE_BE_URL}/api/business/${business._id}`,
         { business_image: updatedImages },
         { headers: { 'Content-Type': 'application/json' } }
       );
 
-      // Update business state
       setBusiness((prev) => ({
         ...prev,
         business_image: updatedImages.filter((_, i) => !newImages.includes(allImages[i])),
       }));
 
-      // Update newImages if the deleted image was a new one
       setNewImages((prev) => prev.filter((_, i) => allImages[index] !== prev[i]));
 
-      // Adjust selectedImage if the deleted image was selected
       if (index === selectedImage) {
         setSelectedImage(0);
       } else if (index < selectedImage) {
         setSelectedImage((prev) => prev - 1);
       }
+
+      toast.success('Xóa ảnh thành công!');
     } catch (err) {
       console.error('Error deleting image:', err);
-      setError('Không thể xóa ảnh. Vui lòng thử lại.');
+      toast.error('Không thể xóa ảnh. Vui lòng thử lại.');
     }
   };
 
@@ -371,6 +389,8 @@ const MyBusinessPage = () => {
                     const now = Date.now();
                     const ONE_DAY = 24 * 60 * 60 * 1000;
 
+                    const toastId = toast.loading('Đang kiểm tra và gửi email...');
+
                     try {
                       const lastSent = user?.unsafeMetadata?.[metadataKey];
 
@@ -378,7 +398,12 @@ const MyBusinessPage = () => {
                         const timePassed = now - parseInt(lastSent, 10);
                         if (timePassed < ONE_DAY) {
                           const hoursLeft = Math.ceil((ONE_DAY - timePassed) / (60 * 60 * 1000));
-                          toast.info(`Bạn đã gửi yêu cầu hôm nay. Vui lòng thử lại sau ${hoursLeft} giờ.`);
+                          toast.update(toastId, {
+                            render: `Bạn đã gửi yêu cầu hôm nay. Vui lòng thử lại sau ${hoursLeft} giờ.`,
+                            type: 'info',
+                            isLoading: false,
+                            autoClose: 5000,
+                          });
                           return;
                         }
                       }
@@ -390,12 +415,27 @@ const MyBusinessPage = () => {
 
                       await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REAPPROVE_ID, emailParams);
 
-                      await user.update({ unsafeMetadata: { ...user.unsafeMetadata, [metadataKey]: now } });
+                      await user.update({
+                        unsafeMetadata: {
+                          ...user.unsafeMetadata,
+                          [metadataKey]: now,
+                        }
+                      });
 
-                      toast.success('Yêu cầu đã được gửi đến quản trị viên.');
+                      toast.update(toastId, {
+                        render: 'Yêu cầu đã được gửi đến quản trị viên.',
+                        type: 'success',
+                        isLoading: false,
+                        autoClose: 5000,
+                      });
                     } catch (error) {
                       console.error('Metadata or email error:', error);
-                      toast.error('Không thể gửi email. Vui lòng thử lại sau.');
+                      toast.update(toastId, {
+                        render: 'Không thể gửi email. Vui lòng thử lại sau.',
+                        type: 'error',
+                        isLoading: false,
+                        autoClose: 7000,
+                      });
                     }
                   }}
                 >
@@ -572,10 +612,13 @@ const MyBusinessPage = () => {
                         business.business_address || '...'
                       )}
                     </p>
+
                     {!editFields['business_address'] && (
-                      <p className="edit-btn" onClick={() => handleEdit('business_address')}>
-                        <LuTextCursorInput />
-                      </p>
+                      <div className="edit-btn-group">
+                        <p className="edit-btn" onClick={() => setIsMapOpen(true)} title="Cập nhật từ bản đồ">
+                          <LuTextCursorInput />
+                        </p>
+                      </div>
                     )}
                   </div>
                   <div className="editable-field">
@@ -639,9 +682,11 @@ const MyBusinessPage = () => {
               ))}
             </div>
             <div className="product-actions">
-              <button className="expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
-                {isExpanded ? 'Thu gọn' : 'Mở rộng'}
-              </button>
+              {products.length >= 3 &&
+                <button className="expand-btn" onClick={() => setIsExpanded(!isExpanded)}>
+                  {isExpanded ? 'Thu gọn' : 'Mở rộng'}
+                </button>
+              }
               <a href="/product-registration" className="add-product-btn">
                 Thêm sản phẩm
               </a>
@@ -650,69 +695,59 @@ const MyBusinessPage = () => {
         </div>
       </section>
 
-      <section className="business-feedback-section">
-        <div className="business-feedback">
-          <div className="feedback-container">
-            <h2 className="feedback-title">Feedback</h2>
-            <div className="customer-reviews-section">
-              <div className="reviews-header">
-                <h3 className="reviews-title">Đánh giá của khách hàng</h3>
-                <div className="reviews-summary">
-                  <span className="total-reviews">{totalReviews}</span>
-                  <select
-                    className="sort-dropdown"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                    aria-label="Sort reviews"
-                  >
-                    <option value="Sort: Select">Sort: Select</option>
-                    <option value="newest">Mới nhất</option>
-                    <option value="oldest">Cũ nhất</option>
-                    <option value="highest">Đánh giá cao nhất</option>
-                    <option value="lowest">Đánh giá thấp nhất</option>
-                  </select>
-                </div>
-              </div>
-              <div className="reviews-list">
-                {feedbacks.slice((currentPage - 1) * 2, currentPage * 2).map((feedback) => (
-                  <div key={feedback._id} className="review-item">
-                    <div className="review-header">
-                      <div className="reviewer-info">
-                        <div className="reviewer-avatar" aria-label={`Avatar of ${feedback.user_id}`}>
-                          {feedback.user_id.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="reviewer-details">
-                          <span className="reviewer-name">{feedback.user_id || 'Người dùng ẩn danh'}</span>
-                          <div className="review-rating">
-                            <span className="stars">{renderStars(5)}</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span className="review-date">
-                        {new Date(feedback.feedback_date).toLocaleDateString('vi-VN')}
-                      </span>
-                    </div>
-                    <div className="review-content">
-                      <p className="review-text">{feedback.feedback_comment}</p>
-                    </div>
-                    <div className="review-footer">
-                      <button className="share-btn">
-                        <span className="share-icon">↗</span> Chia sẻ
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {Math.ceil(feedbacks.length / 2) > 1 && (
-                <div className="pagination" role="navigation" aria-label="Review Pagination">
-                  {renderPagination()}
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
+      <MyBusinessFeedback businessId={business?._id} />
+      <MapModal
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        onConfirm={async (coords) => {
+          const [lat, lng] = coords;
+          const toastId = toast.loading('Đang lấy địa chỉ...');
+          try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
+            const data = await response.json();
+            const newAddress = data.display_name || 'Địa chỉ chưa rõ';
 
+
+            setEditedValues((prev) => ({
+              ...prev,
+              business_address: newAddress,
+            }));
+
+            setBusiness((prev) => ({
+              ...prev,
+              business_address: newAddress,
+              business_location: {
+                type: 'Point',
+                coordinates: [lng, lat],
+              },
+            }));
+
+            await axios.put(`${import.meta.env.VITE_BE_URL}/api/business/${business._id}`, {
+              business_address: newAddress,
+              business_location: {
+                type: 'Point',
+                coordinates: [lng, lat],
+              },
+            });
+
+            toast.update(toastId, {
+              render: 'Lấy địa chỉ thành công!',
+              type: 'success',
+              isLoading: false,
+              autoClose: 3000,
+            });
+            setIsMapOpen(false);
+          } catch (error) {
+            console.error('Lỗi cập nhật địa chỉ:', error);
+            toast.update(toastId, {
+              render: 'Không thể lấy địa chỉ. Vui lòng thử lại.',
+              type: 'error',
+              isLoading: false,
+              autoClose: 3000,
+            });
+          }
+        }}
+      />
       <BusinessProductModal
         showModal={showModal}
         setShowModal={setShowModal}

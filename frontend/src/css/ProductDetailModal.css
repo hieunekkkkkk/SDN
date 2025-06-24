@@ -205,6 +205,7 @@
 
 .editable-field{
   display: flex;
+  align-items: center;
 }
 
 .editable-field:hover .edit-btn {
