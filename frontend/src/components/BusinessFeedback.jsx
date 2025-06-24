@@ -15,7 +15,7 @@ const BusinessFeedback = ({ businessId }) => {
   const [selectedRating, setSelectedRating] = useState(5);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [userInfoMap, setUserInfoMap] = useState({});
-  
+
   const itemsPerPage = 5;
 
   // Fetch feedbacks when component mounts or businessId changes
@@ -25,33 +25,21 @@ const BusinessFeedback = ({ businessId }) => {
     }
   }, [businessId]);
 
-  // Hàm lấy thông tin user từ userId
   const fetchUserInfo = async (userId) => {
     if (!userId || userInfoMap[userId]) return;
-    
-    // Kiểm tra nếu userId có vẻ là test data (ngắn, bắt đầu bằng "user")
-    if (userId.length < 10 || userId.startsWith('user')) {
-      // Đối với test data, tạo tên thân thiện
-      const displayName = userId.length > 5 ? 
-        `Người dùng ${userId.slice(-4).toUpperCase()}` : 
-        `Người dùng ${userId}`;
-      setUserInfoMap(prev => ({ ...prev, [userId]: displayName }));
-      return;
-    }
-    
+
     try {
       const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/user/${userId}`);
-      const username = response.data?.users?.fullName || 
-                      response.data?.users?.email?.split('@')[0] || 
-                      'Người dùng';
-      setUserInfoMap(prev => ({ ...prev, [userId]: username }));
+      const user = response.data?.users;
+      const username = user?.fullName || user?.email?.split('@')[0] || 'Người dùng';
+      setUserInfoMap((prev) => ({ ...prev, [userId]: username }));
     } catch (error) {
-      console.error('Error fetching user info for userId:', userId, error);
-      // Fallback cho trường hợp không tìm thấy user
-      const displayName = userId.length > 10 ? 
-        `Người dùng ${userId.slice(-4).toUpperCase()}` : 
-        `Người dùng ${userId}`;
-      setUserInfoMap(prev => ({ ...prev, [userId]: displayName }));
+      console.error('Error fetching user info:', error);
+      const fallbackName =
+        userId.length > 10
+          ? `Người dùng ${userId.slice(-4).toUpperCase()}`
+          : `Người dùng ${userId}`;
+      setUserInfoMap((prev) => ({ ...prev, [userId]: fallbackName }));
     }
   };
 
@@ -59,11 +47,11 @@ const BusinessFeedback = ({ businessId }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axios.get(
         `${import.meta.env.VITE_BE_URL}/api/feedback/business/${businessId}`
       );
-      
+
       // Check if response has success property or data directly
       let feedbackData = [];
       if (response.data.success) {
@@ -73,16 +61,16 @@ const BusinessFeedback = ({ businessId }) => {
       } else {
         feedbackData = [];
       }
-      
+
       setFeedbacks(feedbackData);
-      
+
       // Fetch user info for each feedback
       feedbackData.forEach(feedback => {
         if (feedback.user_id) {
           fetchUserInfo(feedback.user_id);
         }
       });
-      
+
     } catch (err) {
       console.error('Error fetching feedbacks:', err);
       if (err.response?.status === 404) {
@@ -99,18 +87,18 @@ const BusinessFeedback = ({ businessId }) => {
   // Calculate overall rating from feedbacks
   const calculateOverallRating = () => {
     if (feedbacks.length === 0) return 0;
-    
+
     const totalRating = feedbacks.reduce((sum, feedback) => {
       return sum + (feedback.feedback_rating || 5); // Use actual rating or default to 5
     }, 0);
-    
+
     return totalRating / feedbacks.length;
   };
 
   // Sort feedbacks based on selected option
   const getSortedFeedbacks = () => {
     const sorted = [...feedbacks];
-    
+
     switch (sortBy) {
       case 'newest':
         return sorted.sort((a, b) => new Date(b.feedback_date) - new Date(a.feedback_date));
@@ -143,7 +131,7 @@ const BusinessFeedback = ({ businessId }) => {
 
     try {
       setIsSubmitting(true);
-      
+
       // Get current user ID from token
       const token = localStorage.getItem('accessToken');
       if (!token) {
@@ -235,7 +223,7 @@ const BusinessFeedback = ({ businessId }) => {
     if (feedback.user_id && userInfoMap[feedback.user_id]) {
       return userInfoMap[feedback.user_id];
     }
-    
+
     // Fallback nếu chưa có thông tin user
     if (feedback.user_id && typeof feedback.user_id === 'string') {
       const userId = feedback.user_id;
@@ -246,7 +234,7 @@ const BusinessFeedback = ({ businessId }) => {
         return `Người dùng ${userId}`;
       }
     }
-    
+
     return 'Người dùng ẩn danh';
   };
 
@@ -258,7 +246,7 @@ const BusinessFeedback = ({ businessId }) => {
 
   // Handle pagination
   const totalPages = Math.ceil(feedbacks.length / itemsPerPage);
-  
+
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -269,7 +257,7 @@ const BusinessFeedback = ({ businessId }) => {
     if (totalPages <= 1) return null;
 
     const pages = [];
-    
+
     // Previous button
     if (currentPage > 1) {
       pages.push(
@@ -358,7 +346,7 @@ const BusinessFeedback = ({ businessId }) => {
 
             <div className="review-actions">
               {!showWriteReview ? (
-                <button 
+                <button
                   className="write-review-btn"
                   onClick={() => setShowWriteReview(true)}
                 >
@@ -371,9 +359,9 @@ const BusinessFeedback = ({ businessId }) => {
                     <label className="rating-label">Đánh giá của bạn:</label>
                     <div className="interactive-stars">
                       {renderStars(
-                        selectedRating, 
-                        true, 
-                        setSelectedRating, 
+                        selectedRating,
+                        true,
+                        setSelectedRating,
                         setHoveredRating
                       )}
                     </div>
@@ -385,7 +373,7 @@ const BusinessFeedback = ({ businessId }) => {
                       {selectedRating === 5 && 'Rất hài lòng'}
                     </span>
                   </div>
-                  
+
                   <textarea
                     className="feedback-textarea"
                     placeholder="Chia sẻ trải nghiệm của bạn..."
@@ -394,14 +382,14 @@ const BusinessFeedback = ({ businessId }) => {
                     rows="4"
                   />
                   <div className="review-form-actions">
-                    <button 
+                    <button
                       className="submit-review-btn"
                       onClick={handleSubmitFeedback}
                       disabled={isSubmitting || !newFeedback.trim()}
                     >
                       {isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
                     </button>
-                    <button 
+                    <button
                       className="cancel-review-btn"
                       onClick={() => {
                         setShowWriteReview(false);
@@ -473,7 +461,7 @@ const BusinessFeedback = ({ businessId }) => {
 
                     <div className="review-content">
                       <p className="review-text">{feedback.feedback_comment}</p>
-                      
+
                       {feedback.feedback_response && (
                         <div className="business-response">
                           <div className="response-header">
@@ -485,7 +473,7 @@ const BusinessFeedback = ({ businessId }) => {
                     </div>
 
                     <div className="review-footer">
-                      <button 
+                      <button
                         className="share-btn"
                         onClick={() => {
                           if (navigator.share) {
@@ -507,13 +495,13 @@ const BusinessFeedback = ({ businessId }) => {
                           Đánh giá này có hữu ích không?
                         </span>
                         <div className="helpful-buttons">
-                          <button 
+                          <button
                             className="helpful-btn like-btn"
                             onClick={() => handleLike(feedback._id)}
                           >
                             👍 {feedback.feedback_like || 0}
                           </button>
-                          <button 
+                          <button
                             className="helpful-btn dislike-btn"
                             onClick={() => handleDislike(feedback._id)}
                           >

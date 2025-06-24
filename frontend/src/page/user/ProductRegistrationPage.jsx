@@ -189,7 +189,6 @@ const ProductRegistrationPage = () => {
                   value={formData.productName}
                   onChange={handleInputChange}
                   placeholder="Nhập ..."
-                  required
                 />
               </div>
               <div className="form-group">
@@ -246,7 +245,6 @@ const ProductRegistrationPage = () => {
                   value={formData.productPrice}
                   onChange={handleInputChange}
                   placeholder="Nhập ..."
-                  required
                 />
               </div>
               <div className="form-group">
@@ -258,7 +256,6 @@ const ProductRegistrationPage = () => {
                   value={formData.productNumber}
                   onChange={handleInputChange}
                   placeholder="Nhập ..."
-                  required
                 />
               </div>
             </div>
@@ -270,7 +267,6 @@ const ProductRegistrationPage = () => {
               name="policyConfirmation"
               checked={formData.policyConfirmation}
               onChange={handleInputChange}
-              required
             />
             <label htmlFor="policy-confirmation" className="checkbox-label">
               Xác nhận tuân thủ chính sách nền tảng
