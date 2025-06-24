@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../css/BusinessRegistrationPage.css';
@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import useGeolocation from '../../utils/useGeolocation';
 import { convertFilesToBase64 } from '../../utils/imageToBase64';
 import { sendEmail } from '../../utils/sendEmail';
+import MapModal from '../../components/MapModal';
 
 const BusinessRegistrationPage = () => {
   const navigate = useNavigate();
@@ -42,6 +43,8 @@ const BusinessRegistrationPage = () => {
   const [tooManyPaymentsToday, setTooManyPaymentsToday] = useState(false);
   const [paymentsTodayCount, setPaymentsTodayCount] = useState(0);
   const { location, fetchLocation } = useGeolocation();
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [selectedCoords, setSelectedCoords] = useState(null);
 
   const userId = getCurrentUserId();
 
@@ -162,19 +165,19 @@ const BusinessRegistrationPage = () => {
       toast.error(<div>Vui lòng <b>hoàn tất thanh toán</b> trước khi đăng ký.</div>);
       return;
     }
-
-    if (!formData.businessAddress || !formData.businessAddress.trim()) {
-      toast.error(<div><b>Địa chỉ doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
-      return;
-    }
-
+    
     if (!formData.businessName || !formData.businessName.trim()) {
       toast.error(<div><b>Tên doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!formData.businessType || !formData.businessType.trim()) {
       toast.error(<div><b>Loại hình doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
+      return;
+    }
+
+    if (!formData.businessAddress || !formData.businessAddress.trim()) {
+      toast.error(<div><b>Địa chỉ doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
 
@@ -363,7 +366,7 @@ const BusinessRegistrationPage = () => {
             <div className="business-register-form-columns">
               <div className="business-register-form-column left">
                 <div className="business-register-form-group">
-                  <label htmlFor="business-name">Tên doanh nghiệp</label>
+                  <label htmlFor="business-name">Tên doanh nghiệp<span style={{color: 'red'}}> *</span></label>
                   <input
                     type="text"
                     id="business-name"
@@ -375,7 +378,7 @@ const BusinessRegistrationPage = () => {
                   />
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="business-address">Địa chỉ</label>
+                  <label htmlFor="business-address">Địa chỉ<span style={{color: 'red'}}> *</span></label>
                   <input
                     type="text"
                     id="business-address"
@@ -399,7 +402,7 @@ const BusinessRegistrationPage = () => {
                   />
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="business-image">Hình ảnh</label>
+                  <label htmlFor="business-image">Hình ảnh<span style={{color: 'red'}}> *</span></label>
                   <div className="business-register-image-upload">
                     {images.map((image, index) => (
                       <div key={index} className="business-register-image-preview">
@@ -441,7 +444,7 @@ const BusinessRegistrationPage = () => {
 
               <div className="business-register-form-column right">
                 <div className="business-register-form-group">
-                  <label htmlFor="business-type">Loại hình kinh doanh</label>
+                  <label htmlFor="business-type">Loại hình kinh doanh<span style={{color: 'red'}}> *</span></label>
                   {loading ? (
                     <p>Đang tải...</p>
                   ) : error ? (
@@ -464,13 +467,13 @@ const BusinessRegistrationPage = () => {
                   )}
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="geolocate">Kinh độ/Vĩ độ</label>
+                  <label htmlFor="geolocate">Kinh độ/Vĩ độ<span style={{color: 'red'}}> *</span></label>
                   <div className="business-register-geolocate">
                     <input
                       type="text"
                       value={
-                        location
-                          ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`
+                        selectedCoords
+                          ? `${selectedCoords.latitude.toFixed(6)}, ${selectedCoords.longitude.toFixed(6)}`
                           : ''
                       }
                       readOnly
@@ -479,16 +482,16 @@ const BusinessRegistrationPage = () => {
                     <button
                       type="button"
                       className="business-register-geolocate-btn"
-                      onClick={fetchLocation}
+                      onClick={() => setIsMapOpen(true)}
                       disabled={!havePaid}
                     >
-                      Lấy Kinh độ/Vĩ độ
+                      Mở bản đồ chọn vị trí
                     </button>
                   </div>
                   <span className='business-register-geolocate-note'>*Vui lòng ở tại doanh nghiệp để lấy được tọa độ chính xác nhất</span>
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="business-phone">Số điện thoại</label>
+                  <label htmlFor="business-phone">Số điện thoại<span style={{color: 'red'}}> *</span></label>
                   <input
                     type="number"
                     id="business-phone"
@@ -500,7 +503,7 @@ const BusinessRegistrationPage = () => {
                   />
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="operating-hours">Thời gian hoạt động</label>
+                  <label htmlFor="operating-hours">Thời gian hoạt động<span style={{color: 'red'}}> *</span></label>
                   <div className="business-register-operating-hours-inputs">
                     <input
                       type="time"
@@ -536,6 +539,14 @@ const BusinessRegistrationPage = () => {
           </div>
         </form>
       </main >
+      <MapModal
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        onConfirm={(coords) => {
+          setIsMapOpen(false);
+          setSelectedCoords({ latitude: coords[0], longitude: coords[1] });
+        }}
+      />
       <Footer />
     </>
   );
