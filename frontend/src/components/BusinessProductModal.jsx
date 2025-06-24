@@ -6,6 +6,7 @@ import { convertFilesToBase64 } from '../utils/imageToBase64';
 import '../css/ProductDetailModal.css';
 import MyBusinessProductFeedback from './MyBusinessProductFeedback';
 import { LuTextCursorInput } from "react-icons/lu";
+import { toast } from 'react-toastify';
 
 
 const BusinessProductModal = ({
@@ -61,15 +62,15 @@ const BusinessProductModal = ({
   const handleChange = (e, field) => {
     let value = e.target.value;
     if (field === 'price') {
-      value = value.replace(/[^0-9]/g, ''); // Remove non-numeric characters
+      value = value.replace(/[^0-9]/g, '');
     }
     setEditedValues((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleKeyDown = (e, field) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent default Enter behavior
-      handleBlur(field); // Trigger blur to save the field
+      e.preventDefault();
+      handleBlur(field);
     }
   };
 
@@ -80,7 +81,7 @@ const BusinessProductModal = ({
         const apiField = fieldMapping[field] || field;
         let value = editedValues[field];
         if (field === 'price') {
-          value = parseFloat(value) || 0; // Convert to number, default to 0 if invalid
+          value = parseFloat(value) || 0;
         }
         const response = await fetch(
           `${import.meta.env.VITE_BE_URL}/api/product/${selectedProduct.id}`,
@@ -93,13 +94,11 @@ const BusinessProductModal = ({
         if (!response.ok) throw new Error('Cập nhật thất bại');
         const updatedProduct = await response.json();
 
-        // Update selectedProduct in modal
         setSelectedProduct((prev) => ({
           ...prev,
           [field]: field === 'price' ? value.toString() : value,
         }));
 
-        // Update parent products state if setProducts is provided
         if (products && setProducts) {
           setProducts(
             products.map((p) =>
@@ -134,7 +133,6 @@ const BusinessProductModal = ({
       console.error('Error converting images to base64:', error);
       setError('Không thể chuyển đổi ảnh. Vui lòng thử lại.');
     } finally {
-      // Reset file input so the same file can be selected again
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -149,6 +147,7 @@ const BusinessProductModal = ({
           ...(selectedProduct.thumbnails || []),
           ...newImages,
         ];
+
         const response = await fetch(
           `${import.meta.env.VITE_BE_URL}/api/product/${selectedProduct.id}`,
           {
@@ -157,32 +156,35 @@ const BusinessProductModal = ({
             body: JSON.stringify({ product_image: updatedThumbnails }),
           }
         );
+
         if (!response.ok) throw new Error('Cập nhật ảnh thất bại');
+
         const updatedProduct = await response.json();
 
-        // Update selectedProduct in modal
         setSelectedProduct((prev) => ({
           ...prev,
           thumbnails: updatedThumbnails,
         }));
 
-        // Update parent products state if setProducts is provided
         if (products && setProducts) {
-          setProducts(
-            products.map((p) =>
+          setProducts((prev) =>
+            prev.map((p) =>
               p._id === selectedProduct.id
                 ? { ...p, product_image: updatedThumbnails }
                 : p
             )
           );
         }
+
         setNewImages([]);
         setError(null);
+        toast.success('Lưu ảnh thành công!');
       } catch (err) {
         console.error('Error saving images:', err);
         setError(
           'Không thể lưu ảnh. Vui lòng kiểm tra kết nối hoặc liên hệ admin.'
         );
+        toast.error('Không thể lưu ảnh. Vui lòng thử lại.');
       } finally {
         setLoading(false);
       }
@@ -190,9 +192,19 @@ const BusinessProductModal = ({
   };
 
   const handleDeleteImage = async (index) => {
+    if (allThumbnails.length === 1) {
+      toast.warning('Sản phẩm phải có ít nhất một ảnh.');
+      return;
+    }
+
+    const confirmDelete = window.confirm('Bạn có chắc muốn xóa ảnh này không?');
+    if (!confirmDelete) return;
+
     setLoading(true);
+
     try {
       const updatedThumbnails = allThumbnails.filter((_, i) => i !== index);
+
       const response = await fetch(
         `${import.meta.env.VITE_BE_URL}/api/product/${selectedProduct.id}`,
         {
@@ -201,38 +213,47 @@ const BusinessProductModal = ({
           body: JSON.stringify({ product_image: updatedThumbnails }),
         }
       );
+
       if (!response.ok) throw new Error('Failed to delete image');
+
       const updatedNewImages = newImages.filter(
-        (_, i) => !allThumbnails.includes(newImages[i]) || updatedThumbnails.includes(newImages[i])
+        (img) => updatedThumbnails.includes(img)
       );
+
       const updatedProductThumbnails = updatedThumbnails.filter(
         (img) => !newImages.includes(img) || updatedNewImages.includes(img)
       );
-      let newSelectedImage = selectedImage;
-      if (index === selectedImage) {
-        newSelectedImage = 0;
-      } else if (index < selectedImage) {
-        newSelectedImage = Math.max(0, selectedImage - 1);
-      }
+
+      const newSelectedImage =
+        index === selectedImage
+          ? 0
+          : index < selectedImage
+            ? Math.max(0, selectedImage - 1)
+            : selectedImage;
+
       setSelectedProduct((prev) => ({
         ...prev,
         thumbnails: updatedProductThumbnails,
       }));
       setNewImages(updatedNewImages);
       setSelectedImage(newSelectedImage);
+
       if (products && setProducts) {
-        setProducts(
-          products.map((p) =>
+        setProducts((prev) =>
+          prev.map((p) =>
             p._id === selectedProduct.id
               ? { ...p, product_image: updatedThumbnails }
               : p
           )
         );
       }
+
       setError(null);
+      toast.success('Xóa ảnh thành công!');
     } catch (err) {
       console.error('Error deleting image:', err);
       setError('Không thể xóa ảnh. Vui lòng thử lại.');
+      toast.error('Không thể xóa ảnh. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }

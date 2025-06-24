@@ -4,16 +4,17 @@ import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import LoadingScreen from '../../components/LoadingScreen';
-import BusinessFeedback from '../../components/BusinessFeedback'; // Import BusinessFeedback component
+import BusinessFeedback from '../../components/BusinessFeedback';
 import { FaFacebookF, FaInstagram, FaGoogle, FaArrowLeft } from 'react-icons/fa';
 import ProductDetailModal from '../../components/ProductDetailModal';
 import ImageZoomModal from '../../components/ImageZoomModal';
 import '../../css/BusinessPage.css';
+import { getCurrentUserId } from '../../utils/useCurrentUserId';
 
 const BusinessPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   // State for business data
   const [business, setBusiness] = useState(null);
   const [products, setProducts] = useState([]);
@@ -25,7 +26,7 @@ const BusinessPage = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  
+
   // Image zoom state
   const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
   const [zoomedImageUrl, setZoomedImageUrl] = useState('');
@@ -54,7 +55,14 @@ const BusinessPage = () => {
 
         // Handle business data
         if (businessResult.status === 'fulfilled') {
-          setBusiness(businessResult.value.data);
+          const fetchedBusiness = businessResult.value.data;
+          setBusiness(fetchedBusiness);
+
+          const currentUserId = getCurrentUserId();
+          if (currentUserId && fetchedBusiness.owner_id === currentUserId) {
+            navigate('/my-business');
+            return;
+          }
         } else {
           throw new Error('Không thể tải thông tin doanh nghiệp');
         }
@@ -107,11 +115,11 @@ const BusinessPage = () => {
 
   // Products handlers
   const totalSlides = Math.ceil(products.length / itemsPerSlide);
-  
+
   const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % totalSlides);
   const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides);
   const goToSlide = (index) => setCurrentSlide(index);
-  
+
   const getCurrentProducts = () => {
     const startIndex = currentSlide * itemsPerSlide;
     return products.slice(startIndex, startIndex + itemsPerSlide);
@@ -158,15 +166,15 @@ const BusinessPage = () => {
         <Header />
         <div style={{ textAlign: 'center', padding: '100px 20px' }}>
           <h2>Lỗi: {error}</h2>
-          <button 
+          <button
             onClick={() => navigate(-1)}
-            style={{ 
-              marginTop: '20px', 
-              padding: '10px 20px', 
-              backgroundColor: '#ff6b35', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '5px' 
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              backgroundColor: '#ff6b35',
+              color: 'white',
+              border: 'none',
+              borderRadius: '5px'
             }}
           >
             Quay lại
@@ -177,8 +185,8 @@ const BusinessPage = () => {
     );
   }
 
-  const images = business.business_image && business.business_image.length > 0 
-    ? business.business_image 
+  const images = business.business_image && business.business_image.length > 0
+    ? business.business_image
     : ['/1.png'];
 
   const overallRating = business.business_rating || 0;
@@ -195,7 +203,7 @@ const BusinessPage = () => {
             <button className="back-button" onClick={() => navigate(-1)}>
               <FaArrowLeft className="back-icon" /> Quay Lại
             </button>
-            
+
             <div className="business-content">
               <div className="business-images">
                 <div className="main-image">
@@ -220,8 +228,8 @@ const BusinessPage = () => {
                       }}
                       style={{ cursor: 'pointer' }}
                     >
-                      <img 
-                        src={img} 
+                      <img
+                        src={img}
                         alt={`${business.business_name} thumbnail ${idx + 1}`}
                         onError={(e) => { e.target.src = '/1.png'; }}
                       />
@@ -229,20 +237,20 @@ const BusinessPage = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div className="business-info">
                 <h1 className="business-title">{business.business_name}</h1>
-                
+
                 <div className="business-status">
                   <span className={`status-badge ${business.business_status ? 'open' : 'closed'}`}>
                     {business.business_status ? 'Đang mở cửa' : 'Đã đóng cửa'}
                   </span>
                 </div>
-                
+
                 <p className="business-description">
                   {business.business_detail || 'Không có mô tả chi tiết'}
                 </p>
-                
+
                 <p className="business-category">
                   Loại hình: {business.business_category_id?.category_name || 'Chưa phân loại'}
                 </p>
@@ -258,9 +266,9 @@ const BusinessPage = () => {
                   <strong>Điện thoại:</strong> {business.business_phone || 'Chưa cập nhật'}
                   <br />
                   <strong>Giờ hoạt động:</strong> {
-                    business.business_time ? 
-                    `${business.business_time.open} - ${business.business_time.close}` : 
-                    'Chưa cập nhật'
+                    business.business_time ?
+                      `${business.business_time.open} - ${business.business_time.close}` :
+                      'Chưa cập nhật'
                   }
                 </div>
 
@@ -292,9 +300,9 @@ const BusinessPage = () => {
               <h2 className="products-title">Sản phẩm kinh doanh</h2>
 
               <div className="products-carousel">
-                <button 
-                  className="carousel-btn prev-btn" 
-                  onClick={prevSlide} 
+                <button
+                  className="carousel-btn prev-btn"
+                  onClick={prevSlide}
                   disabled={totalSlides <= 1}
                 >
                   ‹
@@ -305,8 +313,8 @@ const BusinessPage = () => {
                     <div key={product._id} className="product-card">
                       <div className="product-images">
                         <div className="product-main-image">
-                          <img 
-                            src={product.product_image?.[0] || '/1.png'} 
+                          <img
+                            src={product.product_image?.[0] || '/1.png'}
                             alt={product.product_name}
                             onError={(e) => { e.target.src = '/1.png'; }}
                           />
@@ -320,8 +328,8 @@ const BusinessPage = () => {
                           <div className="stars">{renderStars(product.product_rating || 0)}</div>
                           <span className="reviews-count">{product.product_total_vote || 0} đánh giá</span>
                         </div>
-                        <button 
-                          className="view-details-btn" 
+                        <button
+                          className="view-details-btn"
                           onClick={() => handleViewDetails(product._id)}
                         >
                           Xem chi tiết
@@ -331,9 +339,9 @@ const BusinessPage = () => {
                   ))}
                 </div>
 
-                <button 
-                  className="carousel-btn next-btn" 
-                  onClick={nextSlide} 
+                <button
+                  className="carousel-btn next-btn"
+                  onClick={nextSlide}
                   disabled={totalSlides <= 1}
                 >
                   ›
