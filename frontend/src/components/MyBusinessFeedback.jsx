@@ -73,9 +73,8 @@ const MyBusinessFeedback = ({ businessId }) => {
 
         } catch (err) {
             console.error('Error fetching feedbacks:', err);
-            console.error('1', err.response.success);
-            if (err.response.success === false) {
-                setFeedbacks([]);
+            if (err.response?.status === 404) {
+                setFeedbacks([]); // No feedbacks found is not an error
             } else {
                 setError('Không thể tải đánh giá');
                 toast.error('Không thể tải đánh giá');

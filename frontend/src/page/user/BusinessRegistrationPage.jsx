@@ -181,8 +181,8 @@ const BusinessRegistrationPage = () => {
       return;
     }
 
-    if (!location) {
-      toast.error(<div><b>Vị trí địa lý</b> (kinh độ/vĩ độ) là bắt buộc. Vui lòng nhấn nút lấy Kinh độ/Vĩ độ trước khi đăng ký.</div>);
+    if (!selectedCoords.latitude && !selectedCoords.longitude) {
+      toast.error(<div>Kinh độ/vĩ độ<b></b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
 
