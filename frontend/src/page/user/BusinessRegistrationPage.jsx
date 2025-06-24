@@ -45,6 +45,8 @@ const BusinessRegistrationPage = () => {
   const { location, fetchLocation } = useGeolocation();
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [selectedCoords, setSelectedCoords] = useState(null);
+  console.log(selectedCoords);
+  
 
   const userId = getCurrentUserId();
 
@@ -181,7 +183,7 @@ const BusinessRegistrationPage = () => {
       return;
     }
 
-    if (!selectedCoords.latitude && !selectedCoords.longitude) {
+    if (!selectedCoords.latitude || !selectedCoords.longitude) {
       toast.error(<div>Kinh độ/vĩ độ<b></b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
@@ -215,7 +217,7 @@ const BusinessRegistrationPage = () => {
         business_address: formData.businessAddress,
         business_location: {
           type: 'Point',
-          coordinates: [location.longitude, location.latitude],
+          coordinates: [selectedCoords.longitude, selectedCoords.latitude],
         },
         business_category_id: formData.businessType,
         business_detail: formData.businessDescription,
@@ -233,12 +235,9 @@ const BusinessRegistrationPage = () => {
         business_active: 'pending',
       };
 
-      const response = await axios.post(`${import.meta.env.VITE_BE_URL}/api/business`, businessData);
-      const createdBusiness = response.data.business;
-
       const emailParams = {
         email: import.meta.env.VITE_EMAILJS_ADMIN_EMAIL,
-        business_name: createdBusiness.business_name,
+        business_name: formData.businessName,
       };
 
       try {
