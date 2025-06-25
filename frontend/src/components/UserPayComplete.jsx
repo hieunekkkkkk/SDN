@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { getCurrentUserRole } from '../utils/useCurrentUserRole';
 
 const UserPayComplete = () => {
   const { user } = useUser();
@@ -14,14 +15,21 @@ const UserPayComplete = () => {
         const payments = response.data.data || [];
 
         const completedPayment = payments.find(payment => payment.payment_status === 'completed');
+
+        const role = getCurrentUserRole();
+
         if (!completedPayment) {
           console.warn('No completed payment found.');
-          navigate('/business-registration');
+          if (role === 'owner') {
+            navigate('/my-business');
+          } else {
+            navigate('/business-registration');
+          }
           return;
         }
 
         const userPlan = user.unsafeMetadata?.userPlan
-        
+
         const newUserPlan = {
           ...userPlan,
           stackId: completedPayment.payment_stack._id,
@@ -30,8 +38,7 @@ const UserPayComplete = () => {
         };
 
         const currentUserPlan = user.unsafeMetadata?.userPlan;
-        console.log(currentUserPlan);
-        
+
         const isSamePlan =
           currentUserPlan?.stackId === newUserPlan.stackId &&
           currentUserPlan?.date === newUserPlan.date;
@@ -45,7 +52,12 @@ const UserPayComplete = () => {
           });
         }
 
-        navigate('/business-registration');
+        if (role === 'owner') {
+          navigate('/my-business');
+        } else {
+          navigate('/business-registration');
+        }
+
       } catch (err) {
         console.error('Error verifying payment and updating plan:', err);
       }

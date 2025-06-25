@@ -154,7 +154,7 @@ const BusinessRegistrationPage = () => {
       });
 
       if (paymentResponse.data && paymentResponse.data.url) {
-        window.open(paymentResponse.data.url, '_blank');
+        window.open(paymentResponse.data.url, '_self');
       } else {
         throw new Error('Thanh toán thất bại.');
       }
