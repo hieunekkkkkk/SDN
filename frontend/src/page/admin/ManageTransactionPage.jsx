@@ -141,7 +141,7 @@ function ManageTransactionPage() {
       });
 
       if (response.ok) {
-        toast.success('Xóa distinctive');
+        toast.success('Xóa giao dịch thành công');
         setPayments(payments.filter(payment => payment._id !== paymentId));
       } else {
         throw new Error('Xóa giao dịch thất bại');
