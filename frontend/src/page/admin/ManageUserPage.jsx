@@ -52,6 +52,7 @@ function ManageUserPage() {
   };
 
   const updateUserLock = async (userId, lock) => {
+    const loadingId = toast.loading(lock ? 'Đang khóa người dùng…' : 'Đang mở khóa người dùng…');
     try {
       const endpoint = lock
         ? `${import.meta.env.VITE_BE_URL}/api/user/${userId}/lock`
@@ -59,9 +60,11 @@ function ManageUserPage() {
 
       await axios.put(endpoint);
 
+      toast.dismiss(loadingId);
       toast.success(lock ? 'Đã khóa người dùng' : 'Đã mở khóa người dùng');
       fetchUsers(currentPage);
     } catch (error) {
+      toast.dismiss(loadingId);
       toast.error(lock ? 'Không thể khóa người dùng' : 'Không thể mở khóa người dùng');
     }
   };

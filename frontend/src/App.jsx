@@ -24,6 +24,8 @@ import BusinessRegistrationPage from './page/user/BusinessRegistrationPage';
 import ManageUserPage from './page/admin/ManageUserPage';
 import ManageBusinessPage from './page/admin/ManageBusinessPage';
 import ManageTransactionPage from './page/admin/ManageTransactionPage';
+import UserPayComplete from './components/UserPayComplete';
+import StackPage from './page/user/StackPage';
 import AdminRoute from './components/AdminRoute';
 import OwnerRoute from './components/OwnerRoute';
 import ClientRoute from './components/ClientRoute';
@@ -69,6 +71,9 @@ const AppRoutes = () => {
             element={<DiscoverByCategoryPage />}
           />
           <Route path="/user-profile/*" element={<><SignedIn><UserProfilePage /></SignedIn><SignedOut><LoginPage /></SignedOut></>} />
+
+          <Route path="/payment-complete" element={<><SignedIn><UserPayComplete /></SignedIn><SignedOut><LoginPage /></SignedOut></>} />
+          <Route path="/stacks" element={<><SignedIn><StackPage /></SignedIn><SignedOut><LoginPage /></SignedOut></>} />
           <Route
             path="/business-registration"
             element={

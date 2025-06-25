@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
 import { PuffLoader } from 'react-spinners';
 import { toast } from 'react-toastify';
-import useGeolocation from '../../utils/useGeolocation';
 import { convertFilesToBase64 } from '../../utils/imageToBase64';
 import { sendEmail } from '../../utils/sendEmail';
 import MapModal from '../../components/MapModal';
@@ -42,11 +41,10 @@ const BusinessRegistrationPage = () => {
   const [havePaid, setHavePaid] = useState(false);
   const [tooManyPaymentsToday, setTooManyPaymentsToday] = useState(false);
   const [paymentsTodayCount, setPaymentsTodayCount] = useState(0);
-  const { location, fetchLocation } = useGeolocation();
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [selectedCoords, setSelectedCoords] = useState(null);
-  console.log(selectedCoords);
-  
+  const [creatingBusiness, setCreatingBusiness] = useState(false);
+
 
   const userId = getCurrentUserId();
 
@@ -55,7 +53,16 @@ const BusinessRegistrationPage = () => {
       const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/payment/userid/${userId}`);
       const payments = response.data.data || [];
 
-      const completedPayment = payments.find(payment => payment.payment_status === 'completed');
+      const completedPayment = payments.find(payment => {
+        if (payment.payment_status !== 'completed') return false;
+
+        const paymentDate = new Date(payment.payment_date);
+        const now = new Date();
+
+        const diffInDays = (now.getTime() - paymentDate.getTime()) / (1000 * 60 * 60 * 24);
+        return diffInDays <= 30;
+      });
+
       if (completedPayment) {
         setPaymentStatus(completedPayment.payment_status);
         setPaymentStack(completedPayment.payment_stack._id);
@@ -162,54 +169,56 @@ const BusinessRegistrationPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     if (paymentStatus !== 'completed') {
       toast.error(<div>Vui lòng <b>hoàn tất thanh toán</b> trước khi đăng ký.</div>);
       return;
     }
-
+    
     if (!formData.businessName || !formData.businessName.trim()) {
       toast.error(<div><b>Tên doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!formData.businessType || !formData.businessType.trim()) {
       toast.error(<div><b>Loại hình doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!formData.businessAddress || !formData.businessAddress.trim()) {
       toast.error(<div><b>Địa chỉ doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!selectedCoords.latitude || !selectedCoords.longitude) {
       toast.error(<div>Kinh độ/vĩ độ<b></b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!formData.businessPhone || !formData.businessPhone.trim()) {
       toast.error(<div><b>Số điện thoại doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!formData.operatingHoursFrom || !formData.operatingHoursFrom.trim()) {
       toast.error(<div><b>Giờ mở cửa doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!formData.operatingHoursTo || !formData.operatingHoursTo.trim()) {
       toast.error(<div><b>Giờ đóng cửa doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!images || images.length === 0) {
       toast.error(<div><b>Hình ảnh doanh nghiệp</b> là bắt buộc. Vui lòng thêm ít nhất một hình ảnh.</div>);
       return;
     }
 
+    setCreatingBusiness(true);
+    
     const toastId = toast.loading('Đang tạo doanh nghiệp...');
-
+    
     try {
       const businessData = {
         owner_id: userId,
@@ -234,6 +243,8 @@ const BusinessRegistrationPage = () => {
         business_status: false,
         business_active: 'pending',
       };
+
+      await axios.post(`${import.meta.env.VITE_BE_URL}/api/business`, businessData);
 
       const emailParams = {
         email: import.meta.env.VITE_EMAILJS_ADMIN_EMAIL,
@@ -269,6 +280,9 @@ const BusinessRegistrationPage = () => {
         isLoading: false,
         autoClose: 7000,
       });
+    }
+    finally {
+      setCreatingBusiness(false);
     }
   };
 
@@ -325,7 +339,17 @@ const BusinessRegistrationPage = () => {
               <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
             </div>
           ) : loading ? (
-            <p>Đang tải...</p>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              opacity: 0.3,
+              height: '428px'
+            }}>
+              <PuffLoader size={90} />
+              <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
+            </div>
           ) : error ? (
             <p>{error}</p>
           ) : (
@@ -540,9 +564,9 @@ const BusinessRegistrationPage = () => {
               <button
                 type="submit"
                 className="business-register-submit-btn"
-                disabled={paymentStatus !== 'completed' || !havePaid}
+                disabled={paymentStatus !== 'completed' || !havePaid || creatingBusiness}
               >
-                Đăng ký
+                {creatingBusiness ? ' Đang xử lý...' : 'Đăng ký'}
               </button>
             </div>
           </div>

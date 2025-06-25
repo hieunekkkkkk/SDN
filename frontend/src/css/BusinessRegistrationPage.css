@@ -8,7 +8,7 @@
 .business-register-intro-card {
   background-color: #f9e4e4;
   border-radius: var(--border-radius);
-  padding: 1.5rem 3rem;
+  padding: 1.5rem 3rem 3rem;
   margin-bottom: 5rem;
 }
 
@@ -117,7 +117,7 @@
   flex-direction: column;
 } */
 
-.business-register-geolocate-note{
+.business-register-geolocate-note {
   color: red;
   font-size: 12px;
 }
@@ -238,6 +238,10 @@
 
 .business-register-submit-btn:hover {
   background-color: #4a148c;
+}
+
+.business-register-submit-btn:disabled {
+  background-color: #6c5786;
 }
 
 .business-register-pricing-plans {

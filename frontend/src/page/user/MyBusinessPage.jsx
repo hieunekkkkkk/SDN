@@ -4,7 +4,7 @@ import { useUser } from '@clerk/clerk-react';
 import axios from 'axios';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
-import { FaFacebookF, FaInstagram, FaGoogle, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaPlus } from 'react-icons/fa';
 import BusinessProductModal from '../../components/BusinessProductModal';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
 import { convertFilesToBase64 } from '../../utils/imageToBase64';
@@ -32,11 +32,10 @@ const MyBusinessPage = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortBy, setSortBy] = useState('Sort: Select');
   const fileInputRef = useRef(null);
   const [categories, setCategories] = useState([]);
   const [isMapOpen, setIsMapOpen] = useState(false);
+  const [planExpired, setPlanExpired] = useState(false);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -97,8 +96,6 @@ const MyBusinessPage = () => {
         }
 
         const businessId = userBusiness._id;
-        console.log(businessId);
-
 
         const results = await Promise.allSettled([
           axios.get(`${import.meta.env.VITE_BE_URL}/api/business/${businessId}`),
@@ -128,11 +125,92 @@ const MyBusinessPage = () => {
           console.warn('Could not load feedbacks:', feedbacksResult.reason);
           setFeedbacks([]);
         }
+
+        checkPlanExpiryAndUpdate(userBusiness);
+
       } catch (err) {
         console.error('Error fetching business data:', err.response ? err.response.data : err.message);
         setError(`Không thể tải dữ liệu doanh nghiệp. Chi tiết: ${err.message}`);
       } finally {
         setLoading(false);
+      }
+    };
+
+    const checkPlanExpiryAndUpdate = async (business) => {
+      const plan = user?.unsafeMetadata?.userPlan;
+      if (!plan?.date) return;
+
+      const planDate = new Date(plan.date);
+      const now = new Date();
+
+      const diffInDays = (now.getTime() - planDate.getTime()) / (1000 * 60 * 60 * 24);
+
+      if (diffInDays <= 30 && plan.planDeactivated && business.business_active !== 'active') {
+        try {
+          await axios.put(`${import.meta.env.VITE_BE_URL}/api/business/${business._id}`, {
+            business_active: 'active',
+          });
+
+          await user.update({
+            unsafeMetadata: {
+              ...user.unsafeMetadata,
+              userPlan: {
+                ...plan,
+                planDeactivated: false,
+              },
+            },
+          });
+          console.log('Business reactivated due to renewed plan.');
+        } catch (err) {
+          console.error('Error reactivating business:', err);
+        }
+
+        return;
+      }
+
+      if (diffInDays > 30) {
+        setPlanExpired(true);
+
+        if (plan.planNotified) return;
+
+        try {
+          await axios.put(`${import.meta.env.VITE_BE_URL}/api/business/${business._id}`, {
+            business_active: 'pending',
+          });
+
+          const userRes = await axios.get(`${import.meta.env.VITE_BE_URL}/api/user/${business.owner_id}`);
+          const owner = userRes.data.users;
+
+          if (!owner?.email || !owner?.fullName) {
+            console.warn('Missing owner email or name. Skipping email.');
+            return;
+          }
+
+          await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REJECT_ID, {
+            email: owner.email,
+            owner_name: owner.fullName,
+            subject: 'Gói đăng ký doanh nghiệp của bạn đã hết hạn',
+            message_body: `
+          Gói đăng ký của doanh nghiệp <strong>${business.business_name}</strong> đã hết hạn sau 30 ngày sử dụng.<br /><br />
+          Trạng thái hiển thị của doanh nghiệp đã được chuyển về <strong>chờ duyệt</strong>.<br /><br />
+          Vui lòng truy cập trang doanh nghiệp trên Local Link để chọn gói đăng ký mới và gia hạn dịch vụ.
+        `,
+          });
+
+          await user.update({
+            unsafeMetadata: {
+              ...user.unsafeMetadata,
+              userPlan: {
+                ...user.unsafeMetadata.userPlan,
+                planNotified: true,
+                planDeactivated: true,
+              },
+            },
+          });
+
+        } catch (err) {
+          console.error('Error updating status or sending expiration email:', err);
+        }
       }
     };
 
@@ -215,7 +293,6 @@ const MyBusinessPage = () => {
       console.error('Error converting images to base64:', error);
       setError('Không thể chuyển đổi ảnh. Vui lòng thử lại.');
     } finally {
-      // Reset file input so the same file can be selected again
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -307,48 +384,11 @@ const MyBusinessPage = () => {
 
   const displayedProducts = isExpanded ? products : products.slice(0, 6);
 
-  const handlePageChange = (page) => setCurrentPage(page);
-
   const handleKeyDown = (e, field) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Prevent default Enter behavior
-      handleBlur(field); // Trigger blur to save the field
+      e.preventDefault();
+      handleBlur(field);
     }
-  };
-
-  const renderPagination = () => {
-    const totalPages = Math.ceil(feedbacks.length / 2);
-    const pages = [];
-    if (currentPage > 1) {
-      pages.push(
-        <button key="prev" className="page-btn" onClick={() => handlePageChange(currentPage - 1)}>
-          ‹
-        </button>
-      );
-    }
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-        pages.push(
-          <button
-            key={i}
-            className={`page-btn ${currentPage === i ? 'active' : ''}`}
-            onClick={() => handlePageChange(i)}
-          >
-            {i}
-          </button>
-        );
-      } else if (i === currentPage - 2 || i === currentPage + 2) {
-        pages.push(<span key={`dots-${i}`} className="page-dots">...</span>);
-      }
-    }
-    if (currentPage < totalPages) {
-      pages.push(
-        <button key="next" className="page-btn" onClick={() => handlePageChange(currentPage + 1)}>
-          ›
-        </button>
-      );
-    }
-    return pages;
   };
 
   if (loading) {
@@ -380,6 +420,21 @@ const MyBusinessPage = () => {
             <button className="back-button" onClick={() => navigate(-1)}>
               <span className="back-icon">←</span> Quay Lại
             </button>
+            {planExpired && (
+              <div className="business-warning">
+                <button
+                  className='business-detail-reapprove-btn'
+                  onClick={() => navigate('/stacks')}
+                >
+                  Gói doanh nghiệp của bạn đã hết hạn. Vui lòng nhấn vào đây để gia hạn!
+                </button>
+              </div>
+            )}
+            {business?.business_active === 'pending' && !planExpired && (
+              <div className="business-warning">
+                Doanh nghiệp của bạn đang trong quá trình xét duyệt bởi quản trị viên. <br />Vui lòng đợi hoặc liên hệ qua email <b>locallinkhola@gmail.com</b> để được hỗ trợ.
+              </div>
+            )}
             {business?.business_active === 'inactive' && (
               <div className="business-warning">
                 <button
