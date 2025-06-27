@@ -75,12 +75,24 @@ function ManageBusinessPage() {
       updated[index].business_active = newStatus;
       setBusinesses(updated);
 
-      toast.dismiss(loadingToastId);
-      toast.success(`${newStatus === 'active' ? 'Kích hoạt' : 'Vô hiệu hóa'} doanh nghiệp "${name}" thành công!`);
+      toast.update(loadingToastId, {
+        render: `${newStatus === 'active' ? 'Kích hoạt' : 'Vô hiệu hóa'} doanh nghiệp "${name}" thành công!`,
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
     } catch (err) {
       console.error('PUT error:', err);
-      toast.dismiss(loadingToastId);
-      toast.error(`Không thể cập nhật trạng thái cho "${name}"`);
+      toast.update(loadingToastId, {
+        render: `Không thể cập nhật trạng thái cho "${name}"`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
     }
   };
 
@@ -110,7 +122,7 @@ function ManageBusinessPage() {
       }
 
       console.log(owner.email, owner.fullName);
-      
+
 
       await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REJECT_ID, {
         email: owner.email,
@@ -125,16 +137,27 @@ function ManageBusinessPage() {
 
       await updateBusinessStatus(index, name, 'inactive');
 
-      toast.dismiss(loadingToastId);
-      toast.success(`Đã từ chối doanh nghiệp "${name}" và gửi email thành công`);
-
+      toast.update(loadingToastId, {
+        render: `Đã từ chối doanh nghiệp "${name}" và gửi email thành công`,
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
       setIsBanModalOpen(false);
       setBanReason('');
       setSelectedBusiness(null);
     } catch (err) {
       console.error(err);
-      toast.dismiss(loadingToastId);
-      toast.error('Từ chối doanh nghiệp hoặc gửi email thất bại');
+      toast.update(loadingToastId, {
+        render: 'Từ chối doanh nghiệp hoặc gửi email thất bại',
+        type: 'error',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
     }
   };
 

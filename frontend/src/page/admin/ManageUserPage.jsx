@@ -60,12 +60,24 @@ function ManageUserPage() {
 
       await axios.put(endpoint);
 
-      toast.dismiss(loadingId);
-      toast.success(lock ? 'Đã khóa người dùng' : 'Đã mở khóa người dùng');
+      toast.update(loadingId, {
+        render: lock ? 'Đã khóa người dùng' : 'Đã mở khóa người dùng',
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
       fetchUsers(currentPage);
     } catch (error) {
-      toast.dismiss(loadingId);
-      toast.error(lock ? 'Không thể khóa người dùng' : 'Không thể mở khóa người dùng');
+      toast.update(loadingId, {
+        render: lock ? 'Không thể khóa người dùng' : 'Không thể mở khóa người dùng',
+        type: 'error',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
     }
   };
 
