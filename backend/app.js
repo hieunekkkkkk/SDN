@@ -7,7 +7,7 @@ const authRoutes = require('./src/routes/auth');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/swagger/swaggerConfig');
 const { metricsMiddleware, metricsEndpoint } = require('./src/middleware/metrics');
-const logger = require('./src/log/logger');
+
 
 const app = express();
 
@@ -21,8 +21,7 @@ app.use((req, res, next) => {
 // Metrics endpoint - đặt trước CORS để Prometheus có thể truy cập
 app.get('/metrics', metricsEndpoint);
 
-// Logging middleware
-app.use(logger.logRequest);
+
 
 // Metrics middleware
 app.use(metricsMiddleware);
