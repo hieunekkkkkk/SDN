@@ -13,6 +13,7 @@ services:
       - '--web.enable-lifecycle'
     networks:
       - backend_app_network
+      - sdn_network
 
   alertmanager:
     image: prom/alertmanager:latest
@@ -29,7 +30,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
     ports:
-      - "3000:3000"
+      - "3001:3000"
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
@@ -37,6 +38,7 @@ services:
       - prometheus
     networks:
       - backend_app_network
+      - sdn_network
 
 volumes:
   prometheus_data:
@@ -46,3 +48,6 @@ volumes:
 networks:
   backend_app_network:
     driver: bridge
+  sdn_network:
+    external: true
+    name: sdn_network

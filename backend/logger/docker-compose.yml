@@ -21,13 +21,24 @@ services:
     container_name: logstash
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ../logs:/usr/share/logstash/logs:ro
     ports:
       - 5044:5044
+      - 8080:8080
       - 9600:9600
+    environment:
+      - "LS_JAVA_OPTS=-Xmx512m -Xms512m"
+      - "PIPELINE_WORKERS=2"
     networks:
       - elk
+      - sdn_network
     depends_on:
       - elasticsearch
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.11.1
@@ -45,6 +56,9 @@ services:
 networks:
   elk:
     driver: bridge
+  sdn_network:
+    external: true
+    name: sdn_network
 
 volumes:
   elasticsearch-data:

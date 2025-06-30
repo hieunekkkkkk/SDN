@@ -7,8 +7,25 @@ const authRoutes = require('./src/routes/auth');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/swagger/swaggerConfig');
 const { metricsMiddleware, metricsEndpoint } = require('./src/middleware/metrics');
+const logger = require('./src/log/logger');
 
 const app = express();
+
+// Request ID middleware
+app.use((req, res, next) => {
+    req.id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+    res.setHeader('X-Request-ID', req.id);
+    next();
+});
+
+// Metrics endpoint - đặt trước CORS để Prometheus có thể truy cập
+app.get('/metrics', metricsEndpoint);
+
+// Logging middleware
+app.use(logger.logRequest);
+
+// Metrics middleware
+app.use(metricsMiddleware);
 
 // Middleware
 app.use(cors({
@@ -20,9 +37,15 @@ app.use(express.json({ limit: '1gb' }));
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Metrics middleware
-app.use(metricsMiddleware);
-app.get('/metrics', metricsEndpoint);
+
+
+// // Metrics endpoint - không áp dụng CORS để Prometheus có thể truy cập
+// app.get('/metrics', (req, res, next) => {
+//     res.header('Access-Control-Allow-Origin', '*');
+//     res.header('Access-Control-Allow-Methods', 'GET');
+//     res.header('Access-Control-Allow-Headers', 'Content-Type');
+//     next();
+// }, metricsEndpoint);
 
 // Connect to MongoDB
 connectDB();

@@ -13,8 +13,8 @@ RUN npm install
 # Sao chép toàn bộ mã nguồn vào container
 COPY . .
 
-# Mở cổng 3000 (cổng mà ứng dụng Node.js chạy)
-EXPOSE 3000
+# Mở cổng 5173 (port cho frontend Vite dev server)
+EXPOSE 5173
 
-# Lệnh khởi động ứng dụng
-CMD ["node", "server.js"]
+# Lệnh khởi động ứng dụng Vite
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
