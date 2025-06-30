@@ -28,9 +28,6 @@ services:
  
 networks:
   app_network:
-    external:
-      name: sdn_network
+    name: sdn_network
+    external: true
 
-volumes:
-  redis-data:
-  redisinsight-data:

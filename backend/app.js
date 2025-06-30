@@ -29,9 +29,15 @@ app.use(metricsMiddleware);
 
 // Middleware
 app.use(cors({
-    origin: 'http://localhost:5173', // Frontend Vite dev server
+    origin: [
+        'http://localhost:5173',
+        'https://smearch.io.vn',
+        'http://react-app:5173',  // Docker container name
+        'http://frontend-react-app-1:5173'  // Docker compose service name
+    ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
 }));
 app.use(express.json({ limit: '1gb' }));
 
