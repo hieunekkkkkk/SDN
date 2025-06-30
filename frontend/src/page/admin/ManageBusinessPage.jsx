@@ -63,6 +63,8 @@ function ManageBusinessPage() {
   };
 
   const updateBusinessStatus = async (index, name, newStatus) => {
+    const loadingToastId = toast.loading('Đang cập nhật trạng thái doanh nghiệp...');
+
     try {
       const business = businesses[index];
       await axios.put(`${import.meta.env.VITE_BE_URL}/api/business/${business._id}`, {
@@ -73,10 +75,24 @@ function ManageBusinessPage() {
       updated[index].business_active = newStatus;
       setBusinesses(updated);
 
-      toast.success(`${newStatus === 'active' ? 'Kích hoạt' : 'Vô hiệu hóa'} doanh nghiệp "${name}" thành công!`);
+      toast.update(loadingToastId, {
+        render: `${newStatus === 'active' ? 'Kích hoạt' : 'Vô hiệu hóa'} doanh nghiệp "${name}" thành công!`,
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
     } catch (err) {
       console.error('PUT error:', err);
-      toast.error(`Không thể cập nhật trạng thái cho "${name}"`);
+      toast.update(loadingToastId, {
+        render: `Không thể cập nhật trạng thái cho "${name}"`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
     }
   };
 
@@ -94,34 +110,61 @@ function ManageBusinessPage() {
     const { index, name } = selectedBusiness;
     const business = businesses[index];
 
+    const loadingToastId = toast.loading('Đang xử lý từ chối doanh nghiệp...');
+
     try {
       const userRes = await axios.get(`${import.meta.env.VITE_BE_URL}/api/user/${business.owner_id}`);
       const owner = userRes.data.users;
 
-      if (!owner?.email || !owner?.fullName) return toast.error('Không tìm thấy thông tin người dùng.');
+      if (!owner?.email || !owner?.fullName) {
+        toast.dismiss(loadingToastId);
+        return toast.error('Không tìm thấy thông tin người dùng.');
+      }
+
+      console.log(owner.email, owner.fullName);
+
 
       await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REJECT_ID, {
         email: owner.email,
         owner_name: owner.fullName,
-        business_name: business.business_name,
-        rejection_reason: banReason,
+        subject: 'Doanh nghiệp bị từ chối phê duyệt',
+        message_body: `
+        <p>Chúng tôi xin thông báo rằng doanh nghiệp <strong>"${business.business_name}"</strong> của bạn đã <strong>không được phê duyệt</strong> trên nền tảng Local Link.</p>
+        <p><strong>Lý do từ chối:</strong><br />${banReason}</p>
+        <p>Nếu bạn cần hỗ trợ chỉnh sửa hoặc muốn gửi lại yêu cầu phê duyệt, vui lòng cập nhật lại thông tin doanh nghiệp trong hệ thống.</p>
+      `,
       });
 
-      toast.success(`Đã từ chối doanh nghiệp "${name}" và gửi email thành công`);
       await updateBusinessStatus(index, name, 'inactive');
 
+      toast.update(loadingToastId, {
+        render: `Đã từ chối doanh nghiệp "${name}" và gửi email thành công`,
+        type: 'success',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
       setIsBanModalOpen(false);
       setBanReason('');
       setSelectedBusiness(null);
     } catch (err) {
       console.error(err);
-      toast.error('Từ chối doanh nghiệp hoặc gửi email thất bại');
+      toast.update(loadingToastId, {
+        render: 'Từ chối doanh nghiệp hoặc gửi email thất bại',
+        type: 'error',
+        isLoading: false,
+        autoClose: 3000,
+        closeOnClick: true,
+        draggable: true,
+      });
     }
   };
 
+
   const filteredBusinesses = businesses.filter((b) => {
     const matchesSearch = b.business_name.toLowerCase().includes(search.toLowerCase()) ||
-                          b.owner_id.toLowerCase().includes(search.toLowerCase());
+      b.owner_id.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = ['Active', 'Inactive', 'Pending'].includes(sortStatus)
       ? b.business_active === sortStatus.toLowerCase()
       : true;
