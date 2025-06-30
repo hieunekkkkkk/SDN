@@ -58,7 +58,7 @@ function DiscoverByCategoryPage() {
       try {
         const storedLocation = JSON.parse(localStorage.getItem('userLocation'));
         if (!storedLocation?.latitude || !storedLocation?.longitude) {
-          throw new Error('Không tìm thấy vị trí người dùng trong localStorage');
+          throw new Error('Vui lòng bật quyền truy cập vị trí trong trình duyệt hoặc thiết bị để tiếp tục.');
         }
 
         const { latitude, longitude } = storedLocation;
