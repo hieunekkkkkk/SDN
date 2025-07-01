@@ -69,7 +69,7 @@ const MapModal = ({ isOpen, onClose, onConfirm }) => {
       <MapContainer
         center={position || [21.0124217, 105.5227143]}
         zoom={16}
-        style={{ height: '700px', width: '100%' }}
+        style={{ height: '60vh', width: '100%' }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         {position && (

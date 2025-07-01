@@ -2,13 +2,22 @@ const { createLogger, format, transports } = require('winston');
 const { ElasticsearchTransport } = require('winston-elasticsearch');
 require('dotenv').config();
 
-// Cấu hình client Elasticsearch
+// Cấu hình client Elasticsearch cho container
 const esTransportOpts = {
     level: 'info',
     clientOpts: {
-        node: `http://${process.env.ELASTICSEARCH_HOST || 'localhost'}:9200`,
+        node: process.env.ELASTICSEARCH_URL || 'http://elasticsearch:9200',
     },
-    indexPrefix: 'nodejs-app'
+    indexPrefix: 'sdn-backend',
+    transformer: (logData) => {
+        return {
+            '@timestamp': new Date().toISOString(),
+            message: logData.message,
+            level: logData.level,
+            service: 'sdn-backend',
+            ...logData.meta
+        };
+    }
 };
 
 // Tạo transport cho Elasticsearch
@@ -25,7 +34,7 @@ const logFormat = format.combine(
 const logger = createLogger({
     level: process.env.LOG_LEVEL || 'info',
     format: logFormat,
-    defaultMeta: { service: 'api-service' },
+    defaultMeta: { service: 'sdn-backend' },
     transports: [
         new transports.Console({
             format: format.combine(
@@ -41,6 +50,5 @@ const logger = createLogger({
 esTransport.on('error', (error) => {
     console.error('Error in Elasticsearch transport', error);
 });
-
 
 module.exports = logger;
