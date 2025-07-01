@@ -9,7 +9,7 @@ const categoryRoutes = require('./category.routes');
 const feedbackRoutes = require('./feedback.routes');
 const userRoutes = require('./user.routes');
 const aiRoutes = require('./ai.routes');
-
+const authRoutes = require('./auth');
 // const redisRoutes = require('./redisRouter');
 
 // Tập trung các routes
@@ -22,6 +22,7 @@ router.use('/category', categoryRoutes);
 router.use('/feedback', feedbackRoutes);
 router.use('/user', userRoutes);
 router.use('/ai', aiRoutes);
+router.use('/auth', authRoutes);
 
 // router.use('/redis', redisRoutes);
 

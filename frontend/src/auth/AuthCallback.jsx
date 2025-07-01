@@ -19,7 +19,7 @@ const AuthCallback = () => {
           const clerkToken = await getToken({ template: 'node-backend' });
           if (!clerkToken) throw new Error("Không lấy được token từ Clerk");
 
-          const response = await fetch(`${import.meta.env.VITE_BE_URL}/auth`, {
+          const response = await fetch(`${import.meta.env.VITE_BE_URL}/api/auth`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${clerkToken}`,
@@ -44,7 +44,7 @@ const AuthCallback = () => {
 
         } catch (err) {
           console.error('Lỗi xác thực, start backend :', err);
-          await signOut(); //auto logout nếu không start be hoặc k thể gọi tới /auth
+          // await signOut(); //auto logout nếu không start be hoặc k thể gọi tới /auth
         }
       }
     };

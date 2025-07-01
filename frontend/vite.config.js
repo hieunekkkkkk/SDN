@@ -7,9 +7,22 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
-    allowedHosts: ['smearch.io.vn'],
+    allowedHosts: ['smearch.io.vn', 'localhost'],
     watch: {
       usePolling: true,
+    },
+    proxy: {
+      '/api': {
+        target: 'http://backend:3000',
+        changeOrigin: true,
+        secure: false,
+        configure: (proxy, options) => {
+          // Cho phép proxy từ domain
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            proxyReq.setHeader('Origin', 'http://backend:3000');
+          });
+        }
+      }
     }
   },
   preview: {

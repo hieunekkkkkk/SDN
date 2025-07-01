@@ -57,11 +57,12 @@ function LandingPage() {
       setError(null);
 
       // Chỉ sử dụng 4 API có sẵn
+      const baseURL = import.meta.env.VITE_BE_URL || '';
       const results = await Promise.allSettled([
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/business?limit=50`),
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/business/rating?limit=50`),
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
-        axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`)
+        axios.get(`${baseURL}/api/business?limit=50`),
+        axios.get(`${baseURL}/api/business/rating?limit=50`),
+        axios.get(`${baseURL}/api/category`),
+        axios.get(`${baseURL}/api/feedback`)
       ]);
 
       const [businessesResult, bestBusinessesResult, categoriesResult, feedbacksResult] = results;
