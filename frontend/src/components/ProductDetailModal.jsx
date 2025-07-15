@@ -10,7 +10,7 @@ const ProductDetailModal = ({
   setShowModal,
   selectedProduct,
   setSelectedProduct,
-  businessId, // Add businessId prop
+  businessId,
   renderStars,
 }) => {
   const [selectedImage, setSelectedImage] = useState(0);
