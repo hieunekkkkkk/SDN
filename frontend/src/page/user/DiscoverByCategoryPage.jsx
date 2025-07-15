@@ -203,7 +203,7 @@ function DiscoverByCategoryPage() {
                   >
                     <div className="place-image">
                       <img
-                        src={b.business_image?.[0] || '/placeholder.jpg'}
+                        src={b.business_image?.[0]}
                         alt={b.business_name}
                       />
                     </div>
