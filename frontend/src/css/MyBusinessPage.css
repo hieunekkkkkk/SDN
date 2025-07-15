@@ -76,6 +76,7 @@
   border: 2px solid transparent;
   transition: border-color 0.3s ease;
   background: #c0c0c0;
+  position: relative;
 }
 
 .thumbnail:hover,
@@ -89,11 +90,34 @@
   object-fit: cover;
 }
 
+.add-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ddd;
+  color: #666;
+  font-size: 1.5rem;
+}
+
+.add-image:hover {
+  background: #ccc;
+  color: #333;
+}
+
 /* Right Side - Details */
 .business-info {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.editable-field {
+  position: relative;
+}
+
+.editable-field:hover .edit-btn {
+  opacity: 1;
+  visibility: visible;
 }
 
 .business-title {
@@ -161,7 +185,7 @@
 
 /* Contact Info Section */
 .contact-info {
-  margin-top: 1rem;
+  /* margin-top: 1rem; */
 }
 
 .contact-title {
@@ -182,27 +206,25 @@
   color: #333;
 }
 
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
 .edit-btn {
-  flex: 1;
-  padding: 0.75rem 2rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  background: #4CAF50;
-  color: white;
+  margin-left: 20px;
+  opacity: 0;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
 }
 
 .edit-btn:hover {
-  background: #45a049;
+  color: #45a049;
+}
+
+input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+  margin-top: 0.5rem;
 }
 
 .social-icons {
@@ -295,20 +317,17 @@
     gap: 2rem;
   }
 
-  .action-buttons {
-    flex-direction: column;
-  }
-
-  .edit-btn {
-    width: 100%;
-  }
-
   .thumbnail-images {
     justify-content: center;
   }
 
   .business-title {
     font-size: 1.3rem;
+  }
+
+  .edit-btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -512,7 +531,7 @@
   }
 
   .products-list {
-    grid-template-columns: repeat(2, 1fr); 
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
   }
 
@@ -533,9 +552,9 @@
 }
 
 @media (max-width: 480px) {
-    .products-list {
-        grid-template-columns: 1fr;
-    }
+  .products-list {
+    grid-template-columns: 1fr;
+  }
 
   .products-title {
     font-size: 1.3rem;
@@ -607,6 +626,7 @@
 .review-actions {
   display: flex;
   gap: 1rem;
+  width: 100%;
 }
 
 .write-review-btn,

@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import '../../css/BusinessRegistrationPage.css';
 import axios from 'axios';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { getCurrentUserId } from '../../utils/useCurrentUserId';
 import { PuffLoader } from 'react-spinners';
 import { toast } from 'react-toastify';
-import useGeolocation from '../../utils/useGeolocation';
 import { convertFilesToBase64 } from '../../utils/imageToBase64';
+import { sendEmail } from '../../utils/sendEmail';
+import MapModal from '../../components/MapModal';
 
 const BusinessRegistrationPage = () => {
   const navigate = useNavigate();
@@ -40,7 +41,10 @@ const BusinessRegistrationPage = () => {
   const [havePaid, setHavePaid] = useState(false);
   const [tooManyPaymentsToday, setTooManyPaymentsToday] = useState(false);
   const [paymentsTodayCount, setPaymentsTodayCount] = useState(0);
-  const { location, fetchLocation } = useGeolocation();
+  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [selectedCoords, setSelectedCoords] = useState(null);
+  const [creatingBusiness, setCreatingBusiness] = useState(false);
+
 
   const userId = getCurrentUserId();
 
@@ -49,7 +53,16 @@ const BusinessRegistrationPage = () => {
       const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/payment/userid/${userId}`);
       const payments = response.data.data || [];
 
-      const completedPayment = payments.find(payment => payment.payment_status === 'completed');
+      const completedPayment = payments.find(payment => {
+        if (payment.payment_status !== 'completed') return false;
+
+        const paymentDate = new Date(payment.payment_date);
+        const now = new Date();
+
+        const diffInDays = (now.getTime() - paymentDate.getTime()) / (1000 * 60 * 60 * 24);
+        return diffInDays <= 30;
+      });
+
       if (completedPayment) {
         setPaymentStatus(completedPayment.payment_status);
         setPaymentStack(completedPayment.payment_stack._id);
@@ -141,7 +154,7 @@ const BusinessRegistrationPage = () => {
       });
 
       if (paymentResponse.data && paymentResponse.data.url) {
-        window.open(paymentResponse.data.url, '_blank');
+        window.open(paymentResponse.data.url, '_self');
       } else {
         throw new Error('Thanh toán thất bại.');
       }
@@ -156,52 +169,56 @@ const BusinessRegistrationPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     if (paymentStatus !== 'completed') {
       toast.error(<div>Vui lòng <b>hoàn tất thanh toán</b> trước khi đăng ký.</div>);
       return;
     }
-
-    if (!formData.businessAddress || !formData.businessAddress.trim()) {
-      toast.error(<div><b>Địa chỉ doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
-      return;
-    }
-
+    
     if (!formData.businessName || !formData.businessName.trim()) {
       toast.error(<div><b>Tên doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!formData.businessType || !formData.businessType.trim()) {
       toast.error(<div><b>Loại hình doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
-    if (!location) {
-      toast.error(<div><b>Vị trí địa lý</b> (kinh độ/vĩ độ) là bắt buộc. Vui lòng nhấn nút lấy Kinh đọ/Vĩ độ trước khi đăng ký.</div>);
+    
+    if (!formData.businessAddress || !formData.businessAddress.trim()) {
+      toast.error(<div><b>Địa chỉ doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
+    if (!selectedCoords.latitude || !selectedCoords.longitude) {
+      toast.error(<div>Kinh độ/vĩ độ<b></b> là bắt buộc và phải có nội dung.</div>);
+      return;
+    }
+    
     if (!formData.businessPhone || !formData.businessPhone.trim()) {
       toast.error(<div><b>Số điện thoại doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!formData.operatingHoursFrom || !formData.operatingHoursFrom.trim()) {
       toast.error(<div><b>Giờ mở cửa doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!formData.operatingHoursTo || !formData.operatingHoursTo.trim()) {
       toast.error(<div><b>Giờ đóng cửa doanh nghiệp</b> là bắt buộc và phải có nội dung.</div>);
       return;
     }
-
+    
     if (!images || images.length === 0) {
       toast.error(<div><b>Hình ảnh doanh nghiệp</b> là bắt buộc. Vui lòng thêm ít nhất một hình ảnh.</div>);
       return;
     }
 
+    setCreatingBusiness(true);
+    
+    const toastId = toast.loading('Đang tạo doanh nghiệp...');
+    
     try {
       const businessData = {
         owner_id: userId,
@@ -209,7 +226,7 @@ const BusinessRegistrationPage = () => {
         business_address: formData.businessAddress,
         business_location: {
           type: 'Point',
-          coordinates: [location.longitude, location.latitude], // [lng, lat]
+          coordinates: [selectedCoords.longitude, selectedCoords.latitude],
         },
         business_category_id: formData.businessType,
         business_detail: formData.businessDescription,
@@ -229,22 +246,45 @@ const BusinessRegistrationPage = () => {
 
       await axios.post(`${import.meta.env.VITE_BE_URL}/api/business`, businessData);
 
+      const emailParams = {
+        email: import.meta.env.VITE_EMAILJS_ADMIN_EMAIL,
+        business_name: formData.businessName,
+      };
+
+      try {
+        await sendEmail(import.meta.env.VITE_EMAILJS_TEMPLATE_REAPPROVE_ID, emailParams);
+      } catch (error) {
+        console.error('Email error:', error);
+      }
+
       await axios.put(`${import.meta.env.VITE_BE_URL}/api/user/${userId}`, {
         "publicMetadata": {
           "role": "owner"
         }
       });
 
-      toast.success('Doanh nghiệp đã được tạo thành công và đang chờ phê duyệt.');
+      toast.update(toastId, {
+        render: 'Doanh nghiệp đã được tạo thành công và đang chờ phê duyệt.',
+        type: 'success',
+        isLoading: false,
+        autoClose: 5000,
+      });
       navigate('/auth-callback');
       localStorage.removeItem('businessFormData');
       localStorage.removeItem('businessImages');
     } catch (err) {
       console.error('Error creating business:', err.response ? err.response.data : err.message);
-      toast.error(`Không thể tạo doanh nghiệp. Chi tiết: ${err.message}`);
+      toast.update(toastId, {
+        render: `Không thể tạo doanh nghiệp. Chi tiết: ${err.message}`,
+        type: 'error',
+        isLoading: false,
+        autoClose: 7000,
+      });
+    }
+    finally {
+      setCreatingBusiness(false);
     }
   };
-
 
   const formatPrice = (price) => {
     if (price >= 1000000000) return `${(price / 1000000000).toFixed(1)}B / tháng`;
@@ -299,7 +339,17 @@ const BusinessRegistrationPage = () => {
               <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
             </div>
           ) : loading ? (
-            <p>Đang tải...</p>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              opacity: 0.3,
+              height: '428px'
+            }}>
+              <PuffLoader size={90} />
+              <p style={{ marginTop: '16px', fontSize: '18px', color: '#333' }}></p>
+            </div>
           ) : error ? (
             <p>{error}</p>
           ) : (
@@ -337,7 +387,7 @@ const BusinessRegistrationPage = () => {
         </div>
         <div className='business-register-tries-left'>{paymentsTodayCount >= 1 && (
           <p style={{ marginTop: '12px', textAlign: 'center', color: '#d9534f', fontWeight: 'bold' }}>
-            Bạn đã đạt giới hạn thanh toán trong ngày. Số lượt còn lại: {Math.max(0, 5 - paymentsTodayCount)}
+            Số lượng chọn gói đã bị giới hạn thanh toán trong ngày. Số lượt còn lại: {Math.max(0, 5 - paymentsTodayCount)}
           </p>
         )}
         </div>
@@ -349,7 +399,7 @@ const BusinessRegistrationPage = () => {
             <div className="business-register-form-columns">
               <div className="business-register-form-column left">
                 <div className="business-register-form-group">
-                  <label htmlFor="business-name">Tên doanh nghiệp</label>
+                  <label htmlFor="business-name">Tên doanh nghiệp<span style={{ color: 'red' }}> *</span></label>
                   <input
                     type="text"
                     id="business-name"
@@ -361,7 +411,7 @@ const BusinessRegistrationPage = () => {
                   />
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="business-address">Địa chỉ</label>
+                  <label htmlFor="business-address">Địa chỉ<span style={{ color: 'red' }}> *</span></label>
                   <input
                     type="text"
                     id="business-address"
@@ -369,7 +419,7 @@ const BusinessRegistrationPage = () => {
                     placeholder="Nhập địa chỉ..."
                     value={formData.businessAddress}
                     onChange={handleInputChange}
-                    disabled={!havePaid}
+                    disabled
                   />
                 </div>
                 <div className="business-register-form-group">
@@ -380,12 +430,12 @@ const BusinessRegistrationPage = () => {
                     placeholder="Nhập mô tả..."
                     value={formData.businessDescription}
                     onChange={handleInputChange}
-                    rows="6"
+                    rows="7"
                     disabled={!havePaid}
                   />
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="business-image">Hình ảnh</label>
+                  <label htmlFor="business-image">Hình ảnh<span style={{ color: 'red' }}> *</span></label>
                   <div className="business-register-image-upload">
                     {images.map((image, index) => (
                       <div key={index} className="business-register-image-preview">
@@ -427,7 +477,7 @@ const BusinessRegistrationPage = () => {
 
               <div className="business-register-form-column right">
                 <div className="business-register-form-group">
-                  <label htmlFor="business-type">Loại hình kinh doanh</label>
+                  <label htmlFor="business-type">Loại hình kinh doanh<span style={{ color: 'red' }}> *</span></label>
                   {loading ? (
                     <p>Đang tải...</p>
                   ) : error ? (
@@ -450,13 +500,13 @@ const BusinessRegistrationPage = () => {
                   )}
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="geolocate">Kinh độ/Vĩ độ</label>
+                  <label htmlFor="geolocate">Kinh độ/Vĩ độ<span style={{ color: 'red' }}> *</span></label>
                   <div className="business-register-geolocate">
                     <input
                       type="text"
                       value={
-                        location
-                          ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`
+                        selectedCoords
+                          ? `${selectedCoords.latitude.toFixed(6)}, ${selectedCoords.longitude.toFixed(6)}`
                           : ''
                       }
                       readOnly
@@ -465,15 +515,16 @@ const BusinessRegistrationPage = () => {
                     <button
                       type="button"
                       className="business-register-geolocate-btn"
-                      onClick={fetchLocation}
+                      onClick={() => setIsMapOpen(true)}
                       disabled={!havePaid}
                     >
-                      Lấy Kinh độ/Vĩ độ
+                      Mở bản đồ chọn vị trí
                     </button>
                   </div>
+                  <span className='business-register-geolocate-note'>*Vui lòng ở tại doanh nghiệp để lấy được tọa độ chính xác nhất</span>
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="business-phone">Số điện thoại</label>
+                  <label htmlFor="business-phone">Số điện thoại<span style={{ color: 'red' }}> *</span></label>
                   <input
                     type="number"
                     id="business-phone"
@@ -485,7 +536,7 @@ const BusinessRegistrationPage = () => {
                   />
                 </div>
                 <div className="business-register-form-group">
-                  <label htmlFor="operating-hours">Thời gian hoạt động</label>
+                  <label htmlFor="operating-hours">Thời gian hoạt động<span style={{ color: 'red' }}> *</span></label>
                   <div className="business-register-operating-hours-inputs">
                     <input
                       type="time"
@@ -513,14 +564,57 @@ const BusinessRegistrationPage = () => {
               <button
                 type="submit"
                 className="business-register-submit-btn"
-                disabled={paymentStatus !== 'completed' || !havePaid}
+                disabled={paymentStatus !== 'completed' || !havePaid || creatingBusiness}
               >
-                Đăng ký
+                {creatingBusiness ? ' Đang xử lý...' : 'Đăng ký'}
               </button>
             </div>
           </div>
         </form>
       </main >
+      <MapModal
+        isOpen={isMapOpen}
+        onClose={() => setIsMapOpen(false)}
+        onConfirm={async (coords) => {
+          const [lat, lng] = coords;
+
+          const toastId = toast.loading('Đang lấy địa chỉ...');
+
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`
+            );
+            const data = await response.json();
+            const newAddress = data.display_name || 'Địa chỉ chưa rõ';
+
+            setFormData((prev) => ({
+              ...prev,
+              businessAddress: newAddress,
+            }));
+
+            setSelectedCoords({
+              latitude: lat,
+              longitude: lng,
+            });
+
+            toast.update(toastId, {
+              render: 'Lấy địa chỉ thành công!',
+              type: 'success',
+              isLoading: false,
+              autoClose: 3000,
+            });
+          } catch (err) {
+            toast.update(toastId, {
+              render: 'Không thể lấy địa chỉ. Vui lòng thử lại.',
+              type: 'error',
+              isLoading: false,
+              autoClose: 3000,
+            });
+          }
+
+          setIsMapOpen(false);
+        }}
+      />
       <Footer />
     </>
   );

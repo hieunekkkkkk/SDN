@@ -23,15 +23,23 @@ class BusinessService {
     }
 
     // Get all businesses with pagination
-    async getAllBusinesses(page = 1, limit = 10) {
+    async getAllBusinesses(page = 1, limit = 10, sort = 'Newest') {
         try {
             const skip = (page - 1) * limit;
+
+            let sortOption = {};
+            if (sort === 'Newest') sortOption = { _id: -1 };
+            else if (sort === 'Oldest') sortOption = { _id: 1 };
+
             const businesses = await Business.find()
+                .sort(sortOption)
                 .skip(skip)
                 .limit(limit)
                 .populate('business_category_id')
                 .populate('business_stack_id');
+
             const total = await Business.countDocuments();
+
             return {
                 businesses,
                 totalPages: Math.ceil(total / limit),
@@ -166,29 +174,34 @@ class BusinessService {
     }
 
     // Find 3 nearest businesses to given coordinates
-    async findNearestBusinesses(latitude, longitude, maxDistance) {
+    async findNearestBusinesses(latitude, longitude, maxDistance, categoryId) {
         try {
             // Kiểm tra và tạo index nếu cần (tùy chọn - vì đã có trong schema)
             // await Business.collection.createIndex({ business_location: '2dsphere' });
 
-            const businesses = await Business.find({
+            const query = {
                 business_location: {
                     $near: {
                         $geometry: {
                             type: 'Point',
                             coordinates: [longitude, latitude]
                         },
-                        $maxDistance: maxDistance // Sử dụng maxDistance từ tham số
+                        $maxDistance: maxDistance
                     }
                 },
-                // business_status: true, // Chỉ lấy business đang hoạt động
-                business_active: 'active' // Chỉ lấy business active
-            })
-                .limit(3)
+                business_active: 'active'
+            };
+
+            if (categoryId) {
+                query.business_category_id = categoryId;
+            }
+
+            const businesses = await Business.find(query)
                 .populate('business_category_id')
                 .populate('business_stack_id')
-                .select('-__v') // Loại bỏ version key
-                .sort({ business_rating: -1 }); // Sắp xếp theo rating cao nhất
+                .select('-__v')
+                .limit(3)
+                .sort({ business_rating: -1 });
 
             return businesses;
         } catch (error) {
@@ -225,9 +238,9 @@ class BusinessService {
                     ...query,
                     business_location: {
                         $near: {
-                            $geometry: { 
-                                type: 'Point', 
-                                coordinates: userLocation 
+                            $geometry: {
+                                type: 'Point',
+                                coordinates: userLocation
                             },
                             $maxDistance: maxDistance
                         }
@@ -339,7 +352,7 @@ class BusinessService {
                 message: `Error filtering businesses: ${error.message}`
             };
         }
-      }
+    }
 }
 
 module.exports = new BusinessService();

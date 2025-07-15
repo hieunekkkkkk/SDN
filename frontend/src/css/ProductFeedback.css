@@ -134,9 +134,9 @@
     font-size: 0.8rem;
   }
   
-  .review-actions {
+  .review-actions-modal {
     flex: 1;
-    max-width: 400px;
+    width: 100%;
   }
   
   .write-review-section {

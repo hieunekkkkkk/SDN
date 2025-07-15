@@ -1,4 +1,3 @@
-// src/utils/sendEmail.js
 import emailjs from '@emailjs/browser';
 
 /**

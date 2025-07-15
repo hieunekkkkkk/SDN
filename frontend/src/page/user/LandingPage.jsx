@@ -166,8 +166,6 @@ function LandingPage() {
   }, []);
 
   const handleSeeMore = useCallback((categoryName, categoryId) => {
-    console.log('handleSeeMore called with:', { categoryName, categoryId });
-
     if (!categoryName || !categoryId) {
       console.error('Missing category data:', { categoryName, categoryId });
       return;
@@ -294,17 +292,18 @@ function LandingPage() {
   const showServiceNav = categories.length > 4;
 
   if (loading) {
-    return <LoadingScreen />;
+    return <><Header /><LoadingScreen /></>;
   }
 
   if (error) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
-        <p>{error}</p>
-        <button onClick={loadInitialData} className="btn">
-          Thử lại
-        </button>
-      </div>
+      // <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
+      //   <p>{error}</p>
+      //   <button onClick={loadInitialData} className="btn">
+      //     Thử lại
+      //   </button>
+      // </div>
+      <><Header /><LoadingScreen /></>
     );
   }
 

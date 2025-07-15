@@ -7,7 +7,6 @@ const Footer = () => {
 
   const handleNewsletterSubmit = (e) => {
     e.preventDefault();
-    console.log('Đăng ký bản tin:', email);
     setEmail('');
   };
 

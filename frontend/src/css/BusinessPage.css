@@ -10,6 +10,16 @@
   width: 100%;
 }
 
+.business-warning{
+  margin-bottom: 50px;
+  text-align: center;
+}
+
+.business-warning-text{
+  color: red;
+  font-weight: bold;
+}
+
 .back-button {
   display: flex;
   align-items: center;
@@ -145,7 +155,7 @@
 .business-description {
   color: #666;
   line-height: 1.5;
-  /* margin: 0.5rem 0; */
+  margin: 0.5rem 0;
 }
 
 .business-category {
@@ -1037,4 +1047,19 @@
 .social-link:hover {
   transform: scale(1.1);
   opacity: 0.85;
+}
+
+.business-detail-reapprove-btn{
+  color: red;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.business-detail-reapprove-btn:hover{
+  color: rgb(192, 0, 0);
 }

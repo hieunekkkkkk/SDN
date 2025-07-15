@@ -6,8 +6,6 @@ export const getCurrentUserRole = () => {
 
   try {
     const decoded = jwtDecode(token);
-    // console.log('Decoded JWT:', decoded);
-    // console.log('User role:', decoded.role);
     return decoded.role;
   } catch (error) {
     console.error('Invalid token:', error);

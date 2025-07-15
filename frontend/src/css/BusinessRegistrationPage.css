@@ -8,7 +8,7 @@
 .business-register-intro-card {
   background-color: #f9e4e4;
   border-radius: var(--border-radius);
-  padding: 1.5rem 3rem;
+  padding: 1.5rem 3rem 3rem;
   margin-bottom: 5rem;
 }
 
@@ -105,16 +105,21 @@
   border: none;
   border-radius: var(--border-radius);
   cursor: pointer;
-  width: 170px;
+  width: 200px;
   margin-left: 10px;
   font-size: 15px;
 }
-
+/* 
 .checkbox-group {
   display: flex;
   align-items: flex-start;
   max-width: 300px;
   flex-direction: column;
+} */
+
+.business-register-geolocate-note {
+  color: red;
+  font-size: 12px;
 }
 
 .business-register-form-group label {
@@ -123,13 +128,14 @@
 }
 
 .business-register-form-group :is(input, textarea) {
-  padding: 0.5rem;
+  padding: 1rem 0.5rem;
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
   -moz-appearance: textfield;
   cursor: text;
   font-size: 16px;
   flex: 1;
+  margin: 0;
 }
 
 .business-register-form-group input[type="number"] {
@@ -144,7 +150,7 @@
 }
 
 .business-register-form-group select {
-  padding: 0.5rem;
+  padding: 1rem 0.5rem;
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
   font-size: 16px;
@@ -158,7 +164,7 @@
 
 .business-register-operating-hours-inputs input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 1rem 0.5rem;
   border: 1px solid #ddd;
   border-radius: var(--border-radius);
   font-size: 16px;
@@ -232,6 +238,10 @@
 
 .business-register-submit-btn:hover {
   background-color: #4a148c;
+}
+
+.business-register-submit-btn:disabled {
+  background-color: #6c5786;
 }
 
 .business-register-pricing-plans {

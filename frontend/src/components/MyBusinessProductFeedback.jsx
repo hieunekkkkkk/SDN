@@ -1,9 +1,10 @@
+// components/ProductFeedback.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
-import '../css/BusinessFeedback.css';
+import '../css/ProductFeedback.css';
 
-const BusinessFeedback = ({ businessId }) => {
+const ProductFeedback = ({ productId, isModal = false }) => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -16,14 +17,13 @@ const BusinessFeedback = ({ businessId }) => {
   const [hoveredRating, setHoveredRating] = useState(0);
   const [userInfoMap, setUserInfoMap] = useState({});
 
-  const itemsPerPage = 5;
+  const itemsPerPage = isModal ? 3 : 5;
 
-  // Fetch feedbacks when component mounts or businessId changes
   useEffect(() => {
-    if (businessId) {
+    if (productId) {
       fetchFeedbacks();
     }
-  }, [businessId]);
+  }, [productId]);
 
   const fetchUserInfo = async (userId) => {
     if (!userId || userInfoMap[userId]) return;
@@ -49,10 +49,9 @@ const BusinessFeedback = ({ businessId }) => {
       setError(null);
 
       const response = await axios.get(
-        `${import.meta.env.VITE_BE_URL}/api/feedback/business/${businessId}`
+        `${import.meta.env.VITE_BE_URL}/api/feedback/product/${productId}`
       );
 
-      // Check if response has success property or data directly
       let feedbackData = [];
       if (response.data.success) {
         feedbackData = response.data.data || [];
@@ -64,7 +63,6 @@ const BusinessFeedback = ({ businessId }) => {
 
       setFeedbacks(feedbackData);
 
-      // Fetch user info for each feedback
       feedbackData.forEach(feedback => {
         if (feedback.user_id) {
           fetchUserInfo(feedback.user_id);
@@ -74,7 +72,7 @@ const BusinessFeedback = ({ businessId }) => {
     } catch (err) {
       console.error('Error fetching feedbacks:', err);
       if (err.response?.status === 404) {
-        setFeedbacks([]); // No feedbacks found is not an error
+        setFeedbacks([]);
       } else {
         setError('Không thể tải đánh giá');
         toast.error('Không thể tải đánh giá');
@@ -84,18 +82,16 @@ const BusinessFeedback = ({ businessId }) => {
     }
   };
 
-  // Calculate overall rating from feedbacks
   const calculateOverallRating = () => {
     if (feedbacks.length === 0) return 0;
 
     const totalRating = feedbacks.reduce((sum, feedback) => {
-      return sum + (feedback.feedback_rating || 5); // Use actual rating or default to 5
+      return sum + (feedback.feedback_rating || 5);
     }, 0);
 
     return totalRating / feedbacks.length;
   };
 
-  // Sort feedbacks based on selected option
   const getSortedFeedbacks = () => {
     const sorted = [...feedbacks];
 
@@ -124,10 +120,7 @@ const BusinessFeedback = ({ businessId }) => {
 
   // Handle feedback submission
   const handleSubmitFeedback = async () => {
-    if (!newFeedback.trim()) {
-      toast.error('Vui lòng nhập nội dung đánh giá');
-      return;
-    }
+    if (!newFeedback.trim()) return;
 
     try {
       setIsSubmitting(true);
@@ -147,10 +140,10 @@ const BusinessFeedback = ({ businessId }) => {
         `${import.meta.env.VITE_BE_URL}/api/feedback`,
         {
           user_id: userId,
-          business_id: businessId,
-          feedback_type: 'business',
+          product_id: productId,
+          feedback_type: 'product',
           feedback_comment: newFeedback.trim(),
-          feedback_rating: selectedRating, // Include rating
+          feedback_rating: selectedRating,
           feedback_like: 0,
           feedback_dislike: 0
         }
@@ -159,12 +152,11 @@ const BusinessFeedback = ({ businessId }) => {
       if (response.data.message === 'Feedback created successfully') {
         setNewFeedback('');
         setSelectedRating(5);
-        setShowWriteReview(false);
-        fetchFeedbacks(); // Refresh feedbacks
-        toast.success('Đánh giá đã được gửi thành công!');
+        fetchFeedbacks();
+        toast.success('Đánh giá sản phẩm đã được gửi thành công!');
       }
     } catch (err) {
-      console.error('Error submitting feedback:', err);
+      console.error('Error submitting product feedback:', err);
       toast.error('Không thể gửi đánh giá. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
@@ -177,11 +169,9 @@ const BusinessFeedback = ({ businessId }) => {
       await axios.patch(
         `${import.meta.env.VITE_BE_URL}/api/feedback/${feedbackId}/like`
       );
-      fetchFeedbacks(); // Refresh to get updated counts
-      toast.success('Đã thích đánh giá này');
+      fetchFeedbacks();
     } catch (err) {
       console.error('Error liking feedback:', err);
-      toast.error('Không thể thích đánh giá này');
     }
   };
 
@@ -190,15 +180,12 @@ const BusinessFeedback = ({ businessId }) => {
       await axios.patch(
         `${import.meta.env.VITE_BE_URL}/api/feedback/${feedbackId}/dislike`
       );
-      fetchFeedbacks(); // Refresh to get updated counts
-      toast.success('Đã không thích đánh giá này');
+      fetchFeedbacks();
     } catch (err) {
       console.error('Error disliking feedback:', err);
-      toast.error('Không thể bỏ thích đánh giá này');
     }
   };
 
-  // Render star rating
   const renderStars = (rating, interactive = false, onStarClick = null, onStarHover = null) => {
     const stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -224,7 +211,6 @@ const BusinessFeedback = ({ businessId }) => {
       return userInfoMap[feedback.user_id];
     }
 
-    // Fallback nếu chưa có thông tin user
     if (feedback.user_id && typeof feedback.user_id === 'string') {
       const userId = feedback.user_id;
       if (userId.length > 10) {
@@ -320,21 +306,21 @@ const BusinessFeedback = ({ businessId }) => {
 
   if (loading) {
     return (
-      <section className="business-feedback-section">
-        <div className="business-feedback">
+      <div className={`product-feedback-section ${isModal ? 'modal-version' : ''}`}>
+        <div className="product-feedback">
           <div className="feedback-container">
-            <div className="loading-state">Đang tải đánh giá...</div>
+            <div className="loading-state">Đang tải đánh giá sản phẩm...</div>
           </div>
         </div>
-      </section>
+      </div>
     );
   }
 
   return (
-    <section className="business-feedback-section">
-      <div className="business-feedback">
+    <div className={`product-feedback-section ${isModal ? 'modal-version' : ''}`}>
+      <div className="product-feedback">
         <div className="feedback-container">
-          <h2 className="feedback-title">Đánh giá từ khách hàng</h2>
+          {!isModal && <h2 className="feedback-title">Đánh giá sản phẩm</h2>}
 
           {/* Overall Rating */}
           <div className="overall-rating">
@@ -344,65 +330,10 @@ const BusinessFeedback = ({ businessId }) => {
             </div>
             <span className="time-period">từ {feedbacks.length} đánh giá</span>
 
-            <div className="review-actions">
-              {!showWriteReview ? (
-                <button
-                  className="write-review-btn"
-                  onClick={() => setShowWriteReview(true)}
-                >
-                  Viết đánh giá
-                </button>
-              ) : (
-                <div className="write-review-section">
-                  {/* Rating Selection */}
-                  <div className="rating-input-section">
-                    <label className="rating-label">Đánh giá của bạn:</label>
-                    <div className="interactive-stars">
-                      {renderStars(
-                        selectedRating,
-                        true,
-                        setSelectedRating,
-                        setHoveredRating
-                      )}
-                    </div>
-                    <span className="rating-text">
-                      {selectedRating === 1 && 'Rất không hài lòng'}
-                      {selectedRating === 2 && 'Không hài lòng'}
-                      {selectedRating === 3 && 'Bình thường'}
-                      {selectedRating === 4 && 'Hài lòng'}
-                      {selectedRating === 5 && 'Rất hài lòng'}
-                    </span>
-                  </div>
-
-                  <textarea
-                    className="feedback-textarea"
-                    placeholder="Chia sẻ trải nghiệm của bạn..."
-                    value={newFeedback}
-                    onChange={(e) => setNewFeedback(e.target.value)}
-                    rows="4"
-                  />
-                  <div className="review-form-actions">
-                    <button
-                      className="submit-review-btn"
-                      onClick={handleSubmitFeedback}
-                      disabled={isSubmitting || !newFeedback.trim()}
-                    >
-                      {isSubmitting ? 'Đang gửi...' : 'Gửi đánh giá'}
-                    </button>
-                    <button
-                      className="cancel-review-btn"
-                      onClick={() => {
-                        setShowWriteReview(false);
-                        setNewFeedback('');
-                        setSelectedRating(5);
-                      }}
-                    >
-                      Hủy
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+            {!isModal && (
+              <div className="review-actions-modal">
+              </div>
+            )}
           </div>
 
           {error && (
@@ -473,23 +404,6 @@ const BusinessFeedback = ({ businessId }) => {
                     </div>
 
                     <div className="review-footer">
-                      <button
-                        className="share-btn"
-                        onClick={() => {
-                          if (navigator.share) {
-                            navigator.share({
-                              text: feedback.feedback_comment,
-                              url: window.location.href
-                            });
-                          } else {
-                            navigator.clipboard.writeText(window.location.href);
-                            toast.success('Đã sao chép link');
-                          }
-                        }}
-                      >
-                        <span className="share-icon">↗</span> Chia sẻ
-                      </button>
-
                       <div className="helpful-section">
                         <span className="helpful-text">
                           Đánh giá này có hữu ích không?
@@ -515,7 +429,7 @@ const BusinessFeedback = ({ businessId }) => {
               </div>
             ) : (
               <div className="no-reviews">
-                <p>Chưa có đánh giá nào cho doanh nghiệp này.</p>
+                <p>Chưa có đánh giá nào cho sản phẩm này.</p>
                 <p>Hãy là người đầu tiên chia sẻ trải nghiệm của bạn!</p>
               </div>
             )}
@@ -529,8 +443,8 @@ const BusinessFeedback = ({ businessId }) => {
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
-export default BusinessFeedback;
+export default ProductFeedback;

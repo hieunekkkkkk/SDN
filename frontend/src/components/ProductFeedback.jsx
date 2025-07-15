@@ -16,7 +16,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
   const [selectedRating, setSelectedRating] = useState(5);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [userInfoMap, setUserInfoMap] = useState({});
-  
+
   const itemsPerPage = isModal ? 3 : 5;
 
   useEffect(() => {
@@ -27,28 +27,19 @@ const ProductFeedback = ({ productId, isModal = false }) => {
 
   const fetchUserInfo = async (userId) => {
     if (!userId || userInfoMap[userId]) return;
-    
-    if (userId.length < 10 || userId.startsWith('user')) {
-      const displayName = userId.length > 5 ? 
-        `Người dùng ${userId.slice(-4).toUpperCase()}` : 
-        `Người dùng ${userId}`;
-      setUserInfoMap(prev => ({ ...prev, [userId]: displayName }));
-      return;
-    }
-    
+
     try {
       const response = await axios.get(`${import.meta.env.VITE_BE_URL}/api/user/${userId}`);
-      const username = response.data?.users?.fullName || 
-                      response.data?.users?.email?.split('@')[0] || 
-                      'Người dùng';
-      setUserInfoMap(prev => ({ ...prev, [userId]: username }));
+      const user = response.data?.users;
+      const username = user?.fullName || user?.email?.split('@')[0] || 'Người dùng';
+      setUserInfoMap((prev) => ({ ...prev, [userId]: username }));
     } catch (error) {
-      console.error('Error fetching user info for userId:', userId, error);
-
-      const displayName = userId.length > 10 ? 
-        `Người dùng ${userId.slice(-4).toUpperCase()}` : 
-        `Người dùng ${userId}`;
-      setUserInfoMap(prev => ({ ...prev, [userId]: displayName }));
+      console.error('Error fetching user info:', error);
+      const fallbackName =
+        userId.length > 10
+          ? `Người dùng ${userId.slice(-4).toUpperCase()}`
+          : `Người dùng ${userId}`;
+      setUserInfoMap((prev) => ({ ...prev, [userId]: fallbackName }));
     }
   };
 
@@ -56,11 +47,11 @@ const ProductFeedback = ({ productId, isModal = false }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axios.get(
         `${import.meta.env.VITE_BE_URL}/api/feedback/product/${productId}`
       );
-      
+
       let feedbackData = [];
       if (response.data.success) {
         feedbackData = response.data.data || [];
@@ -69,19 +60,19 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       } else {
         feedbackData = [];
       }
-      
+
       setFeedbacks(feedbackData);
-      
+
       feedbackData.forEach(feedback => {
         if (feedback.user_id) {
           fetchUserInfo(feedback.user_id);
         }
       });
-      
+
     } catch (err) {
       console.error('Error fetching feedbacks:', err);
       if (err.response?.status === 404) {
-        setFeedbacks([]); 
+        setFeedbacks([]);
       } else {
         setError('Không thể tải đánh giá');
         toast.error('Không thể tải đánh giá');
@@ -93,17 +84,17 @@ const ProductFeedback = ({ productId, isModal = false }) => {
 
   const calculateOverallRating = () => {
     if (feedbacks.length === 0) return 0;
-    
+
     const totalRating = feedbacks.reduce((sum, feedback) => {
-      return sum + (feedback.feedback_rating || 5); 
+      return sum + (feedback.feedback_rating || 5);
     }, 0);
-    
+
     return totalRating / feedbacks.length;
   };
 
   const getSortedFeedbacks = () => {
     const sorted = [...feedbacks];
-    
+
     switch (sortBy) {
       case 'newest':
         return sorted.sort((a, b) => new Date(b.feedback_date) - new Date(a.feedback_date));
@@ -133,11 +124,11 @@ const ProductFeedback = ({ productId, isModal = false }) => {
 
     try {
       setIsSubmitting(true);
-      
+
       // Get current user ID from token
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        alert('Vui lòng đăng nhập để gửi đánh giá');
+        toast.error('Vui lòng đăng nhập để gửi đánh giá');
         return;
       }
 
@@ -161,12 +152,12 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       if (response.data.message === 'Feedback created successfully') {
         setNewFeedback('');
         setSelectedRating(5);
-        fetchFeedbacks(); 
-        alert('Đánh giá sản phẩm đã được gửi thành công!');
+        fetchFeedbacks();
+        toast.success('Đánh giá sản phẩm đã được gửi thành công!');
       }
     } catch (err) {
       console.error('Error submitting product feedback:', err);
-      alert('Không thể gửi đánh giá. Vui lòng thử lại.');
+      toast.error('Không thể gửi đánh giá. Vui lòng thử lại.');
     } finally {
       setIsSubmitting(false);
     }
@@ -219,7 +210,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
     if (feedback.user_id && userInfoMap[feedback.user_id]) {
       return userInfoMap[feedback.user_id];
     }
-    
+
     if (feedback.user_id && typeof feedback.user_id === 'string') {
       const userId = feedback.user_id;
       if (userId.length > 10) {
@@ -229,7 +220,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
         return `Người dùng ${userId}`;
       }
     }
-    
+
     return 'Người dùng ẩn danh';
   };
 
@@ -241,7 +232,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
 
   // Handle pagination
   const totalPages = Math.ceil(feedbacks.length / itemsPerPage);
-  
+
   const handlePageChange = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -252,7 +243,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
     if (totalPages <= 1) return null;
 
     const pages = [];
-    
+
     // Previous button
     if (currentPage > 1) {
       pages.push(
@@ -340,16 +331,16 @@ const ProductFeedback = ({ productId, isModal = false }) => {
             <span className="time-period">từ {feedbacks.length} đánh giá</span>
 
             {!isModal && (
-              <div className="review-actions">
+              <div className="review-actions-modal">
                 <div className="write-review-section">
                   {/* Rating Selection */}
                   <div className="rating-input-section">
                     <label className="rating-label">Đánh giá của bạn:</label>
                     <div className="interactive-stars">
                       {renderStars(
-                        selectedRating, 
-                        true, 
-                        setSelectedRating, 
+                        selectedRating,
+                        true,
+                        setSelectedRating,
                         setHoveredRating
                       )}
                     </div>
@@ -361,7 +352,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
                       {selectedRating === 5 && 'Rất hài lòng'}
                     </span>
                   </div>
-                  
+
                   <textarea
                     className="feedback-textarea"
                     placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."
@@ -370,7 +361,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
                     rows="4"
                   />
                   <div className="review-form-actions">
-                    <button 
+                    <button
                       className="submit-review-btn"
                       onClick={handleSubmitFeedback}
                       disabled={isSubmitting || !newFeedback.trim()}
@@ -439,7 +430,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
 
                     <div className="review-content">
                       <p className="review-text">{feedback.feedback_comment}</p>
-                      
+
                       {feedback.feedback_response && (
                         <div className="business-response">
                           <div className="response-header">
@@ -456,13 +447,13 @@ const ProductFeedback = ({ productId, isModal = false }) => {
                           Đánh giá này có hữu ích không?
                         </span>
                         <div className="helpful-buttons">
-                          <button 
+                          <button
                             className="helpful-btn like-btn"
                             onClick={() => handleLike(feedback._id)}
                           >
                             👍 {feedback.feedback_like || 0}
                           </button>
-                          <button 
+                          <button
                             className="helpful-btn dislike-btn"
                             onClick={() => handleDislike(feedback._id)}
                           >
