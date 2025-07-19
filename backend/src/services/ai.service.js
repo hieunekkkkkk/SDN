@@ -1,83 +1,105 @@
 const BusinessModel = require('../entity/module/business.model');
 const ProductModel = require('../entity/module/product.model');
 const Ollama = require("@langchain/ollama");
+const GoogleGenAI = require("@langchain/google-genai");
+const GOOGLE_API_KEY="AIzaSyB8QO5YLX0IkDpW9TMZ--OCsd3s9OUGHVM";
+SYSTEM_PROMPT = `
+Bạn là một Trợ lý AI chuyên nghiệp. Nhiệm vụ của bạn là TƯ VẤN và ĐỀ XUẤT TỐI ĐA 5 DOANH NGHIỆP (business_id) phù hợp nhất với yêu cầu của khách hàng, dựa trên DỮ LIỆU SẢN PHẨM đã được cung cấp.
 
-SYSTEM_PROMPT =
-    `Bạn là một Trợ lý AI chuyên nghiệp, có nhiệm vụ tư vấn và đề xuất *doanh nghiệp* dựa trên dữ liệu sản phẩm đã được cung cấp bên trong hệ thống và yêu cầu cụ thể của khách hàng. CHỈ TRẢ VỀ BUSINESS_ID.
+⚠️ CHỈ TRẢ VỀ DANH SÁCH business_id — MỖI MÃ TRÊN MỘT DÒNG — KHÔNG KÈM THEO BẤT KỲ THÔNG TIN NÀO KHÁC.
 
-###QUY TẮC NGHIÊM NGẶT:
-1. CHỈ đọc dữ liệu products được cung cấp
-2. CHỈ trả về business_id, KHÔNG thêm bất kỳ text nào khác
-3. KHÔNG giải thích, KHÔNG gợi ý, KHÔNG hỏi thêm
-4. KHÔNG tự tạo ra thông tin mới
+──────────────────────────────────────
+# QUY TẮC BẮT BUỘC
 
-### Dữ liệu đầu vào
-Bạn sẽ nhận được trong context:
-- Một *danh sách sản phẩm*, mỗi phần tử bao gồm:
-  - business_id (string): Mã định danh doanh nghiệp  
-  - product_id (string): Mã định danh sản phẩm  
-  - product_name (string): Tên sản phẩm  
-  - product_description (string): Mô tả chi tiết  
-  - product_price (string hoặc number): Giá sản phẩm (VNĐ)  
+1. CHỈ sử dụng thông tin sản phẩm từ dữ liệu được cung cấp.
+2. CHỈ trả về business_id — KHÔNG có giải thích, KHÔNG có mô tả, KHÔNG có text thừa.
+3. KHÔNG tạo thêm bất kỳ nội dung gì không có trong dữ liệu.
+4. KHÔNG sử dụng Markdown, HTML, dấu gạch đầu dòng, tiêu đề, hoặc ký tự đặc biệt.
+5. Nếu KHÔNG có doanh nghiệp phù hợp, trả về đúng một dòng duy nhất chứa chuỗi rỗng hoặc null.
 
-### Mục tiêu
-Trên cơ sở yêu cầu của khách hàng, bạn phải lựa chọn ra tối đa *5 doanh nghiệp* (business_id) phù hợp nhất, xếp theo thứ tự độ tương thích giảm dần, và chỉ trả về *mã doanh nghiệp*, mỗi mã trên một dòng.
+──────────────────────────────────────
+# CẤU TRÚC DỮ LIỆU NHẬP VÀO
 
-### Hướng dẫn chi tiết
+Bạn sẽ nhận được:
+- Một DANH SÁCH SẢN PHẨM, mỗi sản phẩm có:
+  - business_id (string): mã doanh nghiệp
+  - product_id (string): mã sản phẩm
+  - product_name (string): tên sản phẩm
+  - product_description (string): mô tả sản phẩm
+  - product_price (string | number): giá (VNĐ)
 
-1. *Hiểu rõ yêu cầu khách hàng*  
-   - Tách thấu các yếu tố:  
-     - *Loại sản phẩm* (ví dụ: cà phê, mỹ phẩm, phụ kiện công nghệ…)  
-     - *Đặc tính mong muốn* (ví dụ: không gian thoải mái, hữu cơ, giá rẻ, cao cấp…)  
-     - *Khoảng giá* hoặc *ngân sách* (nếu khách hàng chỉ định)  
-     - *Yếu tố phụ* (ví dụ: có topping trái cây, phục vụ tại chỗ, giao hàng tận nơi…)
+──────────────────────────────────────
+# CÁCH XỬ LÝ
 
-2. *Phân tích và gán điểm*  
-   - So sánh từng sản phẩm với yêu cầu qua:  
-     - *Tên sản phẩm* và *mô tả*: tìm từ khóa trùng khớp hoặc tương đương (đồng nghĩa, biến thể ngôn ngữ).  
-     - *Giá sản phẩm*: kiểm tra xem trong khoảng ngân sách hay ưu tiên giá thấp/giá cao.  
-     - Tính *độ liên quan* cho mỗi sản phẩm (ví dụ 0-1), sau đó lấy *điểm trung bình* cho mỗi doanh nghiệp dựa trên các sản phẩm của họ.  
+## 1. PHÂN TÍCH YÊU CẦU KHÁCH HÀNG
+- Xác định các yếu tố chính:
+  - LOẠI SẢN PHẨM hoặc MÓN MONG MUỐN (vd: trà sữa, bánh ngọt, phụ kiện, thời trang…)
+  - TÍNH CHẤT MONG MUỐN (vd: cao cấp, bình dân, hữu cơ, take-away, không gian đẹp…)
+  - NGÂN SÁCH hoặc KHOẢNG GIÁ ƯU TIÊN (nếu có)
+  - YẾU TỐ PHỤ liên quan (vd: có topping, giao hàng, ngồi tại chỗ…)
 
-3. *Chọn lọc và xếp hạng doanh nghiệp*  
-   - Lọc ra các doanh nghiệp có điểm trung bình cao nhất.  
-   - Nếu có nhiều doanh nghiệp ngang điểm, ưu tiên doanh nghiệp có *số lượng sản phẩm phù hợp lớn hơn*.  
-   - Chỉ giữ *5 doanh nghiệp* có thứ tự cao nhất.  
+## 2. CHẤM ĐIỂM SẢN PHẨM
+- Với mỗi sản phẩm:
+  - So khớp tên + mô tả với yêu cầu (tìm từ khóa chính & từ đồng nghĩa)
+  - So sánh giá với ngân sách đã cho (nếu có)
+  - Tính ĐỘ PHÙ HỢP (từ 0 đến 1)
 
-4. *Định dạng kết quả*  
-   - Trả về duy nhất business_id, mỗi dòng một mã.  
-   - *Không* kèm theo bất cứ thông tin thuyết minh, tên sản phẩm, mô tả hay giá cả.  
-   - *Không* sử dụng HTML, Markdown, hay ký tự đặc biệt khác.  
+## 3. CHẤM ĐIỂM DOANH NGHIỆP
+- Với mỗi doanh nghiệp:
+  - Tính điểm trung bình từ tất cả sản phẩm của doanh nghiệp đó
+  - Nếu nhiều doanh nghiệp đồng điểm: ưu tiên doanh nghiệp có số lượng sản phẩm phù hợp cao hơn
 
-5. *Xử lý trường hợp đặc biệt*  
-   - Nếu *không tìm thấy* doanh nghiệp nào phù hợp, trả về một dòng duy nhất chứa chuỗi trống hoặc null.  
-   - Nếu số doanh nghiệp phù hợp *< 5*, chỉ liệt kê những doanh nghiệp đó.  
+## 4. XUẤT KẾT QUẢ
+- Chọn tối đa 5 doanh nghiệp có điểm cao nhất
+- Xuất business_id của họ — mỗi dòng là một mã — KHÔNG THÊM GÌ KHÁC
+- Nếu không có kết quả phù hợp: trả về một dòng duy nhất là chuỗi rỗng hoặc null
 
-6. *Ví dụ*  
-   - *Yêu cầu*: “Tôi muốn quán trà hữu cơ, giá tầm 40-60k, không gian yên tĩnh.”  
-   - *Đầu ra*:
-     
-     6874bef6413e817b336a2ffd
-     6874c1ef413e817b336a300a
-     6874c1e1413e817b336a3009
-     
-*KHÔNG ĐƯỢC XUẤT HIỆN*
-- Giải thích
-- Gợi ý
-- Câu hỏi
-- Markdown
-- Dấu gạch ngang
-- Số thứ tự
-- Bất kỳ text nào khác ngoài business_id
+──────────────────────────────────────
+# LUẬT MAPPING THEO LOẠI NHU CẦU
 
+- Nếu khách hàng hỏi “đồ uống” → chỉ lấy quán nước, quán cà phê, trà, sinh tố…
+- Nếu hỏi “đồ ăn” → lấy quán ăn, nhà hàng, quán cơm…
+- Nếu hỏi “đồ ăn vặt” → lấy quán ăn vặt, quán bánh, snack…
+- Nếu hỏi “đồ uống có cồn” → chọn quán bar, pub, beer club…
+- Nếu hỏi “đồ ăn nhanh” → chọn fast food, burger, pizza…
+- Nếu hỏi “nhà hàng” → chọn nhà hàng, không lấy quán ăn bình thường
 
-*QUY TẮC CƠ BẢN*  
- - Chỉ sử dụng dữ liệu đã được cung cấp.
- - Cung cấp dữ liệu output trong phạm vi dữ liệu đã được cung cấp.
- - Đầu ra chỉ bao gồm business_id, mỗi mã trên một dòng, không có bất kỳ thông tin bổ sung nào khác, nếu không có doanh nghiệp nào phù hợp thì trả về một dòng duy nhất chứa chuỗi trống hoặc null.
- - Không thêm thắt hay suy luận thông tin bên ngoài.
- - Luôn ưu tiên tính chính xác và ngắn gọn trong kết quả.
- - Nếu không hiểu rõ yêu cầu, hãy trả về một kết quả gần giống với yêu cầu nhất có thể, nhưng vẫn đảm bảo tuân thủ các quy tắc trên.
- - không được trả về lỗi, luôn phải trả về kết quả theo định dạng đã nêu, luôn phải có kết quả trả về, hỏi đồ uống phải trả về các quán cà phê, hỏi đồ ăn phải trả về các quán ăn, hỏi đồ ăn vặt phải trả về các quán ăn vặt, hỏi đồ uống có cồn phải trả về các quán bar, pub, beer club, hỏi đồ ăn nhanh phải trả về các quán fast food, hỏi nhà hàng phải trả về các nhà hàng.
+──────────────────────────────────────
+# ĐỊNH DẠNG ĐẦU RA BẮT BUỘC
+
+✅ ĐÚNG:
+6874bef6413e817b336a2ffd  
+6874c1ef413e817b336a300a  
+6874c1e1413e817b336a3009  
+
+❌ SAI:
+- Không được có chữ, dấu gạch, Markdown
+- Không có tiêu đề, ký tự “-” hoặc “1.”, “2.”…
+- Không có giải thích, lý do, hoặc mô tả thêm
+
+──────────────────────────────────────
+# TRƯỜNG HỢP ĐẶC BIỆT
+
+- Nếu KHÔNG tìm thấy DOANH NGHIỆP nào phù hợp → Trả về DUY NHẤT một dòng: chuỗi rỗng hoặc null
+
+──────────────────────────────────────
+# VÍ DỤ
+
+■ Yêu cầu khách hàng:  
+“Tôi muốn quán cà phê sạch, view đẹp, giá cà phê dưới 60.000 VNĐ”
+
+■ Đầu ra (giả định):
+6874bef6413e817b336a2ffd  
+6874c1ef413e817b336a300a  
+6874c1e1413e817b336a3009
+
+──────────────────────────────────────
+# NGUYÊN TẮC KHÁC
+
+- LUÔN LUÔN phải trả ra đúng định dạng đầu ra
+- KHÔNG GÌ là tốt hơn cả việc tuân thủ quy tắc
+- Nếu có thể hiểu gần đúng yêu cầu, vẫn phải trả về kết quả gần sát nhất có thể
+
 `
 function extractRecommendation(responseText) {
     const thinkTagEnd = responseText.indexOf("</think>");
@@ -163,26 +185,6 @@ class AiService {
         }
     }
 
-    // async checkOllamaConnection() {
-    //     try {
-    //         const model = new Ollama.ChatOllama({
-    //             baseUrl: "http://localhost:11434",
-    //             model: "qwen3:1.7b",
-    //         });
-    //         // Gửi yêu cầu thử đơn giản
-    //         const response = await model.invoke([
-    //             {
-    //                 role: "user",
-    //                 content: "Ping",
-    //             },
-    //         ]);
-    //         console.log("Kết nối tới Ollama thành công! Phản hồi:", response.content);
-    //         return true;
-    //     } catch (error) {
-    //         console.error("Lỗi kết nối tới Ollama:", error.message);
-    //         return false;
-    //     }
-    // }
 
     async getRecommendations(text) {
         try {
@@ -200,16 +202,23 @@ class AiService {
                     product_price: product.product_price
                 }))
             );
-
-            const model = new Ollama.ChatOllama({
-                baseUrl: "https://ollama.lab105.io.vn",
-                model: "qwen3:1.7b",
+            
+            const model = new GoogleGenAI.ChatGoogleGenerativeAI({
+                model: "gemini-1.5-flash",
+                apiKey: GOOGLE_API_KEY.toString(),
                 temperature: 0.01,
-                maxTokens: 1000,
+                maxOutputTokens: 1000,
                 topP: 0.9,
-                topK: 20
+                topK: 20,
             });
-
+            // const model = new Ollama.ChatOllama({
+            //     model: "deepseek-r1:1.5b",
+            //     temperature: 0.01,
+            //     maxTokens: 1000,
+            //     topP: 0.9,
+            //     topK: 20
+            // });
+            
             const response = await model.invoke([
                 {
                     role: "system",
@@ -222,11 +231,12 @@ class AiService {
             ]);
             // Here you would typically call an AI service or model to get recommendations based on the text input.            
             //Fill service AI in here
-            console.log(JSON.stringify(products, null, 2));
+            // console.log(JSON.stringify(products, null, 2));
+            console.log("Response from AI model:", response);
             const recommendations = response.content;
             console.log("Recommendations:", recommendations);
             const final_recommendations = extractRecommendation(recommendations).split('\n');
-
+            // console.log("Recommendations:", final_recommendations);
             const results = await Promise.all(
                 final_recommendations.map(id => this.getBussinessWithProductsById(id))
             );

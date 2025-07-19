@@ -6,7 +6,7 @@ services:
     container_name: ollama
     restart: unless-stopped
     ports:
-      - "11434:11434"
+      - "11435:11435"
     environment:
       - OLLAMA_HOST=0.0.0.0
       - OLLAMA_FLASH_ATTENTION=1
@@ -30,7 +30,7 @@ services:
       sh -c "
         ollama serve & 
         sleep 5 && 
-        ollama pull qwen3:1.7b &&
+        ollama pull qwen3:8b &&
         wait
       "
 
