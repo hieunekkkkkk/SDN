@@ -14,13 +14,13 @@ const authRoutes = require('./auth');
 
 // Tập trung các routes
 
-router.use('/business', businessRoutes);
-router.use('/product', productRoutes);
-router.use('/payment', paymentRoutes);
-router.use('/stack', stackRoutes);
-router.use('/category', categoryRoutes);
-router.use('/feedback', feedbackRoutes);
-router.use('/user', userRoutes);
+router.use('/businesses', businessRoutes);
+router.use('/products', productRoutes);
+router.use('/payments', paymentRoutes);
+router.use('/stacks', stackRoutes);
+router.use('/categories', categoryRoutes);
+router.use('/feedbacks', feedbackRoutes);
+router.use('/users', userRoutes);
 router.use('/ai', aiRoutes);
 router.use('/auth', authRoutes);
 
