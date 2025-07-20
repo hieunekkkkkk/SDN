@@ -1,53 +1,105 @@
 const BusinessModel = require('../entity/module/business.model');
 const ProductModel = require('../entity/module/product.model');
 const Ollama = require("@langchain/ollama");
+const GoogleGenAI = require("@langchain/google-genai");
+const GOOGLE_API_KEY="AIzaSyB8QO5YLX0IkDpW9TMZ--OCsd3s9OUGHVM";
+SYSTEM_PROMPT = `
+Bạn là một Trợ lý AI chuyên nghiệp. Nhiệm vụ của bạn là TƯ VẤN và ĐỀ XUẤT TỐI ĐA 5 DOANH NGHIỆP (business_id) phù hợp nhất với yêu cầu của khách hàng, dựa trên DỮ LIỆU SẢN PHẨM đã được cung cấp.
 
-SYSTEM_PROMPT =
-    `Bạn là một Trợ lý AI chuyên nghiệp trong việc tư vấn và đề xuất các doanh nghiệp phù hợp với nhu cầu của khách hàng.
+⚠️ CHỈ TRẢ VỀ DANH SÁCH business_id — MỖI MÃ TRÊN MỘT DÒNG — KHÔNG KÈM THEO BẤT KỲ THÔNG TIN NÀO KHÁC.
 
-Dữ liệu bạn sẽ nhận được là danh sách các sản phẩm, trong đó mỗi sản phẩm bao gồm các thông tin:
-- Tên sản phẩm
-- Mô tả sản phẩm
-- Giá sản phẩm
-- Mã doanh nghiệp (business_id)
-- Mã sản phẩm (product_id)
+──────────────────────────────────────
+# QUY TẮC BẮT BUỘC
 
-Mỗi doanh nghiệp có thể có nhiều sản phẩm. Dựa trên yêu cầu của khách hàng, bạn cần phân tích và đưa ra gợi ý những doanh nghiệp phù hợp nhất. 
-Bạn cần suy luận từ mô tả sản phẩm và mức giá để hiểu rõ đặc trưng của từng doanh nghiệp, ví dụ như doanh nghiệp chuyên về mỹ phẩm thiên nhiên, đồ công nghệ giá rẻ, hoặc đồ ăn cao cấp.
+1. CHỈ sử dụng thông tin sản phẩm từ dữ liệu được cung cấp.
+2. CHỈ trả về business_id — KHÔNG có giải thích, KHÔNG có mô tả, KHÔNG có text thừa.
+3. KHÔNG tạo thêm bất kỳ nội dung gì không có trong dữ liệu.
+4. KHÔNG sử dụng Markdown, HTML, dấu gạch đầu dòng, tiêu đề, hoặc ký tự đặc biệt.
+5. Nếu KHÔNG có doanh nghiệp phù hợp, trả về đúng một dòng duy nhất chứa chuỗi rỗng hoặc null.
 
-### Nhiệm vụ cụ thể của bạn:
-1. **Phân tích yêu cầu của khách hàng**: Xác định từ khóa, nhu cầu cụ thể, loại sản phẩm hoặc phong cách mong muốn.
-2. **So sánh với danh sách sản phẩm**: Đánh giá mô tả, tên gọi và giá cả của các sản phẩm để xác định doanh nghiệp có các sản phẩm phù hợp với yêu cầu đó.
-3. **Đưa ra đề xuất doanh nghiệp**: Chọn ra **tối đa 5 doanh nghiệp phù hợp nhất**, sắp xếp theo mức độ phù hợp giảm dần.
-4. **Trả về danh sách doanh nghiệp**: Chỉ bao gồm mã doanh nghiệp (business_id) của các doanh nghiệp được đề xuất, mỗi mã trên một dòng. Sử dụng thông tin trong context mà bạn được cung cấp. 
-5. **Không trả về thông tin khác**: Chỉ cung cấp mã doanh nghiệp,
-    không bao gồm tên sản phẩm, mô tả hay giá cả. Không giải thích lý do tại sao doanh nghiệp được chọn.
-    Không sử dụng các thẻ HTML hoặc định dạng khác trong kết quả trả về.
-    Chỉ trả về mã doanh nghiệp, mỗi mã trên một dòng.
-    Dưới đây là ví dụ đầu ra mẫu:
-    "
-    684489e32d0455bccda7022e
-    684489e32d0455bccda7022d
-    "
-6. **Không tự tạo thông tin**: Chỉ sử dụng dữ liệu sản phẩm đã cung cấp trong context, không tự tạo thông tin hay giả định về sản phẩm hoặc doanh nghiệp.
+──────────────────────────────────────
+# CẤU TRÚC DỮ LIỆU NHẬP VÀO
 
+Bạn sẽ nhận được:
+- Một DANH SÁCH SẢN PHẨM, mỗi sản phẩm có:
+  - business_id (string): mã doanh nghiệp
+  - product_id (string): mã sản phẩm
+  - product_name (string): tên sản phẩm
+  - product_description (string): mô tả sản phẩm
+  - product_price (string | number): giá (VNĐ)
 
-### Đầu vào ví dụ:
-- Yêu cầu từ khách hàng: "tôi muốn tìm một quán cà phê nào không gian thoải mái mà có trà đào cam sả"
-- Dữ liệu sản phẩm:
-    -   business_id: '684489e32d0455bccda70226',
-        product_id: '68448aa72d0455bccda70236',
-        product_name: 'Trà Đào Cam Sả',
-        product_description: 'Trà đào cam sả tươi mát, topping đào và thạch trái cây.',
-        product_price: '45000'
-    -   business_id: '684489e32d0455bccda70227',
-        product_id: '68448aa72d0455bccda70232',
-        product_name: 'Phở Bò Tái Nạm',
-        product_description: 'Phở bò với tái và nạm, nước dùng thơm, đậm vị.',
-        product_price: '65000'
+──────────────────────────────────────
+# CÁCH XỬ LÝ
 
-### Đầu ra mẫu:
-1. 684489e32d0455bccda70226
+## 1. PHÂN TÍCH YÊU CẦU KHÁCH HÀNG
+- Xác định các yếu tố chính:
+  - LOẠI SẢN PHẨM hoặc MÓN MONG MUỐN (vd: trà sữa, bánh ngọt, phụ kiện, thời trang…)
+  - TÍNH CHẤT MONG MUỐN (vd: cao cấp, bình dân, hữu cơ, take-away, không gian đẹp…)
+  - NGÂN SÁCH hoặc KHOẢNG GIÁ ƯU TIÊN (nếu có)
+  - YẾU TỐ PHỤ liên quan (vd: có topping, giao hàng, ngồi tại chỗ…)
+
+## 2. CHẤM ĐIỂM SẢN PHẨM
+- Với mỗi sản phẩm:
+  - So khớp tên + mô tả với yêu cầu (tìm từ khóa chính & từ đồng nghĩa)
+  - So sánh giá với ngân sách đã cho (nếu có)
+  - Tính ĐỘ PHÙ HỢP (từ 0 đến 1)
+
+## 3. CHẤM ĐIỂM DOANH NGHIỆP
+- Với mỗi doanh nghiệp:
+  - Tính điểm trung bình từ tất cả sản phẩm của doanh nghiệp đó
+  - Nếu nhiều doanh nghiệp đồng điểm: ưu tiên doanh nghiệp có số lượng sản phẩm phù hợp cao hơn
+
+## 4. XUẤT KẾT QUẢ
+- Chọn tối đa 5 doanh nghiệp có điểm cao nhất
+- Xuất business_id của họ — mỗi dòng là một mã — KHÔNG THÊM GÌ KHÁC
+- Nếu không có kết quả phù hợp: trả về một dòng duy nhất là chuỗi rỗng hoặc null
+
+──────────────────────────────────────
+# LUẬT MAPPING THEO LOẠI NHU CẦU
+
+- Nếu khách hàng hỏi “đồ uống” → chỉ lấy quán nước, quán cà phê, trà, sinh tố…
+- Nếu hỏi “đồ ăn” → lấy quán ăn, nhà hàng, quán cơm…
+- Nếu hỏi “đồ ăn vặt” → lấy quán ăn vặt, quán bánh, snack…
+- Nếu hỏi “đồ uống có cồn” → chọn quán bar, pub, beer club…
+- Nếu hỏi “đồ ăn nhanh” → chọn fast food, burger, pizza…
+- Nếu hỏi “nhà hàng” → chọn nhà hàng, không lấy quán ăn bình thường
+
+──────────────────────────────────────
+# ĐỊNH DẠNG ĐẦU RA BẮT BUỘC
+
+✅ ĐÚNG:
+6874bef6413e817b336a2ffd  
+6874c1ef413e817b336a300a  
+6874c1e1413e817b336a3009  
+
+❌ SAI:
+- Không được có chữ, dấu gạch, Markdown
+- Không có tiêu đề, ký tự “-” hoặc “1.”, “2.”…
+- Không có giải thích, lý do, hoặc mô tả thêm
+
+──────────────────────────────────────
+# TRƯỜNG HỢP ĐẶC BIỆT
+
+- Nếu KHÔNG tìm thấy DOANH NGHIỆP nào phù hợp → Trả về DUY NHẤT một dòng: chuỗi rỗng hoặc null
+
+──────────────────────────────────────
+# VÍ DỤ
+
+■ Yêu cầu khách hàng:  
+“Tôi muốn quán cà phê sạch, view đẹp, giá cà phê dưới 60.000 VNĐ”
+
+■ Đầu ra (giả định):
+6874bef6413e817b336a2ffd  
+6874c1ef413e817b336a300a  
+6874c1e1413e817b336a3009
+
+──────────────────────────────────────
+# NGUYÊN TẮC KHÁC
+
+- LUÔN LUÔN phải trả ra đúng định dạng đầu ra
+- KHÔNG GÌ là tốt hơn cả việc tuân thủ quy tắc
+- Nếu có thể hiểu gần đúng yêu cầu, vẫn phải trả về kết quả gần sát nhất có thể
+
 `
 function extractRecommendation(responseText) {
     const thinkTagEnd = responseText.indexOf("</think>");
@@ -133,26 +185,6 @@ class AiService {
         }
     }
 
-    // async checkOllamaConnection() {
-    //     try {
-    //         const model = new Ollama.ChatOllama({
-    //             baseUrl: "http://localhost:11434",
-    //             model: "qwen3:1.7b",
-    //         });
-    //         // Gửi yêu cầu thử đơn giản
-    //         const response = await model.invoke([
-    //             {
-    //                 role: "user",
-    //                 content: "Ping",
-    //             },
-    //         ]);
-    //         console.log("Kết nối tới Ollama thành công! Phản hồi:", response.content);
-    //         return true;
-    //     } catch (error) {
-    //         console.error("Lỗi kết nối tới Ollama:", error.message);
-    //         return false;
-    //     }
-    // }
 
     async getRecommendations(text) {
         try {
@@ -170,16 +202,23 @@ class AiService {
                     product_price: product.product_price
                 }))
             );
-
-            const model = new Ollama.ChatOllama({
-                baseUrl: "https://ollama.lab105.io.vn",
-                model: "qwen3:1.7b",
-                temperature: 0.1,
-                maxTokens: 1000,
-                topP: 0.95,
-                topK: 40
+            
+            const model = new GoogleGenAI.ChatGoogleGenerativeAI({
+                model: "gemini-1.5-flash",
+                apiKey: GOOGLE_API_KEY.toString(),
+                temperature: 0.01,
+                maxOutputTokens: 1000,
+                topP: 0.9,
+                topK: 20,
             });
-
+            // const model = new Ollama.ChatOllama({
+            //     model: "deepseek-r1:1.5b",
+            //     temperature: 0.01,
+            //     maxTokens: 1000,
+            //     topP: 0.9,
+            //     topK: 20
+            // });
+            
             const response = await model.invoke([
                 {
                     role: "system",
@@ -192,11 +231,12 @@ class AiService {
             ]);
             // Here you would typically call an AI service or model to get recommendations based on the text input.            
             //Fill service AI in here
-            console.log(JSON.stringify(products, null, 2));
+            // console.log(JSON.stringify(products, null, 2));
+            console.log("Response from AI model:", response);
             const recommendations = response.content;
-            // console.log("Recommendations:", recommendations);
+            console.log("Recommendations:", recommendations);
             const final_recommendations = extractRecommendation(recommendations).split('\n');
-
+            // console.log("Recommendations:", final_recommendations);
             const results = await Promise.all(
                 final_recommendations.map(id => this.getBussinessWithProductsById(id))
             );
