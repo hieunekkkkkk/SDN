@@ -4,6 +4,7 @@ const connectDB = require('./src/config/database');
 const router = require('./src/routes/index');
 const adminRoutes = require('./src/routes/admin');
 const logger = require('./src/log/logger');
+const rateLimit = require('express-rate-limit');
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/swagger/swaggerConfig');
@@ -49,6 +50,12 @@ app.get('/metrics', metricsEndpoint);
 
 // Metrics middleware
 app.use(metricsMiddleware);
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, 
+    max: 100 
+  });
+  app.use(limiter);
 
 // Middleware
 app.use(cors({
