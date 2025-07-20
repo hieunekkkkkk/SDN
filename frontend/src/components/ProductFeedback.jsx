@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import '../css/ProductFeedback.css';
 
-const ProductFeedback = ({ productId, isModal = false }) => {
+const ProductFeedback = ({ productId, isModal = false, onProductUpdate }) => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -43,6 +43,24 @@ const ProductFeedback = ({ productId, isModal = false }) => {
     }
   };
 
+  const updateProductRating = async (rating, totalVotes) => {
+    try {
+      await axios.put(`${import.meta.env.VITE_BE_URL}/api/product/${productId}`, {
+        product_rating: rating,
+        product_total_vote: totalVotes,
+      });
+
+      if (typeof onProductUpdate === 'function') {
+        onProductUpdate({
+          rating: rating,
+          reviews: totalVotes,
+        });
+      }
+    } catch (err) {
+      console.error('Error updating product rating:', err);
+    }
+  };
+
   const fetchFeedbacks = async () => {
     try {
       setLoading(true);
@@ -62,6 +80,11 @@ const ProductFeedback = ({ productId, isModal = false }) => {
       }
 
       setFeedbacks(feedbackData);
+
+      const overall = feedbackData.length === 0
+        ? 0
+        : feedbackData.reduce((sum, feedback) => sum + (feedback.feedback_rating || 5), 0) / feedbackData.length;
+      updateProductRating(overall, feedbackData.length);
 
       feedbackData.forEach(feedback => {
         if (feedback.user_id) {
@@ -153,6 +176,17 @@ const ProductFeedback = ({ productId, isModal = false }) => {
         setNewFeedback('');
         setSelectedRating(5);
         fetchFeedbacks();
+        const updated = [...feedbacks, { feedback_rating: selectedRating }];
+        const totalVotes = updated.length;
+        const averageRating =
+          updated.reduce((sum, fb) => sum + (fb.feedback_rating || 5), 0) / totalVotes;
+
+        if (typeof onProductUpdate === 'function') {
+          onProductUpdate({
+            product_rating: averageRating,
+            product_total_vote: totalVotes,
+          });
+        }
         toast.success('Đánh giá sản phẩm đã được gửi thành công!');
       }
     } catch (err) {

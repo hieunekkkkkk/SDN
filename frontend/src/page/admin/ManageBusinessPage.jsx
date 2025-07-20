@@ -189,7 +189,6 @@ function ManageBusinessPage() {
             />
           </div>
           <div className="manage-business-sort-select">
-            <label>Sắp xếp:</label>
             <select value={sortStatus} onChange={(e) => setSortStatus(e.target.value)}>
               <option value="Newest">Mới nhất</option>
               <option value="Oldest">Cũ nhất</option>

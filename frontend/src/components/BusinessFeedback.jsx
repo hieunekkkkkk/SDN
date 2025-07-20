@@ -3,7 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import '../css/BusinessFeedback.css';
 
-const BusinessFeedback = ({ businessId }) => {
+const BusinessFeedback = ({ businessId, onBusinessUpdate }) => {
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -43,6 +43,24 @@ const BusinessFeedback = ({ businessId }) => {
     }
   };
 
+  const updateBusinessRating = async (rating, totalVotes) => {
+    try {
+      await axios.put(`${import.meta.env.VITE_BE_URL}/api/business/${businessId}`, {
+        business_rating: rating,
+        business_total_vote: totalVotes,
+      });
+
+      if (typeof onBusinessUpdate === 'function') {
+        onBusinessUpdate({
+          business_rating: rating,
+          business_total_vote: totalVotes,
+        });
+      }
+    } catch (err) {
+      console.error('Error updating business rating:', err);
+    }
+  };
+
   const fetchFeedbacks = async () => {
     try {
       setLoading(true);
@@ -63,6 +81,11 @@ const BusinessFeedback = ({ businessId }) => {
       }
 
       setFeedbacks(feedbackData);
+
+      const overall = feedbackData.length === 0
+        ? 0
+        : feedbackData.reduce((sum, feedback) => sum + (feedback.feedback_rating || 5), 0) / feedbackData.length;
+      updateBusinessRating(overall, feedbackData.length);
 
       // Fetch user info for each feedback
       feedbackData.forEach(feedback => {
@@ -121,6 +144,9 @@ const BusinessFeedback = ({ businessId }) => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return sorted.slice(startIndex, startIndex + itemsPerPage);
   };
+
+  const overallRating = calculateOverallRating();
+  const paginatedFeedbacks = getPaginatedFeedbacks();
 
   // Handle feedback submission
   const handleSubmitFeedback = async () => {
@@ -315,8 +341,6 @@ const BusinessFeedback = ({ businessId }) => {
     return pages;
   };
 
-  const overallRating = calculateOverallRating();
-  const paginatedFeedbacks = getPaginatedFeedbacks();
 
   if (loading) {
     return (

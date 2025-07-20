@@ -51,6 +51,30 @@ function LandingPage() {
     loadInitialData();
   }, []);
 
+  const [totalBusinesses, setTotalBusinesses] = useState(0);
+  const [totalCategories, setTotalCategories] = useState(0);
+  const [totalFeedbacks, setTotalFeedbacks] = useState(0);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const [businessRes, categoryRes, feedbackRes] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/business`),
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/category`),
+          axios.get(`${import.meta.env.VITE_BE_URL}/api/feedback`),
+        ]);
+        
+        setTotalBusinesses(businessRes.data.businesses.length || 0);
+        setTotalCategories(categoryRes.data.categories.length || 0);
+        setTotalFeedbacks(feedbackRes.data.data.length || 0);
+      } catch (err) {
+        console.error('Error fetching stats:', err);
+      }
+    };
+
+    fetchStats();
+  }, []);
+  
   const loadInitialData = async () => {
     try {
       setLoading(true);
@@ -460,7 +484,25 @@ function LandingPage() {
           <WhyChooseSection />
 
           {/* Stats Section - ĐỘNG từ API data */}
-          <StatsSection stats={stats} />
+          <section className="stats-section">
+            <div className="stats-grid">
+              <div className="stat-item">
+                <div className="stat-icon">🏢</div>
+                <h3>{totalBusinesses}</h3>
+                <p>Doanh nghiệp đã tham gia</p>
+              </div>
+              <div className="stat-item">
+                <div className="stat-icon">📍</div>
+                <h3>{totalCategories}</h3>
+                <p>Danh mục đa dạng</p>
+              </div>
+              <div className="stat-item">
+                <div className="stat-icon">💬</div>
+                <h3>{totalFeedbacks}</h3>
+                <p>Phản hồi từ người dùng</p>
+              </div>
+            </div>
+          </section>
 
         </div>
         {/* Feedback Section - HOÀN TOÀN ĐỘNG từ feedbacks API với like/dislike */}
@@ -515,7 +557,7 @@ function LandingPage() {
               </div>
 
               {/* Feedback Stats - ĐỘNG từ feedbacks API */}
-              <div className="feedback-stats">
+              {/* <div className="feedback-stats">
                 <div className="feedback-stat">
                   <h3>{stats.totalFeedbacks}</h3>
                   <p>Phản hồi từ người dùng</p>
@@ -528,7 +570,7 @@ function LandingPage() {
                   <h3>{stats.totalBusinesses}+</h3>
                   <p>Doanh nghiệp đã tham gia</p>
                 </div>
-              </div>
+              </div> */}
             </div>
           </section>
         )}
@@ -694,7 +736,7 @@ const TestimonialCard = React.memo(({ text, author, date, likes, dislikes }) => 
     </div>
     <p className="testimonial-text">"{text}"</p>
     <div className="testimonial-author">
-      <img
+      {/* <img
         src={author.avatar}
         alt={author.name}
         loading="lazy"
@@ -705,41 +747,15 @@ const TestimonialCard = React.memo(({ text, author, date, likes, dislikes }) => 
       <div>
         <h4>{author.name}</h4>
         <p>{author.role}</p>
-      </div>
+      </div> */}
     </div>
-    <div className="testimonial-reactions">
+    {/* <div className="testimonial-reactions">
       <span className="reaction">👍 {likes}</span>
       <span className="reaction">👎 {dislikes}</span>
-    </div>
+    </div> */}
   </div>
 ));
 
 // Stats Section - ĐỘNG từ tất cả APIs
-const StatsSection = React.memo(({ stats }) => (
-  <section className="stats-section">
-    <div className="stats-grid">
-      <div className="stat-item">
-        <div className="stat-icon">🏢</div>
-        <h3>{stats.totalBusinesses}+</h3>
-        <p>Doanh nghiệp đã tham gia</p>
-      </div>
-      <div className="stat-item">
-        <div className="stat-icon">📍</div>
-        <h3>{stats.totalCategories}+</h3>
-        <p>Danh mục đa dạng</p>
-      </div>
-      <div className="stat-item">
-        <div className="stat-icon">💬</div>
-        <h3>{stats.totalFeedbacks}+</h3>
-        <p>Phản hồi từ người dùng</p>
-      </div>
-      <div className="stat-item">
-        <div className="stat-icon">👍</div>
-        <h3>{stats.totalLikes}+</h3>
-        <p>Lượt thích từ người dùng</p>
-      </div>
-    </div>
-  </section>
-));
 
 export default LandingPage;

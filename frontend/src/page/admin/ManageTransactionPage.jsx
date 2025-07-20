@@ -476,7 +476,7 @@ function ManageTransactionPage() {
           <div className="transaction-search-bar">
             <input
               type="text"
-              placeholder="Tìm theo mã GD, user ID"
+              placeholder="Tìm theo mã GD, Tên người dùng"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -532,7 +532,6 @@ function ManageTransactionPage() {
             </div>
           </div>
           <div className="sort-select">
-            <label>Sắp xếp:</label>
             <select value={`${sortConfig.sortBy}:${sortConfig.sortOrder}`} onChange={handleSortChange}>
               <option value="payment_date:desc">Mới nhất</option>
               <option value="payment_date:asc">Cũ nhất</option>
@@ -556,7 +555,7 @@ function ManageTransactionPage() {
               <thead>
                 <tr>
                   <th>Mã GD</th>
-                  <th>User ID</th>
+                  <th>Tên người dùng</th>
                   <th>Giá trị</th>
                   <th>Ngày/Giờ</th>
                   <th>Gói dịch vụ</th>

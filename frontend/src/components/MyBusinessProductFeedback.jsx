@@ -427,12 +427,7 @@ const ProductFeedback = ({ productId, isModal = false }) => {
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="no-reviews">
-                <p>Chưa có đánh giá nào cho sản phẩm này.</p>
-                <p>Hãy là người đầu tiên chia sẻ trải nghiệm của bạn!</p>
-              </div>
-            )}
+            ) : null}
 
             {/* Pagination */}
             {totalPages > 1 && (

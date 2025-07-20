@@ -508,12 +508,7 @@ const MyBusinessFeedback = ({ businessId }) => {
                                     </div>
                                 ))}
                             </div>
-                        ) : (
-                            <div className="no-reviews">
-                                <p>Chưa có đánh giá nào cho doanh nghiệp này.</p>
-                                <p>Hãy là người đầu tiên chia sẻ trải nghiệm của bạn!</p>
-                            </div>
-                        )}
+                        ) : null}
 
                         {/* Pagination */}
                         {totalPages > 1 && (

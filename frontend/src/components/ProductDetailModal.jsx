@@ -12,9 +12,10 @@ const ProductDetailModal = ({
   setSelectedProduct,
   businessId,
   renderStars,
+  onProductUpdate
 }) => {
   const [selectedImage, setSelectedImage] = useState(0);
-  
+
   // Image zoom state
   const [isImageZoomOpen, setIsImageZoomOpen] = useState(false);
   const [zoomedImageUrl, setZoomedImageUrl] = useState('');
@@ -114,7 +115,7 @@ const ProductDetailModal = ({
                 <p className="business-category">Đánh giá bởi người dùng</p>
                 <div className="rating-section">
                   <div className="stars">{renderStars(selectedProduct.rating)}</div>
-                  <span className="rating-count">{selectedProduct.reviews}</span>
+                  <span className="rating-count">{selectedProduct.reviews} Đánh giá</span>
                 </div>
                 <p className="business-description">{selectedProduct.description}</p>
               </div>
@@ -123,7 +124,15 @@ const ProductDetailModal = ({
             {/* Product Feedback Section */}
             <ProductFeedback
               productId={selectedProduct.id}
-              businessId={businessId}
+              onProductUpdate={(updated) => {
+                setSelectedProduct(prev => ({ ...prev, ...updated }));
+                if (typeof onProductUpdate === 'function') {
+                  onProductUpdate({
+                    _id: selectedProduct.id,
+                    ...updated,
+                  });
+                }
+              }}
             />
           </motion.div>
         </motion.div>

@@ -133,7 +133,7 @@ const BusinessPage = () => {
         name: product.product_name,
         price: product.product_price,
         rating: product.product_rating || 0,
-        reviews: `${product.product_total_vote || 0} Đánh giá`,
+        reviews: `${product.product_total_vote || 0}`,
         thumbnails: product.product_image || ['/1.png'],
         description: product.product_description || 'Không có mô tả',
       };
@@ -365,7 +365,8 @@ const BusinessPage = () => {
       )}
 
       {/* Feedback Section - Use BusinessFeedback component */}
-      <BusinessFeedback businessId={id} />
+      <BusinessFeedback businessId={id}
+        onBusinessUpdate={(updated) => setBusiness(prev => ({ ...prev, ...updated }))} />
 
       <ProductDetailModal
         showModal={showModal}
@@ -374,6 +375,11 @@ const BusinessPage = () => {
         setSelectedProduct={setSelectedProduct}
         businessId={id}
         renderStars={renderStars}
+        onProductUpdate={(updatedProduct) => {
+          setProducts(prev =>
+            prev.map(p => p._id === updatedProduct._id ? { ...p, ...updatedProduct } : p)
+          );
+        }}
       />
 
       <ImageZoomModal

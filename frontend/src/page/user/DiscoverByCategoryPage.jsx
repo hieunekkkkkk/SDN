@@ -214,7 +214,7 @@ function DiscoverByCategoryPage() {
                         <span className={`place-status ${b.status === 'Đang mở cửa' ? 'open' : 'close'}`}>
                           {b.status}
                         </span>
-                        <span className="place-rating">⭐ {b.rating}</span>
+                        <span className="place-rating">⭐ {b.rating.toFixed(1) || 0}</span>
                       </div>
                     </div>
                   </motion.div>
