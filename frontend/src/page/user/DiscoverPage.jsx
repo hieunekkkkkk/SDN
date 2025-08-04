@@ -174,7 +174,7 @@ function DiscoverPage() {
                 <div className="discover-places-grid">
                   {businesses
                     .filter((b) => b.business_category_id?._id === cat._id)
-                    .slice(0, 3)
+                    .slice(-3)
                     .map((business) => (
                       <div
                         key={business._id}
@@ -199,7 +199,7 @@ function DiscoverPage() {
                             <span className={`discover-status ${business.business_status ? 'open' : 'closed'}`}>
                               {business.business_status ? 'Đang mở cửa' : 'Đã đóng cửa'}
                             </span>
-                            <span className="discover-rating">⭐ {business.business_rating || 0}</span>
+                            <span className="discover-rating">⭐ {business.business_rating.toFixed(1) || 0}</span>
                           </div>
                         </div>
                       </div>

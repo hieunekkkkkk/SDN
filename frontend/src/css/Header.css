@@ -19,8 +19,8 @@
   font-weight: bold;
   color: #333;
   text-decoration: none;
-  width: 120px; /* Chiều rộng ảnh */
-  height: 50px; /* Chiều cao ảnh */
+  width: 80px; 
+  height: 80px; 
 }
 
 .header-nav {

@@ -246,9 +246,17 @@ const MyBusinessPage = () => {
   const handleBlur = async (field, businessId) => {
     const newValue = editedValues[field];
 
+    if (newValue === '') {
+      // Don't proceed with update if it's the placeholder
+      setEditFields((prev) => ({ ...prev, [field]: false }));
+      return;
+    }
+
+    const currentCategoryId = business.business_category_id?._id || business.business_category_id;
+
     const isSame =
       field === 'business_category_id'
-        ? newValue === business.business_category_id?._id
+        ? newValue === currentCategoryId
         : newValue === business[field];
 
     if (isSame) {
@@ -410,6 +418,8 @@ const MyBusinessPage = () => {
   const allImages = [...(business.business_image || []), ...newImages];
   const overallRating = business.business_rating || 0;
   const totalReviews = `${business.business_total_vote || 0} Đánh giá`;
+
+
 
   return (
     <>
@@ -681,12 +691,22 @@ const MyBusinessPage = () => {
                       <strong>Mô hình kinh doanh:</strong>{' '}
                       {editFields['business_category_id'] ? (
                         <select
-                          value={editedValues['business_category_id'] || business.business_category_id?._id}
+                          value={editedValues['business_category_id'] || business.business_category_id?._id || ''}
                           onChange={(e) =>
                             setEditedValues({ ...editedValues, business_category_id: e.target.value })
                           }
-                          onBlur={() => handleBlur('business_category_id', business._id)}
+                          onBlur={() => {
+                            const selectedValue = editedValues['business_category_id'];
+                            if (!selectedValue) {
+                              console.log('Empty selection — skipping update.');
+                              return;
+                            }
+                            handleBlur('business_category_id', business._id);
+                          }}
                         >
+                          <option value={business.business_category_id} >Chọn mô hình</option>
+                          {console.log(business.business_category_id._id)
+                          }
                           {categories.map((cat) => (
                             <option key={cat._id} value={cat._id}>
                               {cat.category_name}

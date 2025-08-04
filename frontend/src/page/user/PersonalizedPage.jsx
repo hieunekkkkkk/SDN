@@ -126,7 +126,7 @@ function PersonalizedPage() {
                     {/* Filter Section */}
                     <div className="personalized-filter-container">
                         <h2 className="personalized-search-title">
-                            Trở lãi ở giúp tìm kiếm theo yêu cầu của bạn!
+                            Tìm kiếm theo yêu cầu của bạn!
                         </h2>
                         <p className="personalized-search-subtitle">
                             Giúp tìm kiếm theo nhu cầu của cá nhân hóa, thêm vào danh sách yêu thích để chia.
@@ -232,7 +232,7 @@ function PersonalizedPage() {
                                     <div
                                         key={place._id}
                                         className="discover-place-card"
-                                        onClick={() => navigate(`/business/${place._id}`)}
+                                        onClick={() => navigate(`/business/${place.business_id}`)}
                                         style={{ cursor: 'pointer' }}
                                     >
                                         <div className="discover-place-image">
